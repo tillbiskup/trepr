@@ -1,0 +1,8 @@
+LICENSE
+MANIFEST.in
+README.rst
+VERSION
+trepr.egg-info/PKG-INFO
+trepr.egg-info/SOURCES.txt
+trepr.egg-info/dependency_links.txt
+trepr.egg-info/top_level.txt

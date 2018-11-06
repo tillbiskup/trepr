@@ -1,0 +1,18 @@
+---
+format:
+  type: trepr report
+  version: 0.0.1
+
+dataset:
+  path: /home/popp/nas/Python/Python-Playground/Daten/messung17/
+figures:
+  - Plotter2D:
+     pretrigger compensation: True
+     averaging: False
+  - Plotter1D:
+     pretrigger compensation: True
+     averaging: True
+     average range: [3150, 3200]
+     average dimension: 1
+     average unit: axis
+report: True

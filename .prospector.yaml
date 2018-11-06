@@ -1,0 +1,9 @@
+inherits:
+  - strictness_high
+
+pep257:
+  run: true
+  disable:
+
+pyroma:
+  run: true

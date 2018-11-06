@@ -1,0 +1,16 @@
+Dataset:
+    path: /home/popp/nas/Python/Python-Playground/Daten/messung17/
+Figures:
+    - Plotter2D:
+        Processing:
+            - pretrigger compensation:
+    - Plotter1D:
+        Processing:
+          # TODO: description der processingstep Klassen verwenden!
+            - pretrigger compensation:
+            - averaging:
+                range: [3150, 3200]
+                dimension: 1
+                unit: axis
+Report:
+  type: report
