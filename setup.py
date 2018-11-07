@@ -1,3 +1,4 @@
+from distutils.core import setup
 import setuptools
 import os
 
@@ -10,7 +11,7 @@ with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
 with open(os.path.join(os.path.dirname(__file__), 'LICENSE')) as f:
     license_ = f.read()
 
-setuptools.setup(
+setup(
     name='trepr',
     version=version,
     description='TREPR processing and analysis routines.',
@@ -18,7 +19,7 @@ setuptools.setup(
     long_description_content_type='text/x-rst',
     author='Jara Popp, Till Biskup',
     author_email='j.popp@gmx.ch',
-    url='',
+    url='https://trepr.de/',
     license=license_,
     packages=setuptools.find_packages(exclude=('doc')),
     keywords=[

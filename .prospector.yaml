@@ -1,6 +1,9 @@
 inherits:
   - strictness_high
 
+ignore-paths:
+  - trepr/bla.py
+
 pep257:
   run: true
   disable:

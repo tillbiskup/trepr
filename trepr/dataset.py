@@ -24,6 +24,19 @@ class DatasetMetadata(aspecd.metadata.DatasetMetadata):
         super().__init__()
         self.recorder = Recorder()
         self.measurement = Measurement()
+        self.sample = Sample()
+        self.transient = Transient()
+        self.experiment = Experiment()
+        self.spectrometer = Spectrometer()
+        self.magnetic_field = MagneticField()
+        self.background = Background()
+        self.bridge = Bridge()
+        self.video_amplifier = VideoAmplifier()
+        self.recorder = Recorder()
+        self.probehead = Probehead()
+        self.pump = Pump()
+        self.temperature_control = TemperatureControl()
+        self.field_calibration = FieldCalibration()
 
 
 class Measurement(aspecd.metadata.Measurement):

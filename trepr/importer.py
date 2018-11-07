@@ -72,21 +72,9 @@ class Importer(aspecd.importer.Importer):
 
     def _import_raw_data(self):
         """Import the timetraces and cut off the header lines."""
-        if os.path.isdir(self._path):
-            filenames = sorted(glob.glob(os.path.join(self._path, '*.[0-9][0-9][0-9]')))
-            for filename in filenames:
-                with open(filename) as file:
-                    raw_data = file.read()
-                lines = raw_data.splitlines()
-                self._header = lines[0:5]
-                self._parse_header()
-                numeric_data = np.loadtxt(io.StringIO(raw_data), skiprows=5)
-                numeric_data = np.reshape(numeric_data, self._timepoints)
-                self._data = np.append(self._data, numeric_data)
-            self._data = \
-                np.reshape(self._data, [len(filenames), self._timepoints])
-        else:
-            with open(self._path) as file:
+        filenames = sorted(glob.glob(os.path.join(self._path, '*.[0-9][0-9][0-9]')))
+        for filename in filenames:
+            with open(filename) as file:
                 raw_data = file.read()
             lines = raw_data.splitlines()
             self._header = lines[0:5]
@@ -94,6 +82,8 @@ class Importer(aspecd.importer.Importer):
             numeric_data = np.loadtxt(io.StringIO(raw_data), skiprows=5)
             numeric_data = np.reshape(numeric_data, self._timepoints)
             self._data = np.append(self._data, numeric_data)
+        self._data = \
+            np.reshape(self._data, [len(filenames), self._timepoints])
 
     def _hand_data_to_dataset(self):
         """Hand the data to the dataset structure."""
@@ -105,7 +95,6 @@ class Importer(aspecd.importer.Importer):
         self.dataset.data.axes[0].unit = self._timeunit
         self.dataset.data.axes[0].quantity = 'time'
         self.dataset.data.axes[1].values = self._fieldaxis
-        print(self.dataset.data.axes[1].values)
         self.dataset.data.axes[1].unit = self._fieldunit
         self.dataset.data.axes[1].quantity = 'magnetic field'
         self.dataset.data.axes[2].unit = self._intensityunit
