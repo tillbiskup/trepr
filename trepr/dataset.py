@@ -1,12 +1,16 @@
-"""To produce replicable results it's important not to change the raw data.
+"""
+To produce replicable results it's important not to change the raw data.
 
-This module creates a dataset structure, inheriting from the aspecd dataset class.
+This module creates a dataset structure, inheriting from the aspecd dataset
+class.
 """
 
 import aspecd.dataset
 import aspecd.metadata
 
+
 class Dataset(aspecd.dataset.Dataset):
+    """Define the structure for a given dataset, inheriting from ASpecD."""
 
     def __init__(self):
         super().__init__()
@@ -14,14 +18,16 @@ class Dataset(aspecd.dataset.Dataset):
 
 
 class DatasetMetadata(aspecd.metadata.DatasetMetadata):
+    """Metadata for a given dataset."""
 
     def __init__(self):
         super().__init__()
         self.recorder = Recorder()
-        self.general = General()
+        self.measurement = Measurement()
 
 
 class Measurement(aspecd.metadata.Measurement):
+    """Metadata corresponding to the measurement."""
 
     def __init__(self, dict_=None):
         self.label = ''
@@ -33,6 +39,7 @@ class Measurement(aspecd.metadata.Measurement):
 
 
 class Sample(aspecd.metadata.Sample):
+    """Metadata corresponding to the sample."""
 
     def __init__(self, dict_=None):
         self.description = ''
@@ -43,6 +50,7 @@ class Sample(aspecd.metadata.Sample):
 
 
 class Transient(aspecd.metadata.Metadata):
+    """Metadata corresponding to the transient."""
 
     def __init__(self, dict_=None):
         self.points = None
@@ -52,6 +60,7 @@ class Transient(aspecd.metadata.Metadata):
 
 
 class Experiment(aspecd.metadata.Metadata):
+    """Metadata corresponding to the experiment."""
 
     def __init__(self, dict_=None):
         self.runs = None
@@ -60,6 +69,7 @@ class Experiment(aspecd.metadata.Metadata):
 
 
 class Spectrometer(aspecd.metadata.Metadata):
+    """Metadata corresponding to the spectrometer."""
 
     def __init__(self, dict_=None):
         self.model = ''
@@ -68,6 +78,7 @@ class Spectrometer(aspecd.metadata.Metadata):
 
 
 class MagneticField(aspecd.metadata.Metadata):
+    """Metadata corresponding to the magnetic field."""
 
     def __init__(self, dict_=None):
         self.field_probe_type = ''
@@ -82,6 +93,7 @@ class MagneticField(aspecd.metadata.Metadata):
 
 
 class Background(aspecd.metadata.Metadata):
+    """Metadata corresponding to the background."""
 
     def __init__(self, dict_=None):
         self.field = aspecd.metadata.PhysicalQuantity()
@@ -92,6 +104,7 @@ class Background(aspecd.metadata.Metadata):
 
 
 class Bridge(aspecd.metadata.Metadata):
+    """Metadata corresponding to the bridge."""
 
     def __init__(self, dict_=None):
         self.model = ''
@@ -105,13 +118,16 @@ class Bridge(aspecd.metadata.Metadata):
 
 
 class VideoAmplifier(aspecd.metadata.Metadata):
+    """Metadata corresponding to the video amplifier."""
 
     def __init__(self, dict_=None):
         self.bandwidth = aspecd.metadata.PhysicalQuantity()
         self.amplification = aspecd.metadata.PhysicalQuantity()
+        super().__init__(dict_=dict_)
 
 
 class Recorder(aspecd.metadata.Metadata):
+    """Metadata corresponding to the recorder."""
 
     def __init__(self, dict_=None):
         self.model = ''
@@ -122,10 +138,11 @@ class Recorder(aspecd.metadata.Metadata):
         self.coupling = ''
         self.impedance = aspecd.metadata.PhysicalQuantity()
         self.sensitivity = aspecd.metadata.PhysicalQuantity()
-        super().__init__(dict_ = dict_)
+        super().__init__(dict_=dict_)
 
 
 class Probehead(aspecd.metadata.Metadata):
+    """Metadata corresponding to the probehead."""
 
     def __init__(self, dict_=None):
         self.type = ''
@@ -135,6 +152,7 @@ class Probehead(aspecd.metadata.Metadata):
 
 
 class Pump(aspecd.metadata.Metadata):
+    """Metadata corresponding to the pump."""
 
     def __init__(self, dict_=None):
         self.type = ''
@@ -151,6 +169,7 @@ class Pump(aspecd.metadata.Metadata):
 
 
 class TemperatureControl(aspecd.metadata.TemperatureControl):
+    """Metadata corresponding to the temperature control."""
 
     def __init__(self, dict_=None):
         self.cryostat = ''
@@ -159,14 +178,15 @@ class TemperatureControl(aspecd.metadata.TemperatureControl):
 
 
 class FieldCalibration(aspecd.metadata.Metadata):
+    """Metadata corresponding to the field calibration."""
 
     def __init__(self, dict_=None):
         self.standard = ''
         super().__init__(dict_=dict_)
 
+
 if __name__ == '__main__':
-    metadata_dict = {'recorder':{'Averages': 500, 'Impedance': '50 Ohm', 'Time base': '2 ns'}}
+    metadata_dict = {'recorder': {'Averages': 500, 'Impedance': '50 Ohm', 'Time base': '2 ns'}}
     dataset = Dataset()
     dataset.metadata.from_dict(metadata_dict)
     print(dataset.metadata.recorder.time_base)
-

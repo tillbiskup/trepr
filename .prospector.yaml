@@ -11,3 +11,17 @@ pep257:
 
 pyroma:
   run: true
+
+pyflakes:
+  run: true
+  disable:
+    - F401
+    - F403
+
+pylint:
+  disable:
+    - invalid-name
+    - import-error
+    - unused-import
+    - wildcard-import
+

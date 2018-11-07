@@ -1,7 +1,17 @@
+"""
+Yaml loader.
+
+Yaml-files are a good way to generate files that are both human and machine
+readable.
+
+This module imports yaml-files and writes the information to a dictionary.
+"""
+
 import yaml
 
 
 class YamlLoader:
+    """Load yaml-files and write the information to a dictionary."""
 
     def __init__(self, filename=''):
         self.filename = filename

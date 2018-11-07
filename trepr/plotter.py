@@ -1,4 +1,7 @@
-""" To analyze a trepr spectrum it's helpful to plot the dataset either in a
+"""
+Plotter.
+
+To analyze a trepr spectrum it's helpful to plot the dataset either in a
 2D or a 1D plot.
 
 This module creates either a 2D or 1D plot of a given dataset.
@@ -21,13 +24,14 @@ class Plotter2D(aspecd.plotting.Plotter):
     ----------
     style : str
         Defines whether the plot is done in xkcd style or not.
+
     """
 
-    def __init__(self, dataset=None):
+    def __init__(self, dataset_=None):
         super().__init__()
         # public properties
         self.style = ''
-        self.dataset = dataset
+        self.dataset = dataset_
         self.description = '2D plot as scaled image.'
         # private properties
         self._extent = list()
@@ -39,17 +43,15 @@ class Plotter2D(aspecd.plotting.Plotter):
         return axis_label
 
     def _create_plot(self):
-        """Plot the given dataset with axes labels. Norm the used colormap by
-         using the Coloring class.
-        """
+        """Plot the given dataset with axes labels and a normed colormap."""
         self._get_extent()
         if self.style == 'xkcd':
             plt.xkcd()
-        fig, ax = plt.subplots()
+        axes = plt.subplot()
         data = self.dataset.data.data
-        norm = coloring.Coloring(dataset=self.dataset).norm
-        ax.imshow(data, norm=norm, interpolation='bilinear', cmap='seismic',
-                  origin='lower', extent=self._extent, aspect='auto')
+        norm = coloring.Coloring(dataset_=self.dataset).norm
+        axes.imshow(data, norm=norm, interpolation='bilinear', cmap='seismic',
+                    origin='lower', extent=self._extent, aspect='auto')
         plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0),
                              useMathText=True)
         plt.xlabel(self._create_axis_label(self.dataset.data.axes[0]))
@@ -74,12 +76,13 @@ class Plotter1D(aspecd.plotting.Plotter):
 
     description : str
         Describes the aim of the class.
+
     """
 
-    def __init__(self, dataset=None):
+    def __init__(self, dataset_=None):
         super().__init__()
         # public properties
-        self.dataset = dataset
+        self.dataset = dataset_
         self.style = ''
         self.description = '1D line plot.'
 
@@ -90,7 +93,7 @@ class Plotter1D(aspecd.plotting.Plotter):
         return axis_label
 
     def _create_plot(self):
-        """Plot the given dataset with axes labels and a zero line. """
+        """Plot the given dataset with axes labels and a zero line."""
         if self.style == 'xkcd':
             plt.xkcd()
         data = self.dataset.data.data

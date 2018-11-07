@@ -17,16 +17,15 @@ class Coloring:
     ----------
     dataset : object
         object of the dataset class.
+
     """
 
-    def __init__(self, dataset=dataset.Dataset()):
-        self.dataset = dataset
+    def __init__(self, dataset_=dataset.Dataset()):
+        self.dataset = dataset_
         self._get_min_and_max()
 
     def _get_min_and_max(self):
-        """Calculate the minimum an maximum of the dataset to set the
-        colormap.
-        """
+        """Calculate the minimum an maximum of the intensity."""
         self._abs_min = abs(np.amin(self.dataset.data.data))
         self._max = np.amax(self.dataset.data.data)
         self._values = [self._abs_min, self._max]

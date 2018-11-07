@@ -131,7 +131,7 @@ class Averaging(aspecd.processing.ProcessingStep):
 
     @staticmethod
     def _value_within_vector_range(value, vector):
-        return value >= np.amin(vector) and value <= np.amax(vector)
+        return np.amin(vector) <= value <= np.amax(vector)
 
     def _sanitise_parameters(self):
         if self.parameters['dimension'] not in [0, 1]:

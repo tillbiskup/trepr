@@ -1,3 +1,14 @@
+"""
+Caller.
+
+In terms of user friendliness, this module serves as an interface between the
+user and the trepr package.
+
+The operation is designed in such a way that a yaml file is transferred to the
+module as a recipe and the module ensures that all necessary steps are carried
+out.
+"""
+
 import os
 
 from aspecd import utils

@@ -20,7 +20,7 @@ setuptools.setup(
     author_email='j.popp@gmx.ch',
     url='',
     license=license_,
-    packages=setuptool.find_packages(exclude=('doc')),
+    packages=setuptools.find_packages(exclude=('doc')),
     keywords=[
         'spectroscopy'
         'trepr'
@@ -40,7 +40,6 @@ setuptools.setup(
         'Topic :: Software Development :: Libraries :: Application Frameworks'
     ],
     install_requires=[
-        'aspecd',
         'cycler',
         'kiwisolver',
         'matplotlib',

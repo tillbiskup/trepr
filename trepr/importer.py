@@ -1,4 +1,6 @@
 """
+Importer.
+
 Trepr raw data consists of multiple timetraces, each stored in a text file.
 To analyze the raw data, it's necessary to bring the timetraces all together
 in form which can be stored as one dataset.
@@ -29,7 +31,7 @@ class Importer(aspecd.importer.Importer):
         Path to the dataset.
 
     Attributes
-    -----------
+    ----------
     dataset : object
         Object of the dataset class.
 
@@ -55,6 +57,7 @@ class Importer(aspecd.importer.Importer):
         self._fieldaxis = np.array([])
         self._infofile = dict()
         self._header = list()
+        self._formatno = int()
         self._time_start = float()
         self._time_stop = float()
         self._timepoints = int()
@@ -64,14 +67,26 @@ class Importer(aspecd.importer.Importer):
         self._import_raw_data()
         self._create_timeaxis()
         self._read_infofile()
-        self._hand_data_to_Dataset()
-        self._hand_axes_to_Dataset()
+        self._hand_data_to_dataset()
+        self._hand_axes_to_dataset()
 
     def _import_raw_data(self):
         """Import the timetraces and cut off the header lines."""
-        filenames = sorted(glob.glob(os.path.join(self._path, '*.[0-9][0-9][0-9]')))
-        for i, filename in enumerate(filenames):
-            with open(filename) as file:
+        if os.path.isdir(self._path):
+            filenames = sorted(glob.glob(os.path.join(self._path, '*.[0-9][0-9][0-9]')))
+            for filename in filenames:
+                with open(filename) as file:
+                    raw_data = file.read()
+                lines = raw_data.splitlines()
+                self._header = lines[0:5]
+                self._parse_header()
+                numeric_data = np.loadtxt(io.StringIO(raw_data), skiprows=5)
+                numeric_data = np.reshape(numeric_data, self._timepoints)
+                self._data = np.append(self._data, numeric_data)
+            self._data = \
+                np.reshape(self._data, [len(filenames), self._timepoints])
+        else:
+            with open(self._path) as file:
                 raw_data = file.read()
             lines = raw_data.splitlines()
             self._header = lines[0:5]
@@ -79,21 +94,18 @@ class Importer(aspecd.importer.Importer):
             numeric_data = np.loadtxt(io.StringIO(raw_data), skiprows=5)
             numeric_data = np.reshape(numeric_data, self._timepoints)
             self._data = np.append(self._data, numeric_data)
-        self._data = \
-            np.reshape(self._data, [len(filenames), self._timepoints])
 
-    def _hand_data_to_Dataset(self):
+    def _hand_data_to_dataset(self):
         """Hand the data to the dataset structure."""
         self.dataset.data.data = self._data
 
-    def _hand_axes_to_Dataset(self):
-        """Hand the time axis, field axis and intensity inclusive unit and
-        quantity to the dataset structure.
-        """
+    def _hand_axes_to_dataset(self):
+        """Hand the axes and intensity to the dataset structure."""
         self.dataset.data.axes[0].values = self._timeaxis
         self.dataset.data.axes[0].unit = self._timeunit
         self.dataset.data.axes[0].quantity = 'time'
         self.dataset.data.axes[1].values = self._fieldaxis
+        print(self.dataset.data.axes[1].values)
         self.dataset.data.axes[1].unit = self._fieldunit
         self.dataset.data.axes[1].quantity = 'magnetic field'
         self.dataset.data.axes[2].unit = self._intensityunit
@@ -115,9 +127,7 @@ class Importer(aspecd.importer.Importer):
         self._timestamps.append(timestamp)
 
     def _parse_header_2nd_line(self):
-        """Parse the second header line and extract the unit of the field as
-         well as the frequency.
-         """
+        """Extract the field- and frequency-unit from the second header line."""
         def parse_line(line):
             obj = re.search('([A-Za-z0-9]*) = ([0-9.]*) ([A-Za-z]*)', line)
             return float(obj.group(2)), obj.group(3)
@@ -132,9 +142,7 @@ class Importer(aspecd.importer.Importer):
         self._commentline = self._header[2]
 
     def _parse_header_4th_line(self):
-        """Parse the fourth header line and extract the format number, the
-        number of timepoints, the time startpoint and the time endpoint.
-        """
+        """Extract the format number, time information from the fourth header line."""
         entries = self._header[3].split()[0:4]
         self._formatno = int(entries[0])
         self._timepoints = int(entries[1])
@@ -142,15 +150,11 @@ class Importer(aspecd.importer.Importer):
         self._time_stop = float(entries[3])
 
     def _parse_header_5th_line(self):
-        """Parse the fifth header line and extract the time- and intensity-
-        unit.
-        """
+        """Extract the time- and intensity-unit from the fifth header line."""
         self._timeunit, self._intensityunit = self._header[4].split()
 
     def _create_timeaxis(self):
-        """Create the timeaxis out of the startpoint, the endpoint and the
-        number of timepoints.
-        """
+        """Create the timeaxis using the startpoint, endpoint and timepoints."""
         self._timeaxis = \
             np.linspace(self._time_start, self._time_stop, num=self._timepoints)
 
@@ -168,4 +172,4 @@ if __name__ == '__main__':
     PATH = '../../Daten/messung17/'
     importer = Importer(path=PATH)
     importer.dataset.import_from(importer)
-    print(importer.dataset.metadata)
+    print(importer.dataset.data.data)

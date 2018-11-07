@@ -1,4 +1,8 @@
-"""This module saves a plot."""
+"""
+After creating plots it's essential to save them.
+
+This module saves a plot.
+"""
 
 import matplotlib.pyplot as plt
 
@@ -8,9 +12,11 @@ import aspecd
 class Saver(aspecd.plotting.Saver):
     """Save a given plot.
 
-    Parameters:
+    Parameters
+    ----------
     filename : str
         Path, including the filename, where to save the plot.
+
     """
 
     def __init__(self, filename=None):

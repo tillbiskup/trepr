@@ -1,4 +1,7 @@
-"""One of the first processing steps after measuring trepr is to set the
+"""
+Pretrigger offset compensation.
+
+One of the first processing steps after measuring trepr is to set the
 average of the pretrigger timetrace to zero. The so called pretrigger
 offset compensation.
 
@@ -21,6 +24,7 @@ class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
 
     undoable : bool
         Information weather the processing step is undoable or not.
+
     """
 
     def __init__(self):
@@ -43,9 +47,7 @@ class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
         return np.average(array)
 
     def _perform_task(self):
-        """Perform the processing step and return the processed data to the
-        dataset.
-        """
+        """Perform the processing step and return the processed data."""
         self._get_zeropoint_index()
         range_end = self.parameters['zeropoint_index']
         for fieldpoint, timetrace in enumerate(self.dataset.data.data):
