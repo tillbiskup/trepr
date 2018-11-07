@@ -20,7 +20,7 @@
 bla.py
 
 # Sphinx templates and build
-trepr/doc/_build
-trepr/doc/_static
-trepr/doc/_templates
-trepr/doc/.doctrees
+doc/_build
+doc/_static
+doc/_templates
+doc/.doctrees
