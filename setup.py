@@ -19,7 +19,7 @@ setup(
     long_description_content_type='text/x-rst',
     author='Jara Popp, Till Biskup',
     author_email='j.popp@gmx.ch',
-    url='https://trepr.de/',
+    url='https://www.trepr.de/',
     license=license_,
     packages=setuptools.find_packages(exclude=('doc')),
     keywords=[
