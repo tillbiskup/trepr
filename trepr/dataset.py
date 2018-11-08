@@ -36,7 +36,6 @@ class DatasetMetadata(aspecd.metadata.DatasetMetadata):
         self.probehead = Probehead()
         self.pump = Pump()
         self.temperature_control = TemperatureControl()
-        self.field_calibration = FieldCalibration()
 
 
 class Measurement(aspecd.metadata.Measurement):
@@ -190,12 +189,20 @@ class TemperatureControl(aspecd.metadata.TemperatureControl):
         super().__init__(dict_=dict_)
 
 
-class FieldCalibration(aspecd.metadata.Metadata):
-    """Metadata corresponding to the field calibration."""
+class MetadataMapper():
 
-    def __init__(self, dict_=None):
-        self.standard = ''
-        super().__init__(dict_=dict_)
+    def __init__(self):
+        self.metadata = dict()
+
+    def rename_key(self, old_key='', new_key=''):
+        self.metadata[new_key] = self.metadata.pop(old_key)
+
+    def combine_items(self, old_keys=None, new_key=''):
+        value_tmp = list()
+        for key in old_keys:
+            value_tmp.append(self.metadata.pop(key))
+        self.metadata[new_key] = ' '.join(value_tmp)
+
 
 
 if __name__ == '__main__':

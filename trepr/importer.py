@@ -15,6 +15,7 @@ import re
 
 import numpy as np
 
+import aspecd.annotation
 import aspecd.data
 import aspecd.dataset
 import aspecd.importer
@@ -153,12 +154,14 @@ class Importer(aspecd.importer.Importer):
         if not infofile_name:
             print('Besorg dir ein Infofile!')
             return
-        self.dataset.metadata = aspecd.infofile.parse(infofile_name[0])
-        #self._infofile = aspecd.infofile.parse(infofile_name[0])
+        infofile_content = aspecd.infofile.parse(infofile_name[0])
+        self.dataset.metadata.from_dict(infofile_content)
+        comment = aspecd.annotation.Comment()
+        comment.comment = infofile_content['COMMENT']
+        self.dataset.annotate(comment)
 
 
 if __name__ == '__main__':
     PATH = '../../Daten/messung17/'
     importer = Importer(path=PATH)
     importer.dataset.import_from(importer)
-    print(importer.dataset.data.data)
