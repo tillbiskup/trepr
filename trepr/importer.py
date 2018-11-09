@@ -165,3 +165,4 @@ if __name__ == '__main__':
     PATH = '../../Daten/messung17/'
     importer = Importer(path=PATH)
     importer.dataset.import_from(importer)
+    print(importer.dataset.metadata.pump)

@@ -1,0 +1,21 @@
+---
+format:
+  type: metadata mapper
+  version: 0.0.1
+
+infofile version: v. 0.1.6
+
+rename keys:
+  - old key: GENERAL
+    new key: measurement
+  - old key: TEMPERATURE
+    new key: temperature_control
+
+combine items:
+  - old keys: ['Date start', 'Time start']
+    new key: start
+    pattern: ' '
+  - old keys: ['Date end', 'Time end']
+    new key: end
+    pattern: ' '
+

@@ -188,20 +188,11 @@ class TemperatureControl(aspecd.metadata.TemperatureControl):
         self.cryogen = ''
         super().__init__(dict_=dict_)
 
-
-class MetadataMapper():
+class MetadataMapper(aspecd.metadata.MetadataMapper):
 
     def __init__(self):
-        self.metadata = dict()
+        pass
 
-    def rename_key(self, old_key='', new_key=''):
-        self.metadata[new_key] = self.metadata.pop(old_key)
-
-    def combine_items(self, old_keys=None, new_key=''):
-        value_tmp = list()
-        for key in old_keys:
-            value_tmp.append(self.metadata.pop(key))
-        self.metadata[new_key] = ' '.join(value_tmp)
 
 
 
