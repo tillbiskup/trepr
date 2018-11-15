@@ -19,7 +19,7 @@ Installation
 
 Install the package by running::
 
-  pip install trepr
+      pip install trepr
 
 Contribute
 ----------
