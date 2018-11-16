@@ -23,5 +23,9 @@ class YamlLoader:
 
 
 if __name__ == '__main__':
-    obj = YamlLoader('importer.yaml')
-    print(obj.yaml_dict)
+    obj = YamlLoader('metadata_mapper.yaml')
+    for key in obj.yaml_dict.keys():
+        if key == 'format':
+            pass
+        else:
+            print(obj.yaml_dict[key]['infofile versions'])

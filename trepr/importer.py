@@ -16,14 +16,13 @@ import re
 import numpy as np
 
 import aspecd.annotation
-import aspecd.data
 import aspecd.dataset
-import aspecd.importer
+import aspecd.io
 import aspecd.infofile
-from trepr import Dataset
+from trepr import dataset
 
 
-class Importer(aspecd.importer.Importer):
+class Importer(aspecd.io.Importer):
     """Import a dataset including its metadata.
 
     Parameters
@@ -41,7 +40,7 @@ class Importer(aspecd.importer.Importer):
     def __init__(self, path=''):
         super().__init__()
         # public properties
-        self.dataset = Dataset()
+        self.dataset = dataset.Dataset()
         # private properties
         self._HEADERLINES = 5
         self._path = path
@@ -67,7 +66,8 @@ class Importer(aspecd.importer.Importer):
         """Execute all necessary methods and write the data to a dataset."""
         self._import_raw_data()
         self._create_timeaxis()
-        self._read_infofile()
+        self._load_infofile()
+        self._map_infofile()
         self._hand_data_to_dataset()
         self._hand_axes_to_dataset()
 
@@ -148,16 +148,22 @@ class Importer(aspecd.importer.Importer):
         self._timeaxis = \
             np.linspace(self._time_start, self._time_stop, num=self._timepoints)
 
-    def _read_infofile(self):
+    def _load_infofile(self):
         """Import the infofile and parse it."""
         infofile_name = glob.glob(os.path.join(self._path, '*.info'))
         if not infofile_name:
             print('Besorg dir ein Infofile!')
             return
-        infofile_content = aspecd.infofile.parse(infofile_name[0])
-        self.dataset.metadata.from_dict(infofile_content)
+        self.infofile = aspecd.infofile.Infofile(infofile_name[0])
+        self.infofile.parse()
+
+    def _map_infofile(self):
+        self.infofile_version = self.infofile.infofile_info['version']
+        new_infofile = dataset.MetadataMapper(version=self.infofile_version,
+                               metadata=self.infofile.parameters)
+        self.dataset.metadata.from_dict(new_infofile.metadata)
         comment = aspecd.annotation.Comment()
-        comment.comment = infofile_content['COMMENT']
+        comment.comment = self.infofile.parameters['COMMENT']
         self.dataset.annotate(comment)
 
 
@@ -165,4 +171,3 @@ if __name__ == '__main__':
     PATH = '../../Daten/messung17/'
     importer = Importer(path=PATH)
     importer.dataset.import_from(importer)
-    print(importer.dataset.metadata.pump)

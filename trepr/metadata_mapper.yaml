@@ -1,21 +1,54 @@
 ---
+
 format:
   type: metadata mapper
   version: 0.0.1
 
-infofile version: v. 0.1.6
+map 1:
+  infofile versions: 
+    - 0.1.6
+    - 0.1.5
+  rename keys:
+    - old key: GENERAL
+      new key: measurement
+      in dict:
+    - old key: TEMPERATURE
+      new key: temperature_control
+      in dict:
+  combine items:
+    - old keys: ['Date start', 'Time start']
+      new key: start
+      pattern: ' '
+      in dict: GENERAL
+    - old keys: ['Date end', 'Time end']
+      new key: end
+      pattern: ' '
+      in dict: GENERAL
 
-rename keys:
-  - old key: GENERAL
-    new key: measurement
-  - old key: TEMPERATURE
-    new key: temperature_control
-
-combine items:
-  - old keys: ['Date start', 'Time start']
-    new key: start
-    pattern: ' '
-  - old keys: ['Date end', 'Time end']
-    new key: end
-    pattern: ' '
+map 2:
+  infofile versions:
+    - 0.1.4
+  rename keys:
+    - old key: GENERAL
+      new key: measurement
+      in dict:
+    - old key: TEMPERATURE
+      new key: temperature_control
+      in dict:
+    - old key: Buffer
+      new key: solvent
+      in dict: SAMPLE
+  copy key:
+    - old key: Date
+      new key: Date end
+      in dict: GENERAL
+  combine items:
+    - old keys: ['Date', 'Time start']
+      new key: start
+      pattern: ' '
+      in dict: GENERAL
+    - old keys: ['Date end', 'Time end']
+      new key: end
+      pattern: ' '
+      in dict: GENERAL
 

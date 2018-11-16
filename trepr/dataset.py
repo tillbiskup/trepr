@@ -7,6 +7,7 @@ class.
 
 import aspecd.dataset
 import aspecd.metadata
+from trepr import yaml_loader
 
 
 class Dataset(aspecd.dataset.Dataset):
@@ -190,14 +191,63 @@ class TemperatureControl(aspecd.metadata.TemperatureControl):
 
 class MetadataMapper(aspecd.metadata.MetadataMapper):
 
-    def __init__(self):
-        pass
+    def __init__(self, version='', metadata=None):
+        self._yaml_dict = dict()
+        self.version = version
+        self.metadata = metadata
+        self.mappings = list()
+        self._load_yaml()
+        self._get_map_recipe()
+        self._create_mapping()
+        #self._copy_key()
+        self._map_metadata()
 
+    def _load_yaml(self):
+        yamlfile = yaml_loader.YamlLoader('metadata_mapper.yaml')
+        self._yaml_dict = yamlfile.yaml_dict
 
+    def _get_map_recipe(self):
+        for key in self._yaml_dict.keys():
+            if key == 'format':
+                pass
+            else:
+                if self.version in self._yaml_dict[key]['infofile versions']:
+                    self.map_recipe = self._yaml_dict[key]
+
+    def _create_mapping(self):
+        if 'copy key' in self.map_recipe.keys():
+            for i in range(len(self.map_recipe['copy key'])):
+                mapping = \
+                    [self.map_recipe['copy key'][i]['in dict'],
+                     'copy_key', [self.map_recipe['copy key'][i]['old key'],
+                                  self.map_recipe['copy key'][i]['new key']]]
+                self.mappings.append(mapping)
+        else:
+            pass
+        for i in range(len(self.map_recipe['combine items'])):
+            mapping = \
+                [self.map_recipe['combine items'][i]['in dict'],
+                 'combine_items', [self.map_recipe['combine items'][i]['old keys'],
+                                   self.map_recipe['combine items'][i]['new key'],
+                 self.map_recipe['combine items'][i]['pattern']]]
+            self.mappings.append(mapping)
+        for i in range(len(self.map_recipe['rename keys'])):
+            mapping = \
+                [self.map_recipe['rename keys'][i]['in dict'],
+                 'rename_key', [self.map_recipe['rename keys'][i]['old key'],
+                                self.map_recipe['rename keys'][i]['new key']]]
+            self.mappings.append(mapping)
+
+    def _copy_key(self):
+        if 'copy key' in self.map_recipe.keys():
+            for i in range(len(self.map_recipe['copy key'])):
+                aspecd.metadata.MetadataMapper.copy_key(self, old_key=self.map_recipe['copy key'][i]['old key'], new_key=self.map_recipe['copy key'][i]['new key'])
+        else:
+            pass
+
+    def _map_metadata(self):
+        aspecd.metadata.MetadataMapper.map(self)
 
 
 if __name__ == '__main__':
-    metadata_dict = {'recorder': {'Averages': 500, 'Impedance': '50 Ohm', 'Time base': '2 ns'}}
-    dataset = Dataset()
-    dataset.metadata.from_dict(metadata_dict)
-    print(dataset.metadata.recorder.time_base)
+    map = MetadataMapper()
