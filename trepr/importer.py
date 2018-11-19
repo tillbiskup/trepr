@@ -154,16 +154,17 @@ class Importer(aspecd.io.Importer):
         if not infofile_name:
             print('Besorg dir ein Infofile!')
             return
-        self.infofile = aspecd.infofile.Infofile(infofile_name[0])
-        self.infofile.parse()
+        self._infofile = aspecd.infofile.Infofile(infofile_name[0])
+        self._infofile.parse()
 
     def _map_infofile(self):
-        self.infofile_version = self.infofile.infofile_info['version']
-        new_infofile = dataset.MetadataMapper(version=self.infofile_version,
-                               metadata=self.infofile.parameters)
+        """Bring the metadata to a given format."""
+        self._infofile_version = self._infofile.infofile_info['version']
+        new_infofile = dataset.MetadataMapper(version=self._infofile_version,
+                                              metadata=self._infofile.parameters)
         self.dataset.metadata.from_dict(new_infofile.metadata)
         comment = aspecd.annotation.Comment()
-        comment.comment = self.infofile.parameters['COMMENT']
+        comment.comment = self._infofile.parameters['COMMENT']
         self.dataset.annotate(comment)
 
 
