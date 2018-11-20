@@ -11,7 +11,7 @@ This module makes a pretrigger offset compensation on a given dataset.
 import numpy as np
 
 import aspecd.processing
-from trepr import importer
+from trepr import io
 
 
 class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):

@@ -23,7 +23,7 @@ saver
 """
 
 from .dataset import *
-from .importer import *
+from .io import *
 from .averaging import *
 from .coloring import *
 from .plotter import *

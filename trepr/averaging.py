@@ -12,7 +12,7 @@ This module calculates the average in a given range along a given axis.
 import numpy as np
 
 import aspecd.processing
-from trepr import importer
+from trepr import io
 
 
 class Error(Exception):
@@ -103,7 +103,7 @@ class Averaging(aspecd.processing.ProcessingStep):
         self.parameters['dimension'] = dimension
         self.parameters['range'] = avg_range
         self.parameters['unit'] = unit
-        # private properties:
+        # protected properties:
         self._dim = self.parameters['dimension']
 
     def _perform_task(self):

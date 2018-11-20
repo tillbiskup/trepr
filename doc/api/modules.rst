@@ -1,5 +1,5 @@
-trepr
-=====
+trepr package
+=============
 
 .. toctree::
    :maxdepth: 4

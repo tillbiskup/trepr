@@ -25,10 +25,10 @@ trepr.dataset module
     :undoc-members:
     :show-inheritance:
 
-trepr.importer module
----------------------
+trepr.io module
+---------------
 
-.. automodule:: trepr.importer
+.. automodule:: trepr.io
     :members:
     :undoc-members:
     :show-inheritance:

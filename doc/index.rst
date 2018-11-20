@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to trepr's documentation!
-=================================
+Welcome to the trepr package's documentation!
+=============================================
 
 trepr is a package, based on the ASpecD framework, for handling trepr data. Due to the inheritance from the ASpecD superclass, all data generated with the trepr package are completely reproducible and have a complete history.
 
@@ -19,8 +19,10 @@ The easiest way to use the trepr package is to hand over a yaml-file to the trep
 Features
 --------
 
-- nichts
-- und wieder nichts
+- fully reproducible processing of TREPR data
+- customisable plots
+- automatically generated reports
+- recipe-driven usage
 
 Installation
 ------------
@@ -37,7 +39,7 @@ Contribute
 Support
 -------
 
-If you are having issues, screw you!
+If you are having issues, please contact us under j.popp@gmx.ch
 
 License
 -------
@@ -47,6 +49,11 @@ The project licensed under the BSD license.
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+
+   audience
+   introduction
+   concepts
+   usecases
 
    api/modules
 

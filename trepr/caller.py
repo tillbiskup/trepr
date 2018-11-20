@@ -23,7 +23,19 @@ from trepr import yaml_loader
 
 
 class Caller:
-    """Read a given yaml-file and execute all demanded methods."""
+    """Read a given yaml-file and execute all demanded methods.
+
+    Parameters
+    ----------
+    yamlfilename : str
+        Name of the yaml-file containing the recipe for generating the report.
+
+    Attributes
+    ----------
+    yamlfilename : str
+        Name of the yaml-file containing the recipe for generating the report.
+
+    """
 
     def __init__(self, yamlfilename=''):
         # public properties:

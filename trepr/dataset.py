@@ -16,13 +16,14 @@ class Dataset(aspecd.dataset.Dataset):
 
     Attributes
     ----------
-    metadata : object
+    metadata : :class:`trepr.dataset.DatasetMetadata`
         Object of the DatasetMetadata class.
 
     """
 
     def __init__(self):
         super().__init__()
+        # public properties
         self.metadata = DatasetMetadata()
 
 
@@ -31,49 +32,50 @@ class DatasetMetadata(aspecd.metadata.DatasetMetadata):
 
     Attributes
     ----------
-    measurement : object
+    measurement : :obj:`trepr.dataset.Measurement`
         Object of the Measurement class.
 
-    sample : object
+    sample : :obj:`trepr.dataset.Sample`
         Object of the Sample class.
 
-    transient : object
+    transient : :obj:`trepr.dataset.Transient`
         Object of the Transient class.
 
-    experiment : object
+    experiment : :obj:`trepr.dataset.Experiment`
         Object of the Experiment class.
 
-    spectrometer : object
+    spectrometer : :obj:`trepr.dataset.Spectrometer`
         Object of the Spectrometer class.
 
-    magnetic_field : object
+    magnetic_field : :obj:`trepr.dataset.MagneticField`
         Object of the MagneicField class.
 
-    background : object
+    background : :obj:`trepr.dataset.Background`
         Object of the Background class.
 
-    bridge : object
+    bridge : :obj:`trepr.dataset.Bridge`
         Object of the Bridge class.
 
-    viedo_amplifier : object
+    viedo_amplifier : :obj:`trepr.dataset.VideoAmplifier`
         Object of the VideoAmplifier class.
 
-    recorder : object
+    recorder : :obj:`trepr.dataset.Recorder`
         Object of the Recorder class.
 
-    probehead : object
+    probehead : :obj:`trepr.dataset.Probehead`
         Object of the Probehead class.
 
-    pump : object
+    pump : :obj:`trepr.dataset.Pump`
         Object of the Pump class.
 
-    temperature_control : object
+    temperature_control : :obj:`trepr.dataset.TemperatureControl`
         Object of the TemperatureControl class.
 
     """
 
     def __init__(self):
         super().__init__()
+        # public properies
         self.measurement = Measurement()
         self.sample = Sample()
         self.transient = Transient()
@@ -91,6 +93,11 @@ class DatasetMetadata(aspecd.metadata.DatasetMetadata):
 
 class Measurement(aspecd.metadata.Measurement):
     """Metadata corresponding to the measurement.
+
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing properties to set.
 
     Attributes
     ----------
@@ -112,16 +119,18 @@ class Measurement(aspecd.metadata.Measurement):
     """
 
     def __init__(self, dict_=None):
+        # public properies
         self.label = ''
-        self.spectrometer = ''
-        self.software = ''
-        self.runs = None
-        self.shot_repetition_rate = aspecd.metadata.PhysicalQuantity()
         super().__init__(dict_=dict_)
 
 
 class Sample(aspecd.metadata.Sample):
     """Metadata corresponding to the sample.
+
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing properties to set.
 
     Attributes
     ----------
@@ -140,6 +149,7 @@ class Sample(aspecd.metadata.Sample):
     """
 
     def __init__(self, dict_=None):
+        # public properies
         self.description = ''
         self.solvent = ''
         self.preperation = ''
@@ -149,6 +159,11 @@ class Sample(aspecd.metadata.Sample):
 
 class Transient(aspecd.metadata.Metadata):
     """Metadata corresponding to the transient.
+
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing properties to set.
 
     Attributes
     ----------
@@ -164,6 +179,7 @@ class Transient(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
+        # public properies
         self.points = None
         self.length = aspecd.metadata.PhysicalQuantity()
         self.trigger_position = None
@@ -172,6 +188,11 @@ class Transient(aspecd.metadata.Metadata):
 
 class Experiment(aspecd.metadata.Metadata):
     """Metadata corresponding to the experiment.
+
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing properties to set.
 
     Attributes
     ----------
@@ -184,6 +205,7 @@ class Experiment(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
+        # public properies
         self.runs = None
         self.shot_repetition_rate = aspecd.metadata.PhysicalQuantity()
         super().__init__(dict_=dict_)
@@ -191,6 +213,11 @@ class Experiment(aspecd.metadata.Metadata):
 
 class Spectrometer(aspecd.metadata.Metadata):
     """Metadata corresponding to the spectrometer.
+
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing properties to set.
 
     Attributes
     ----------
@@ -203,6 +230,7 @@ class Spectrometer(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
+        # public properies
         self.model = ''
         self.software = ''
         super().__init__(dict_=dict_)
@@ -210,6 +238,11 @@ class Spectrometer(aspecd.metadata.Metadata):
 
 class MagneticField(aspecd.metadata.Metadata):
     """Metadata corresponding to the magnetic field.
+
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing properties to set.
 
     Attributes
     ----------
@@ -240,6 +273,7 @@ class MagneticField(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
+        # public properies
         self.field_probe_type = ''
         self.field_probe_model = ''
         self.start = aspecd.metadata.PhysicalQuantity()
@@ -254,13 +288,18 @@ class MagneticField(aspecd.metadata.Metadata):
 class Background(aspecd.metadata.Metadata):
     """Metadata corresponding to the background.
 
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing properties to set.
+
     Attributes
     ----------
     field : object
         Object of the PhysicalQuantity class from ASpecD.
 
     occurence : int
-
+        Number of time traces after which a background trace is recorded.
 
     polarisation: str
         Type of background polarisation.
@@ -271,6 +310,7 @@ class Background(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
+        # public properies
         self.field = aspecd.metadata.PhysicalQuantity()
         self.occurrence = None
         self.polarisation = ''
@@ -280,6 +320,11 @@ class Background(aspecd.metadata.Metadata):
 
 class Bridge(aspecd.metadata.Metadata):
     """Metadata corresponding to the bridge.
+
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing properties to set.
 
     Attributes
     ----------
@@ -307,6 +352,7 @@ class Bridge(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
+        # public properies
         self.model = ''
         self.controller = ''
         self.attenuation = aspecd.metadata.PhysicalQuantity()
@@ -320,6 +366,11 @@ class Bridge(aspecd.metadata.Metadata):
 class VideoAmplifier(aspecd.metadata.Metadata):
     """Metadata corresponding to the video amplifier.
 
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing properties to set.
+
     Attributes
     ----------
     bandwith : object
@@ -331,6 +382,7 @@ class VideoAmplifier(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
+        # public properies
         self.bandwidth = aspecd.metadata.PhysicalQuantity()
         self.amplification = aspecd.metadata.PhysicalQuantity()
         super().__init__(dict_=dict_)
@@ -339,13 +391,18 @@ class VideoAmplifier(aspecd.metadata.Metadata):
 class Recorder(aspecd.metadata.Metadata):
     """Metadata corresponding to the recorder.
 
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing properties to set.
+
     Attributes
     ----------
     model : str
         Model of the recorder used.
 
     averages : int
-
+        Number of accumulations measured.
 
     time_base : object
         Object of the PhysicalQuantity class from ASpecD.
@@ -368,6 +425,7 @@ class Recorder(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
+        # public properies
         self.model = ''
         self.averages = None
         self.time_base = aspecd.metadata.PhysicalQuantity()
@@ -381,6 +439,11 @@ class Recorder(aspecd.metadata.Metadata):
 
 class Probehead(aspecd.metadata.Metadata):
     """Metadata corresponding to the probehead.
+
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing properties to set.
 
     Attributes
     ----------
@@ -396,6 +459,7 @@ class Probehead(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
+        # public properies
         self.type = ''
         self.model = ''
         self.coupling = ''
@@ -404,6 +468,11 @@ class Probehead(aspecd.metadata.Metadata):
 
 class Pump(aspecd.metadata.Metadata):
     """Metadata corresponding to the pump.
+
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing properties to set.
 
     Attributes
     ----------
@@ -429,6 +498,7 @@ class Pump(aspecd.metadata.Metadata):
         Model of the tunable used.
 
     tunable_dye : str
+        Name of Laser dye.
 
     tunable_position : int
         Position of the tunable used.
@@ -439,6 +509,7 @@ class Pump(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
+        # public properies
         self.type = ''
         self.model = ''
         self.wavelength = aspecd.metadata.PhysicalQuantity()
@@ -455,6 +526,11 @@ class Pump(aspecd.metadata.Metadata):
 class TemperatureControl(aspecd.metadata.TemperatureControl):
     """Metadata corresponding to the temperature control.
 
+    Parameters
+    ----------
+    dict_ : dict
+        Dictionary containing properties to set.
+
     Attributes
     ----------
     cryostat : str
@@ -466,12 +542,21 @@ class TemperatureControl(aspecd.metadata.TemperatureControl):
     """
 
     def __init__(self, dict_=None):
+        # public properies
         self.cryostat = ''
         self.cryogen = ''
         super().__init__(dict_=dict_)
 
 class MetadataMapper(aspecd.metadata.MetadataMapper):
     """Bring the metadata into a unified layout using mappings.
+
+    Parameters
+    ----------
+    version : str
+        Version of the imported infofile.
+
+    metadata : dict
+        Dictionary containing all metadata from the infofile.
 
     Attributes
     ----------
@@ -491,8 +576,9 @@ class MetadataMapper(aspecd.metadata.MetadataMapper):
         self.version = version
         self.metadata = metadata
         self.mappings = list()
-        # private properties
+        # protected properties
         self._yaml_dict = dict()
+        # calls to methods
         self._load_yaml()
         self._get_map_recipe()
         self._create_mappings()
@@ -521,25 +607,37 @@ class MetadataMapper(aspecd.metadata.MetadataMapper):
                      'copy_key', [self.map_recipe['copy key'][i]['old key'],
                                   self.map_recipe['copy key'][i]['new key']]]
                 self.mappings.append(mapping)
+        if 'combine items' in self.map_recipe.keys():
+            for i in range(len(self.map_recipe['combine items'])):
+                mapping = \
+                    [self.map_recipe['combine items'][i]['in dict'],
+                     'combine_items', [self.map_recipe['combine items'][i]['old keys'],
+                                       self.map_recipe['combine items'][i]['new key'],
+                     self.map_recipe['combine items'][i]['pattern']]]
+                self.mappings.append(mapping)
+        if 'rename key' in self.map_recipe.keys():
+            for i in range(len(self.map_recipe['rename key'])):
+                mapping = \
+                    [self.map_recipe['rename key'][i]['in dict'],
+                     'rename_key', [self.map_recipe['rename key'][i]['old key'],
+                                    self.map_recipe['rename key'][i]['new key']]]
+                self.mappings.append(mapping)
+        if 'move item' in self.map_recipe.keys():
+            for i in range(len(self.map_recipe['move item'])):
+                mapping = \
+                    ['', 'move_item', [self.map_recipe['move item'][i]['key'],
+                                       self.map_recipe['move item'][i][
+                                           'source dict'],
+                                       self.map_recipe['move item'][i][
+                                           'target dict'], True]]
+                self.mappings.append(mapping)
         else:
             pass
-        for i in range(len(self.map_recipe['combine items'])):
-            mapping = \
-                [self.map_recipe['combine items'][i]['in dict'],
-                 'combine_items', [self.map_recipe['combine items'][i]['old keys'],
-                                   self.map_recipe['combine items'][i]['new key'],
-                 self.map_recipe['combine items'][i]['pattern']]]
-            self.mappings.append(mapping)
-        for i in range(len(self.map_recipe['rename keys'])):
-            mapping = \
-                [self.map_recipe['rename keys'][i]['in dict'],
-                 'rename_key', [self.map_recipe['rename keys'][i]['old key'],
-                                self.map_recipe['rename keys'][i]['new key']]]
-            self.mappings.append(mapping)
 
     def _map_metadata(self):
         """Map the metadata with the created mappings."""
         aspecd.metadata.MetadataMapper.map(self)
+        print(self.metadata)
 
 
 if __name__ == '__main__':

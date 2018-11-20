@@ -32,18 +32,18 @@ class Importer(aspecd.io.Importer):
 
     Attributes
     ----------
-    dataset : object
+    dataset : :obj:`trepr.dataset.Dataset`
         Object of the dataset class.
 
     """
 
-    def __init__(self, path=''):
+    def __init__(self, source=''):
         super().__init__()
         # public properties
         self.dataset = dataset.Dataset()
-        # private properties
+        # protected properties
         self._HEADERLINES = 5
-        self._path = path
+        self._path = source
         self._data = np.array([])
         self._file_format = ''
         self._timestamps = list()
@@ -169,6 +169,6 @@ class Importer(aspecd.io.Importer):
 
 
 if __name__ == '__main__':
-    PATH = '../../Daten/messung17/'
-    importer = Importer(path=PATH)
+    PATH = '../../Daten/messung01/'
+    importer = Importer(source=PATH)
     importer.dataset.import_from(importer)

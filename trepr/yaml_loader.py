@@ -11,14 +11,23 @@ import yaml
 
 
 class YamlLoader:
-    """Load yaml-files and write the information to a dictionary."""
+    """Load yaml-files and write the information to a dictionary.
+
+    Parameters
+    ----------
+    filename : str
+        Name of the yaml-file to load.
+
+    """
 
     def __init__(self, filename=''):
-        self.filename = filename
+        # protected properties
+        self._filename = filename
+        # calls to methods
         self._read_yaml_file()
 
     def _read_yaml_file(self):
-        with open(self.filename, 'r') as stream:
+        with open(self._filename, 'r') as stream:
             self.yaml_dict = yaml.load(stream)
 
 

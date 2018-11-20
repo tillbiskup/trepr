@@ -15,13 +15,15 @@ class Coloring:
 
     Parameters
     ----------
-    dataset : object
-        object of the dataset class.
+    dataset : :obj:`trepr.dataset.Dataset`
+        Object of the dataset class.
 
     """
 
     def __init__(self, dataset_=dataset.Dataset()):
+        # public properties
         self.dataset = dataset_
+        # protected properties
         self._get_min_and_max()
 
     def _get_min_and_max(self):

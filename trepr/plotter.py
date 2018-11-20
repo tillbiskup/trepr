@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import aspecd
 from trepr import averaging
 from trepr import coloring
-from trepr import importer
+from trepr import io
 from trepr import pretrigger_offset_compensation
 from trepr import saver
 
@@ -20,10 +20,21 @@ from trepr import saver
 class Plotter2D(aspecd.plotting.Plotter):
     """Create a 2D plot of a given dataset.
 
+    Parameters
+    ----------
+    dataset_ : :obj:`trepr.dataset.Dataset`
+        Object of the class Dataset.
+
     Attributes
     ----------
     style : str
         Defines whether the plot is done in xkcd style or not.
+
+    dataset : :obj:`trepr.dataset.Dataset`
+        Object of the class Dataset.
+
+    description : str
+        Describes the aim of the class.
 
     """
 
@@ -33,7 +44,7 @@ class Plotter2D(aspecd.plotting.Plotter):
         self.style = ''
         self.dataset = dataset_
         self.description = '2D plot as scaled image.'
-        # private properties
+        # protected properties
         self._extent = list()
 
     @staticmethod
@@ -69,10 +80,18 @@ class Plotter2D(aspecd.plotting.Plotter):
 class Plotter1D(aspecd.plotting.Plotter):
     """Create a 1D plot of a given dataset.
 
+    Parameters
+    ----------
+    dataset_ : object
+        Object of the class Dataset.
+
     Attributes
     ----------
     style : str
         Defines whether the plot is done in xkcd style or not.
+
+    dataset : object
+        Object of the class Dataset.
 
     description : str
         Describes the aim of the class.
