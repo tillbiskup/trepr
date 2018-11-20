@@ -1,7 +1,10 @@
 trepr
 =====
 
-``trepr`` is a framework for handling trepr data focussing on reproducibility. In short: Each and every processing step applied to your data will be recorded and can be traced back, and additionally, for each representation of your data (e.g., figures, tables) you can easily follow how the data shown have been processed and where they originate from.
+``trepr`` is a package, based on the ASpecD framework, for handling trepr data. Due to the inheritance from the ASpecD superclass, all data generated with the trepr package are completely reproducible and have a complete history.
+
+.. warning::
+  The trepr package is currently under active development and still considered in Alpha development state. Therefore, expect frequent changes in features and public APIs that may break your own code. Nevertheless, feedback as well as feature requests are highly welcome.
 
 The easiest way to use the trepr package is to hand over a yaml-file to the trepr-caller::
 
@@ -11,8 +14,10 @@ The easiest way to use the trepr package is to hand over a yaml-file to the trep
 Features
 --------
 
-- nichts
-- und wieder nichts
+- fully reproducible processing of TREPR data
+- customisable plots
+- automatically generated reports
+- recipe-driven usage
 
 Installation
 ------------
@@ -29,14 +34,9 @@ Contribute
 Support
 -------
 
-If you are having issues, screw you!
+If you are having issues, please contact us under j.popp@gmx.ch
 
 License
 -------
 
 The project licensed under the BSD license.
-
-
-
-
-
