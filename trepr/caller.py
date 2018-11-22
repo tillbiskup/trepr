@@ -15,7 +15,7 @@ from aspecd import utils
 from jinja_report import jinja_report
 from trepr import averaging
 from trepr import dataset
-from trepr import importer
+from trepr import io
 from trepr import plotter
 from trepr import pretrigger_offset_compensation
 from trepr import saver
@@ -61,7 +61,7 @@ class Caller:
         elif not os.path.isdir(self._path):
             raise FileNotFoundError('Path not found.')
         else:
-            imp = importer.Importer(path=self._path)
+            imp = io.Importer(source=self._path)
             self._dataset = dataset.Dataset()
             self._dataset.import_from(imp)
 

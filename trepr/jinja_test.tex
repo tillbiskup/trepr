@@ -11,8 +11,8 @@
 
 \begin{document}
 
-\title{{@METADATA['GENERAL']['Label']}}
-\author{{@METADATA['GENERAL']['Operator']}}
+\title{{@METADATA['Measurement']['Label']}}
+\author{{@METADATA['Measurement']['Operator']}}
 \date{{@DATE}}
 \maketitle
 
@@ -20,15 +20,21 @@
 
 \begin{tabbing}
 	\hspace{3.5cm} \= \kill
-%{for key, value in METADATA['GENERAL'].items()}%
-	{@key} \> {@value}
-	\\
+%{for key, value in METADATA['Measurement'].items()}%
+	%{if 'Value' in value}%
+		{@key} \> {@value['Value']}~{@value['Unit']}
+		\\
+	%{elif not value}%
+	%{else}%
+		{@key} \> {@value}
+		\\
+	%{endif}%
 %{endfor}%
 \end{tabbing}
 
 \begin{figure}[H]
 	\includegraphics[width=\textwidth]{Plotter2D}
-	\caption{\textbf{TREPR-Signal von {@METADATA['SAMPLE']['Name']} bei {@METADATA['TEMPERATURE']['Temperature']}.} 900 spp; MW: {@METADATA['BRIDGE']['Attenuation']}, {@METADATA['BRIDGE']['Power']}; VAmp: {@METADATA['VIDEO AMPLIFIER']['Amplification']}, {@METADATA['VIDEO AMPLIFIER']['Bandwidth']}; Laser: {@METADATA['PUMP']['Wavelength']} (OPO Pos. {@METADATA['PUMP']['Tunable position']}), {@METADATA['PUMP']['Repetition rate']}, {@METADATA['PUMP']['Power']} pro Puls.} 
+	\caption{\textbf{TREPR-Signal von {@METADATA['Sample']['Name']} bei {@METADATA['Temperature control']['Temperature']['Value']}~{@METADATA['Temperature control']['Temperature']['Unit']}.} {@METADATA['Recorder']['Averages']}~spp; MW: {@METADATA['Bridge']['Attenuation']['Value']}~{@METADATA['Bridge']['Attenuation']['Unit']}, {@METADATA['Bridge']['Power']['Value']}~{@METADATA['Bridge']['Power']['Unit']}; VAmp: {@METADATA['Video amplifier']['Amplification']['Value']}~{@METADATA['Video amplifier']['Amplification']['Unit']}, {@METADATA['Video amplifier']['Bandwidth']['Value']}~{@METADATA['Video amplifier']['Bandwidth']['Unit']}; Laser: {@METADATA['Pump']['Wavelength']['Value']}~{@METADATA['Pump']['Wavelength']['Unit']} (OPO Pos. {@METADATA['Pump']['Tunable position']}), {@METADATA['Pump']['Repetition rate']['Value']}~{@METADATA['Pump']['Repetition rate']['Unit']}, {@METADATA['Pump']['Power']['Value']}~{@METADATA['Pump']['Power']['Unit']} pro Puls.} 
 \end{figure}
 
 \clearpage
@@ -38,30 +44,37 @@
 \begin{tabbing}
 \hspace{3.5cm} \= \kill
 \textbf{Sample}\\
-%{for key, value in METADATA['SAMPLE'].items()}%
-	{@key} \> {@value}\\
+%{for key, value in METADATA['Sample'].items()}%
+	%{if 'Value' in value}%
+		{@key} \> {@value['Value']}~{@value['Unit']}
+		\\
+	%{elif not value}%
+	%{else}%
+		{@key} \> {@value}
+		\\
+	%{endif}%
 %{endfor}%
 \end{tabbing}
 \end{minipage}
 	
 \begin{multicols}{2}
 
-%{for KEY, VALUE in METADATA['PARAMETER'].items() recursive}%
+%{for KEY, VALUE in METADATA['Parameter'].items() recursive}%
 	\begin{minipage}{.49\textwidth}
 	\textbf{{@KEY}}\\
 	%{for key2, value2 in VALUE.items()}%
-		{@key2}: {@value2}\\
+		%{if 'Value' in value2}%
+			{@key2}: {@value2['Value']}~{@value2['Unit']}
+			\\
+		%{elif not value2}%
+		%{else}%
+			{@key2}: {@value2}
+			\\
+		%{endif}%
 	%{endfor}%
 	\end{minipage}
 %{endfor}%
 \end{multicols}
-
-\begin{minipage}{\textwidth}
-\textbf{Comment}\\
-%{for line in METADATA['COMMENT']}%
-	{@line}\\
-%{endfor}%
-\end{minipage}
 
 
 
@@ -69,7 +82,7 @@
 
 \begin{figure}[H]
 	\includegraphics[width=\textwidth]{Plotter1D}
-	\caption{\textbf{TREPR-Signal von {@METADATA['SAMPLE']['Name']} bei {@METADATA['TEMPERATURE']['Temperature']}: Schnitt bei {@PROCESSINGPARAMETERS['Schnitt bei']} (gemittelt über {@PROCESSINGPARAMETERS['gemittelt über']}).} 900 spp; MW: {@METADATA['BRIDGE']['Attenuation']}, {@METADATA['BRIDGE']['Power']}; VAmp: {@METADATA['VIDEO AMPLIFIER']['Amplification']}, {@METADATA['VIDEO AMPLIFIER']['Bandwidth']}; Laser: {@METADATA['PUMP']['Wavelength']} (OPO Pos. {@METADATA['PUMP']['Tunable position']}), {@METADATA['PUMP']['Repetition rate']}, {@METADATA['PUMP']['Power']} pro Puls.} 
+\caption{\textbf{TREPR-Signal von {@METADATA['Sample']['Name']} bei {@METADATA['Temperature control']['Temperature']['Value']}~{@METADATA['Temperature control']['Temperature']['Unit']}: Schnitt bei {@PROCESSINGPARAMETERS['Schnitt bei']} (gemittelt über {@PROCESSINGPARAMETERS['gemittelt über']}).} {@METADATA['Recorder']['Averages']}~spp; MW: {@METADATA['Bridge']['Attenuation']['Value']}~{@METADATA['Bridge']['Attenuation']['Unit']}, {@METADATA['Bridge']['Power']['Value']}~{@METADATA['Bridge']['Power']['Unit']}; VAmp: {@METADATA['Video amplifier']['Amplification']['Value']}~{@METADATA['Video amplifier']['Amplification']['Unit']}, {@METADATA['Video amplifier']['Bandwidth']['Value']}~{@METADATA['Video amplifier']['Bandwidth']['Unit']}; Laser: {@METADATA['Pump']['Wavelength']['Value']}~{@METADATA['Pump']['Wavelength']['Unit']} (OPO Pos. {@METADATA['Pump']['Tunable position']}), {@METADATA['Pump']['Repetition rate']['Value']}~{@METADATA['Pump']['Repetition rate']['Unit']}, {@METADATA['Pump']['Power']['Value']}~{@METADATA['Pump']['Power']['Unit']} pro Puls.}  
 \end{figure}
 
 \section*{Prozessierung}

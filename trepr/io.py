@@ -9,7 +9,7 @@ This module imports raw data, defines the axis and hands all over to a dataset.
 """
 
 import glob
-import io
+import io as io_
 import os
 import re
 
@@ -80,7 +80,7 @@ class Importer(aspecd.io.Importer):
             lines = raw_data.splitlines()
             self._header = lines[0:5]
             self._parse_header()
-            numeric_data = np.loadtxt(io.StringIO(raw_data), skiprows=5)
+            numeric_data = np.loadtxt(io_.StringIO(raw_data), skiprows=5)
             numeric_data = np.reshape(numeric_data, self._timepoints)
             self._data = np.append(self._data, numeric_data)
         self._data = \
@@ -170,5 +170,5 @@ class Importer(aspecd.io.Importer):
 
 if __name__ == '__main__':
     PATH = '../../Daten/messung01/'
-    importer = Importer(source=PATH)
-    importer.dataset.import_from(importer)
+    io = Importer(source=PATH)
+    io.dataset.import_from(io)

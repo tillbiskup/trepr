@@ -152,7 +152,7 @@ class Sample(aspecd.metadata.Sample):
         # public properies
         self.description = ''
         self.solvent = ''
-        self.preperation = ''
+        self.preparation = ''
         self.tube = ''
         super().__init__(dict_=dict_)
 
@@ -637,7 +637,6 @@ class MetadataMapper(aspecd.metadata.MetadataMapper):
     def _map_metadata(self):
         """Map the metadata with the created mappings."""
         aspecd.metadata.MetadataMapper.map(self)
-        print(self.metadata)
 
 
 if __name__ == '__main__':
