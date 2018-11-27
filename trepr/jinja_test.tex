@@ -21,7 +21,7 @@
 \begin{tabbing}
 	\hspace{3.5cm} \= \kill
 %{for key, value in METADATA['Measurement'].items()}%
-	%{if 'Value' in value}%
+	%{if value and 'Value' in value}%
 		{@key} \> {@value['Value']}~{@value['Unit']}
 		\\
 	%{elif not value}%
@@ -45,7 +45,7 @@
 \hspace{3.5cm} \= \kill
 \textbf{Sample}\\
 %{for key, value in METADATA['Sample'].items()}%
-	%{if 'Value' in value}%
+	%{if value and 'Value' in value}%
 		{@key} \> {@value['Value']}~{@value['Unit']}
 		\\
 	%{elif not value}%
@@ -63,7 +63,7 @@
 	\begin{minipage}{.49\textwidth}
 	\textbf{{@KEY}}\\
 	%{for key2, value2 in VALUE.items()}%
-		%{if 'Value' in value2}%
+		%{if value2 and 'Value' in value2}%
 			{@key2}: {@value2['Value']}~{@value2['Unit']}
 			\\
 		%{elif not value2}%
