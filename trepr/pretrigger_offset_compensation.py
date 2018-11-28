@@ -57,7 +57,8 @@ class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
 
 if __name__ == '__main__':
     PATH = '../../Daten/messung17/'
-    importer = importer.Importer(path=PATH)
+    importer = io.Importer(source=PATH)
     importer.dataset.import_from(importer)
     obj = PretriggerOffsetCompensation()
     process = importer.dataset.process(obj)
+    print(importer.dataset.history[0].processing.parameters)

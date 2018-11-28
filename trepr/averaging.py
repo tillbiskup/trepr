@@ -160,8 +160,9 @@ class Averaging(aspecd.processing.ProcessingStep):
 
 if __name__ == '__main__':
     PATH = '../../Daten/messung17/'
-    importer = importer.Importer(path=PATH)
+    importer = io.Importer(source=PATH)
     dataset = aspecd.dataset.Dataset()
     dataset.import_from(importer)
     obj = Averaging(dimension=1, avg_range=[2900, 2904], unit='axis')
     process = dataset.process(obj)
+    print(importer.dataset.history[0].processing.parameters)
