@@ -108,21 +108,22 @@ class Averaging(aspecd.processing.ProcessingStep):
 
     def _perform_task(self):
         """Perform the processing step."""
+        self.avg_range = self.parameters['range']
         if self.parameters['unit'] == 'axis':
             start_index = self._get_index(self.dataset.data.axes[self._dim].values,
-                                          self.parameters['range'][0])
+                                          self.avg_range[0])
             end_index = self._get_index(self.dataset.data.axes[self._dim].values,
-                                        self.parameters['range'][-1])
-            self.parameters['range'] = [start_index, end_index]
+                                        self.avg_range[-1])
+            self.avg_range = [start_index, end_index]
         if self._dim == 0:
             axes = [self.dataset.data.axes[1], self.dataset.data.axes[2]]
             self.dataset.data.data = np.average(
-                self.dataset.data.data[:, self.parameters['range']], axis=1)
+                self.dataset.data.data[:, self.avg_range], axis=1)
             self.dataset.data.axes = axes
         else:
             axes = [self.dataset.data.axes[0], self.dataset.data.axes[2]]
             self.dataset.data.data = np.average(
-                self.dataset.data.data[self.parameters['range'], :], axis=0)
+                self.dataset.data.data[self.avg_range, :], axis=0)
             self.dataset.data.axes = axes
 
     @staticmethod
