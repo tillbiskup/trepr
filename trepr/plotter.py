@@ -116,6 +116,7 @@ class Plotter1D(aspecd.plotting.Plotter):
             plt.xkcd()
         data = self.dataset.data.data
         plt.subplots()
+        plt.ticklabel_format(style='sci', scilimits=(-2,4), useMathText=True)
         plt.xlabel(self._create_axis_label(self.dataset.data.axes[0]))
         plt.ylabel(self._create_axis_label(self.dataset.data.axes[1]))
         plt.axhline(y=0, color='#999999')
