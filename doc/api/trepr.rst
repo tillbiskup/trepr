@@ -1,10 +1,10 @@
 trepr package
 =============
 
-trepr.averaging module
-----------------------
+trepr.caller module
+---------------------
 
-.. automodule:: trepr.averaging
+.. automodule:: trepr.caller
     :members:
     :undoc-members:
     :show-inheritance:
@@ -41,10 +41,18 @@ trepr.plotter module
     :undoc-members:
     :show-inheritance:
 
-trepr.pretrigger_offset_compensation module
--------------------------------------------
+trepr.processing module
+-----------------------
 
-.. automodule:: trepr.pretrigger_offset_compensation
+.. automodule:: trepr.processing
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+trepr.report module
+-------------------
+
+.. automodule:: trepr.report
     :members:
     :undoc-members:
     :show-inheritance:
@@ -57,3 +65,10 @@ trepr.saver module
     :undoc-members:
     :show-inheritance:
 
+trepr.yaml_loader module
+------------------------
+
+.. automodule:: trepr.yaml_loader
+    :members:
+    :undoc-members:
+    :show-inheritance:

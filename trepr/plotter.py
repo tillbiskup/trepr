@@ -10,10 +10,9 @@ This module creates either a 2D or 1D plot of a given dataset.
 import matplotlib.pyplot as plt
 
 import aspecd
-from trepr import averaging
 from trepr import coloring
 from trepr import io
-from trepr import pretrigger_offset_compensation
+from trepr import processing
 from trepr import saver
 
 
@@ -128,22 +127,21 @@ class Plotter1D(aspecd.plotting.Plotter):
 
 if __name__ == '__main__':
     PATH = '../../Daten/messung17/'
-    importer = importer.Importer(path=PATH)
+    importer = io.Importer(source=PATH)
     dataset = aspecd.dataset.Dataset()
     dataset.import_from(importer)
 
-    obj = pretrigger_offset_compensation.PretriggerOffsetCompensation()
+    obj = processing.PretriggerOffsetCompensation()
     process1 = dataset.process(obj)
     saver_obj1 = saver.Saver(PATH + 'fig1.pdf')
     plotter_obj1 = Plotter2D()
     plot1 = dataset.plot(plotter_obj1)
     plot1.save(saver_obj1)
 
-    averaging_obj = averaging.Averaging(dimension=0,
+    averaging_obj = processing.Averaging(dimension=0,
                                         avg_range=[4.8e-07, 5.2e-07],
                                         unit='axis')
     process = dataset.process(averaging_obj)
     saver_obj = saver.Saver(PATH + 'fig2.pdf')
     plotter_obj = Plotter1D()
-    plot = dataset.plot(plotter_obj)
-    plot.save(saver_obj)
+    dataset.plot(plotter_obj).save(saver_obj)

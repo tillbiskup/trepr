@@ -41,12 +41,16 @@ setup(
         'Topic :: Software Development :: Libraries :: Application Frameworks'
     ],
     install_requires=[
+        'aspecd',
         'cycler',
+        'jinja2',
         'kiwisolver',
+        'markupsafe',
         'matplotlib',
         'numpy',
         'pyparsing',
         'python-dateutil',
+        'pyyaml',
         'six'
     ],
     python_requires='>=3',

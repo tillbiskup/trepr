@@ -1,12 +1,12 @@
--e git+git@gitlab.physchem.uni-freiburg.de:biskup/aspecd-python.git@c3c63c9b8fb39aeddb042f786922c30d74bec707#egg=ASpecD
+-e git+git@gitlab.physchem.uni-freiburg.de:biskup/aspecd-python.git@7c7714235bf04babab85e97396fbea31df600dd7#egg=ASpecD
 cycler==0.10.0
--e git+git@gitlab.physchem.uni-freiburg.de:popp/Python-Playground.git@8f973fa39c805febe0ad2abb546869f60ff924d6#egg=jinja_report&subdirectory=jinja_report
 Jinja2==2.10
 kiwisolver==1.0.1
 MarkupSafe==1.1.0
-matplotlib==3.0.1
+matplotlib==3.0.2
 numpy==1.15.4
 pyparsing==2.3.0
 python-dateutil==2.7.5
 PyYAML==3.13
 six==1.11.0
+-e git+git@gitlab.physchem.uni-freiburg.de:popp/trepr-python.git@ad08fc9821a7629461b9491ab15968acb36e6687#egg=trepr

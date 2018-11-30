@@ -12,12 +12,12 @@ out.
 import os
 
 from aspecd import utils
-from jinja_report import jinja_report
-from trepr import averaging
+#from jinja_report import jinja_report
 from trepr import dataset
 from trepr import io
 from trepr import plotter
-from trepr import pretrigger_offset_compensation
+from trepr import processing
+from trepr import report
 from trepr import saver
 from trepr import yaml_loader
 
@@ -70,13 +70,13 @@ class Caller:
             for key in figure:
                 if figure[key]['pretrigger compensation']:
                     pretrigger_offset = \
-                        pretrigger_offset_compensation.PretriggerOffsetCompensation()
+                        processing.PretriggerOffsetCompensation()
                     self._dataset.process(pretrigger_offset)
                 if figure[key]['averaging']:
                     average_range = figure[key]['average range']
                     average_dimension = figure[key]['average dimension']
                     average_unit = figure[key]['average unit']
-                    average = averaging.Averaging(dimension=average_dimension,
+                    average = processing.Averaging(dimension=average_dimension,
                                                   avg_range=average_range,
                                                   unit=average_unit)
                     self._dataset.process(average)
@@ -92,8 +92,8 @@ class Caller:
 
     def _create_report(self):
         if self._yaml_dict['report']:
-            self.report = jinja_report.JinjaReport(
-                dataset=self._dataset, path=self._path)
+            self.report = report.Report(
+                dataset=self._dataset, source=self._path)
         else:
             pass
 

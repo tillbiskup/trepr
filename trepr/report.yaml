@@ -4,7 +4,7 @@ format:
   version: 0.0.1
 
 dataset:
-  path: /home/popp/nas/Python/Daten/messung01/
+  path: /home/popp/nas/Python/Daten/messung03/
 figures:
   - Plotter2D:
      pretrigger compensation: True
