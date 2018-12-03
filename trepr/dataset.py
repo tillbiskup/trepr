@@ -75,7 +75,7 @@ class DatasetMetadata(aspecd.metadata.DatasetMetadata):
 
     def __init__(self):
         super().__init__()
-        # public properies
+        # public properties
         self.measurement = Measurement()
         self.sample = Sample()
         self.transient = Transient()
@@ -119,7 +119,7 @@ class Measurement(aspecd.metadata.Measurement):
     """
 
     def __init__(self, dict_=None):
-        # public properies
+        # public properties
         self.label = ''
         super().__init__(dict_=dict_)
 
@@ -149,7 +149,7 @@ class Sample(aspecd.metadata.Sample):
     """
 
     def __init__(self, dict_=None):
-        # public properies
+        # public properties
         self.description = ''
         self.solvent = ''
         self.preparation = ''
@@ -179,7 +179,7 @@ class Transient(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
-        # public properies
+        # public properties
         self.points = None
         self.length = aspecd.metadata.PhysicalQuantity()
         self.trigger_position = None
@@ -205,7 +205,7 @@ class Experiment(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
-        # public properies
+        # public properties
         self.runs = None
         self.shot_repetition_rate = aspecd.metadata.PhysicalQuantity()
         super().__init__(dict_=dict_)
@@ -230,7 +230,7 @@ class Spectrometer(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
-        # public properies
+        # public properties
         self.model = ''
         self.software = ''
         super().__init__(dict_=dict_)
@@ -273,7 +273,7 @@ class MagneticField(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
-        # public properies
+        # public properties
         self.field_probe_type = ''
         self.field_probe_model = ''
         self.start = aspecd.metadata.PhysicalQuantity()
@@ -310,7 +310,7 @@ class Background(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
-        # public properies
+        # public properties
         self.field = aspecd.metadata.PhysicalQuantity()
         self.occurrence = None
         self.polarisation = ''
@@ -352,7 +352,7 @@ class Bridge(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
-        # public properies
+        # public properties
         self.model = ''
         self.controller = ''
         self.attenuation = aspecd.metadata.PhysicalQuantity()
@@ -382,7 +382,7 @@ class VideoAmplifier(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
-        # public properies
+        # public properties
         self.bandwidth = aspecd.metadata.PhysicalQuantity()
         self.amplification = aspecd.metadata.PhysicalQuantity()
         super().__init__(dict_=dict_)
@@ -425,7 +425,7 @@ class Recorder(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
-        # public properies
+        # public properties
         self.model = ''
         self.averages = None
         self.time_base = aspecd.metadata.PhysicalQuantity()
@@ -459,7 +459,7 @@ class Probehead(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
-        # public properies
+        # public properties
         self.type = ''
         self.model = ''
         self.coupling = ''
@@ -509,7 +509,7 @@ class Pump(aspecd.metadata.Metadata):
     """
 
     def __init__(self, dict_=None):
-        # public properies
+        # public properties
         self.type = ''
         self.model = ''
         self.wavelength = aspecd.metadata.PhysicalQuantity()
@@ -542,7 +542,7 @@ class TemperatureControl(aspecd.metadata.TemperatureControl):
     """
 
     def __init__(self, dict_=None):
-        # public properies
+        # public properties
         self.cryostat = ''
         self.cryogen = ''
         super().__init__(dict_=dict_)
@@ -572,7 +572,7 @@ class MetadataMapper(aspecd.metadata.MetadataMapper):
     """
 
     def __init__(self, version='', metadata=None):
-        # public proterties
+        # public properties
         self.version = version
         self.metadata = metadata
         self.mappings = list()
