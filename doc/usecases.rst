@@ -19,7 +19,7 @@ Most probably, the first step when processing and analysing data will be to actu
 
 This will import the data (and metadata) contained in the path provided to the argument ``source`` when instantiating the ``Importer`` object.
 
-A few comments on this few lines of code:
+A few comments on these few lines of code:
 
 * Naming the dataset object ``dataset_`` prevents shadowing the module name. Feel free to give it another equally fitting name. Appending an underscore to a variable name in such case is a common solution complying to `PEP 8 <https://www.python.org/dev/peps/pep-0008/>`_. The same applies to the next line instantiating the importer object.
 
@@ -51,7 +51,7 @@ This will generate objects of the class ``Plotter2D`` and ``Saver`` and process 
 Automatic processing
 ====================
 
-The trepr package offers automatic processing. Therefor a YAML file must be passed to the caller. The YAML file has the following structure::
+The trepr package offers automatic processing. Therefore a YAML file needs to be passed to the caller. The YAML file has the following structure::
 
     ---
     format:
@@ -59,7 +59,7 @@ The trepr package offers automatic processing. Therefor a YAML file must be pass
         version: 0.0.1
 
     dataset:
-        path: /home/popp/nas/Python/Daten/messung03/
+        path: /path/to/your/dataset
     figures:
         - Plotter2D:
             pretrigger compensation: True
@@ -72,11 +72,11 @@ The trepr package offers automatic processing. Therefor a YAML file must be pass
             average unit: axis
     report: True
 
-In the YMAL file you specify which processing is to be carried out, which figures is to be created and whether a report is to be generated.
+In the YAML file you specify which processing will be carried out, which figures will be created and whether a report will be generated.
 Passing the YAML file to the caller is very simple::
 
     trepr.caller.Caller("YourYAMLFile.yaml")
 
-This will generate two figures and a report, all stored in the same path as the given data.
+The particular example shown above will generate two figures and a report, all stored in the same path as the given data.
 
 
