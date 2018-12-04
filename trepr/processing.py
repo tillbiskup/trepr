@@ -1,5 +1,5 @@
 """
-Processing.
+General processing facilities.
 
 For the sake of simplicity, the two processing classes averaging and
 pretrigger_offset_compensation are combined in one module.
@@ -64,27 +64,25 @@ class UnitError(Error):
 
 
 class Averaging(aspecd.processing.ProcessingStep):
-    """Averaging.
+    """Averaging of two-dimensional data along a given axis.
 
-    When measuring trepr, the resulting spectrum is always two dimensional.
-    To analyse the data it's necessary to extract a one dimensional spectrum.
-    The one dimensional spectrum can either be a cut along the field- or the
-    timeaxis. To get a representative spectrum, the average over several
-    measurementpoints is calculatet.
-
-    Averaging of a given dataset along one of its two dimensions.
+    When measuring TREPR data, the resulting spectrum is always
+    two-dimensional. To analyse the data it's necessary to extract a
+    one-dimensional spectrum. The one-dimensional spectrum can either be a cut
+    along the field or the time axis. To get a representative spectrum, the
+    average over several measurement points is calculated.
 
     Parameters
     ----------
     dimension : 0,1
-        Dimension along the averaging is done. 0 is along the fieldaxis and 1
-        is along the timeaxis. Default is 0.
+        Dimension along the averaging is done. 0 is along the field axis and 1
+        is along the time axis. Default is 0.
 
-    average_range : list
+    avg_range : list
         Range in which the averaging will take place.
 
     unit : 'axis', 'index'
-        Unit in which the average range is given. Either 'axis' for axisvalues
+        Unit in which the average range is given. Either 'axis' for axis values
         or 'index' for indices. Default is axis.
 
     Attributes
@@ -97,6 +95,17 @@ class Averaging(aspecd.processing.ProcessingStep):
 
     undoable : bool
         Information weather the processing step is undoable or not.
+
+    Raises
+    ------
+    DimensionError
+        Raised if dimension is not in [0, 1].
+
+    UnitError
+        Raised if unit is not in ['axis', 'index'].
+
+    RangeError
+        Raised if range is not within axis.
 
     """
 
@@ -113,31 +122,29 @@ class Averaging(aspecd.processing.ProcessingStep):
 
     def _perform_task(self):
         """Perform the processing step."""
-        self.avg_range = self.parameters['range']
+        avg_range = self.parameters['range']
         if self.parameters['unit'] == 'axis':
-            start_index = self._get_index(self.dataset.data.axes[self._dim].values,
-                                          self.avg_range[0])
-            end_index = self._get_index(self.dataset.data.axes[self._dim].values,
-                                        self.avg_range[-1])
-            self.avg_range = [start_index, end_index]
+            start_index =\
+                self._get_index(self.dataset.data.axes[self._dim].values,
+                                avg_range[0])
+            end_index = \
+                self._get_index(self.dataset.data.axes[self._dim].values,
+                                avg_range[-1])
+            avg_range = [start_index, end_index]
         if self._dim == 0:
             axes = [self.dataset.data.axes[1], self.dataset.data.axes[2]]
-            self.dataset.data.data = np.average(
-                self.dataset.data.data[:, self.avg_range], axis=1)
+            self.dataset.data.data = \
+                np.average(self.dataset.data.data[:, avg_range], axis=1)
             self.dataset.data.axes = axes
         else:
             axes = [self.dataset.data.axes[0], self.dataset.data.axes[2]]
-            self.dataset.data.data = np.average(
-                self.dataset.data.data[self.avg_range, :], axis=0)
+            self.dataset.data.data = \
+                np.average(self.dataset.data.data[avg_range, :], axis=0)
             self.dataset.data.axes = axes
 
     @staticmethod
     def _get_index(vector, value):
         return np.abs(vector - value).argmin()
-
-    @staticmethod
-    def _value_within_vector_range(value, vector):
-        return np.amin(vector) <= value <= np.amax(vector)
 
     def _sanitise_parameters(self):
         if self.parameters['dimension'] not in [0, 1]:
@@ -163,16 +170,18 @@ class Averaging(aspecd.processing.ProcessingStep):
         if self.parameters['range'][1] < self.parameters['range'][0]:
             raise RangeError('Values need to be ascending.')
 
+    @staticmethod
+    def _value_within_vector_range(value, vector):
+        return np.amin(vector) <= value <= np.amax(vector)
+
 
 class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
     """
     Pretrigger offset compensation.
 
-    One of the first processing steps after measuring trepr is to set the
-    average of the pretrigger timetrace to zero. The so called pretrigger
+    One of the first processing steps after measuring TREPR data is to set the
+    average of the pretrigger time trace to zero. The so called pretrigger
     offset compensation.
-
-    Pretrigger offset compensation on a given dataset.
 
     Attributes
     ----------
@@ -191,30 +200,30 @@ class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
         self.description = 'Pretrigger offset compensation'
         self.undoable = True
 
+    def _perform_task(self):
+        """Perform the processing step and return the processed data."""
+        self._get_zeropoint_index()
+        range_end = self.parameters['zeropoint_index']
+        for field_point, time_trace in enumerate(self.dataset.data.data):
+            pretrig_avg = self._get_pretrigger_average(time_trace, range_end)
+            self.dataset.data.data[field_point] = time_trace - pretrig_avg
+
     def _get_zeropoint_index(self):
-        """Get the index of the last negative value on the timeaxis."""
+        """Get the index of the last time value before the trigger."""
         zeropoint_index = \
             np.argmin(np.cumsum(self.dataset.data.axes[0].values))
         self.parameters['zeropoint_index'] = int(zeropoint_index)
 
     @staticmethod
-    def _get_pretrigger_average(timetrace, range_end=1):
-        """Calculate the average of the timetrace before triggering."""
-        array = timetrace[0:range_end]
+    def _get_pretrigger_average(time_trace, range_end=1):
+        """Calculate the average of the time trace before triggering."""
+        array = time_trace[0:range_end]
         return np.average(array)
-
-    def _perform_task(self):
-        """Perform the processing step and return the processed data."""
-        self._get_zeropoint_index()
-        range_end = self.parameters['zeropoint_index']
-        for fieldpoint, timetrace in enumerate(self.dataset.data.data):
-            pretrig_avg = self._get_pretrigger_average(timetrace, range_end)
-            self.dataset.data.data[fieldpoint] = timetrace - pretrig_avg
 
 
 if __name__ == '__main__':
     PATH = '../../Daten/messung17/'
-    importer = io.Importer(source=PATH)
+    importer = io.SpeksimImporter(source=PATH)
     dataset = aspecd.dataset.Dataset()
     dataset.import_from(importer)
 

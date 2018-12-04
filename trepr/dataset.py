@@ -1,23 +1,26 @@
 """
 To produce replicable results it's important not to change the raw data.
 
-This module creates a dataset structure, inheriting from the aspecd dataset
+This module creates a dataset structure, inheriting from the ASpecD dataset
 class. The dataset structure contains metadata, consisting of different
 classes, which contain the individual information about the experiment.
 """
 
 import aspecd.dataset
 import aspecd.metadata
-from trepr import yaml_loader
+from trepr import io
 
 
 class Dataset(aspecd.dataset.Dataset):
     """Define the structure for a given dataset, inheriting from ASpecD.
 
+    The "raison d'être" for this class is mainly to extend the metadata
+    contained in the metadata property.
+
     Attributes
     ----------
     metadata : :class:`trepr.dataset.DatasetMetadata`
-        Object of the DatasetMetadata class.
+        Metadata of dataset.
 
     """
 
@@ -28,48 +31,48 @@ class Dataset(aspecd.dataset.Dataset):
 
 
 class DatasetMetadata(aspecd.metadata.DatasetMetadata):
-    """Metadata for a given dataset.
+    """Metadata for a TREPR dataset.
 
     Attributes
     ----------
     measurement : :obj:`trepr.dataset.Measurement`
-        Object of the Measurement class.
+        Metadata corresponding to the measurement.
 
     sample : :obj:`trepr.dataset.Sample`
-        Object of the Sample class.
+        Metadata corresponding to the sample.
 
     transient : :obj:`trepr.dataset.Transient`
-        Object of the Transient class.
+        Metadata corresponding to the transient.
 
     experiment : :obj:`trepr.dataset.Experiment`
-        Object of the Experiment class.
+        Metadata corresponding to the experiment.
 
     spectrometer : :obj:`trepr.dataset.Spectrometer`
-        Object of the Spectrometer class.
+        Metadata corresponding to the spectrometer.
 
     magnetic_field : :obj:`trepr.dataset.MagneticField`
-        Object of the MagneicField class.
+        Metadata corresponding to the magnetic field.
 
     background : :obj:`trepr.dataset.Background`
-        Object of the Background class.
+        Metadata corresponding to the background.
 
     bridge : :obj:`trepr.dataset.Bridge`
-        Object of the Bridge class.
+        Metadata corresponding to the bridge.
 
     viedo_amplifier : :obj:`trepr.dataset.VideoAmplifier`
-        Object of the VideoAmplifier class.
+        Metadata corresponding to the video amplifier.
 
     recorder : :obj:`trepr.dataset.Recorder`
-        Object of the Recorder class.
+        Metadata corresponding to the recorder.
 
     probehead : :obj:`trepr.dataset.Probehead`
-        Object of the Probehead class.
+        Metadata corresponding to the probehead.
 
     pump : :obj:`trepr.dataset.Pump`
-        Object of the Pump class.
+        Metadata corresponding to the pump.
 
     temperature_control : :obj:`trepr.dataset.TemperatureControl`
-        Object of the TemperatureControl class.
+        Metadata corresponding to the temperature control.
 
     """
 
@@ -104,18 +107,6 @@ class Measurement(aspecd.metadata.Measurement):
     label : str
         Label of the sample, including the sample-number.
 
-    spectrometer : str
-        Model of the spectrometer used.
-
-    software : str
-        Name and version of the software used.
-
-    runs : int
-        Number of recorded runs.
-
-    shot_repetition_rate : object
-        Object of the PhysicalQuantity class from ASpecD.
-
     """
 
     def __init__(self, dict_=None):
@@ -140,7 +131,7 @@ class Sample(aspecd.metadata.Sample):
     solvent : str
         Name of the solvent used.
 
-    preperation : str
+    preparation : str
         Type of sample preparation.
 
     tube : str
@@ -196,11 +187,11 @@ class Experiment(aspecd.metadata.Metadata):
 
     Attributes
     ----------
-     runs : int
+    runs : int
         Number of recorded runs.
 
-    shot_repetition_rate : object
-        Object of the PhysicalQuantity class from ASpecD.
+    shot_repetition_rate : :obj:`aspecd.metadata.PhysicalQuantity`
+        Shot repetition rate of the experiment.
 
     """
 
@@ -252,17 +243,17 @@ class MagneticField(aspecd.metadata.Metadata):
     field_probe_model : str
         Model of field probe used.
 
-    start : object
-        Object of the PhysicalQuantity class from ASpecD.
+    start : :obj:`aspecd.metadata.PhysicalQuantity`
+        Start of the magnetic field sweep.
 
-    stop: object
-        Object of the PhysicalQuantity class from ASpecD.
+    stop: :obj:`aspecd.metadata.PhysicalQuantity`
+        End of the magnetic field sweep.
 
-    step : object
-        Object of the PhysicalQuantity class from ASpecD.
+    step : :obj:`aspecd.metadata.PhysicalQuantity`
+        Step size of the magnetic field sweep.
 
     sequence : str
-        Sequence of measurement performed.
+        Sequence of field steps.
 
     controller : str
         Model of the controller used.
@@ -295,8 +286,8 @@ class Background(aspecd.metadata.Metadata):
 
     Attributes
     ----------
-    field : object
-        Object of the PhysicalQuantity class from ASpecD.
+    field : :obj:`aspecd.metadata.PhysicalQuantity`
+        Magnetic field position of background trace.
 
     occurence : int
         Number of time traces after which a background trace is recorded.
@@ -304,8 +295,8 @@ class Background(aspecd.metadata.Metadata):
     polarisation: str
         Type of background polarisation.
 
-    intensity : object
-        Object of the PhysicalQuantity class from ASpecD.
+    intensity : :obj:`aspecd.metadata.PhysicalQuantity`
+        Amplitude of background signal.
 
     """
 
@@ -329,16 +320,16 @@ class Bridge(aspecd.metadata.Metadata):
     Attributes
     ----------
     model : str
-        Model of the bridge used.
+        Model of the microwave bridge used.
 
     controller : str
-        Model of the controller used.
+        Model of the bridge controller used.
 
-    attenuation : object
-        Object of the PhysicalQuantity class from ASpecD.
+    attenuation : :obj:`aspecd.metadata.PhysicalQuantity`
+        Attenuation of the microwave in dB.
 
-    power : object
-        Object of the PhysicalQuantity class from ASpecD.
+    power : :obj:`aspecd.metadata.PhysicalQuantity`
+        Output power of the microwave.
 
     detection : str
         Type of the detection used.
@@ -346,8 +337,8 @@ class Bridge(aspecd.metadata.Metadata):
     frequency_counter : str
         Model of the frequency counter used.
 
-    mw_frequency : object
-        Object of the PhysicalQuantity class from ASpecD.
+    mw_frequency : :obj:`aspecd.metadata.PhysicalQuantity`
+        Microwave frequency.
 
     """
 
@@ -373,11 +364,11 @@ class VideoAmplifier(aspecd.metadata.Metadata):
 
     Attributes
     ----------
-    bandwith : object
-        Object of the PhysicalQuantity class from ASpecD.
+    bandwidth : :obj:`aspecd.metadata.PhysicalQuantity`
+        Bandwidth of the video amplifier.
 
-    amplification : object
-        Object of the PhysicalQuantity class from ASpecD.
+    amplification : :obj:`aspecd.metadata.PhysicalQuantity`
+        Amplification in dB.
 
     """
 
@@ -404,23 +395,23 @@ class Recorder(aspecd.metadata.Metadata):
     averages : int
         Number of accumulations measured.
 
-    time_base : object
-        Object of the PhysicalQuantity class from ASpecD.
+    time_base : :obj:`aspecd.metadata.PhysicalQuantity`
+        Time base of the recorder.
 
-    bandwith : object
-        Object of the PhysicalQuantity class from ASpecD.
+    bandwidth : :obj:`aspecd.metadata.PhysicalQuantity`
+        Bandwidth of the recorder.
 
-    pretrigger : object
-        Object of the PhysicalQuantity class from ASpecD.
+    pretrigger : :obj:`aspecd.metadata.PhysicalQuantity`
+        Length of time trace before trigger.
 
     coupling : str
         Type of coupling.
 
-    impedance : object
-        Object of the PhysicalQuantity class from ASpecD.
+    impedance : :obj:`aspecd.metadata.PhysicalQuantity`
+        Impedance of the recorder input channel.
 
-    sensitivity : object
-        Object of the PhysicalQuantity class from ASpecD.
+    sensitivity : :obj:`aspecd.metadata.PhysicalQuantity`
+        Sensitivity of the recorder.
 
     """
 
@@ -467,7 +458,7 @@ class Probehead(aspecd.metadata.Metadata):
 
 
 class Pump(aspecd.metadata.Metadata):
-    """Metadata corresponding to the pump.
+    """Metadata corresponding to the optical excitation..
 
     Parameters
     ----------
@@ -482,14 +473,14 @@ class Pump(aspecd.metadata.Metadata):
     model : str
         Model of the pump used.
 
-    wavelength : object
-        Object of the PhysicalQuantity class from ASpecD.
+    wavelength : :obj:`aspecd.metadata.PhysicalQuantity`
+        Wavelength of the optical excitation.
 
-    power : object
-        Object of the PhysicalQuantity class from ASpecD.
+    power : :obj:`aspecd.metadata.PhysicalQuantity`
+        Power of the optical excitation.
 
-    repetition_rate : object
-        Object of the PhysicalQuantity class from ASpecD.
+    repetition_rate : :obj:`aspecd.metadata.PhysicalQuantity`
+        Repetition rate of the optical excitation.
 
     tunable_type : str
         Type of the tunable used.
@@ -504,7 +495,7 @@ class Pump(aspecd.metadata.Metadata):
         Position of the tunable used.
 
     filter : str
-        Type of the filter used.
+        Type of the filter(s) used.
 
     """
 
@@ -547,8 +538,12 @@ class TemperatureControl(aspecd.metadata.TemperatureControl):
         self.cryogen = ''
         super().__init__(dict_=dict_)
 
+
 class MetadataMapper(aspecd.metadata.MetadataMapper):
     """Bring the metadata into a unified layout using mappings.
+
+    Given the version number and metadata read from an infofile, the metadata
+    are converted into a structure compatible to the dataset.
 
     Parameters
     ----------
@@ -566,78 +561,72 @@ class MetadataMapper(aspecd.metadata.MetadataMapper):
     metadata : dict
         Dictionary containing all metadata from the infofile.
 
-    mappings : list
-        List containing all tasks to perform to map the metadata.
-
     """
 
     def __init__(self, version='', metadata=None):
+        super().__init__()
         # public properties
         self.version = version
         self.metadata = metadata
-        self.mappings = list()
         # protected properties
+        self._map_recipe = dict()
         self._yaml_dict = dict()
         # calls to methods
         self._load_yaml()
-        self._get_map_recipe()
+        self._get_mapping_recipe()
         self._create_mappings()
-        self._map_metadata()
+        self.map()
 
     def _load_yaml(self):
-        """Load the yaml-file containing the map recipes."""
-        yamlfile = yaml_loader.YamlLoader('metadata_mapper.yaml')
-        self._yaml_dict = yamlfile.yaml_dict
+        """Load the YAML file containing the map recipes."""
+        yaml_file = io.YamlLoader('metadata_mapper.yaml')
+        self._yaml_dict = yaml_file.yaml_dict
 
-    def _get_map_recipe(self):
-        """Get the right map recipe out of the yaml-file."""
+    def _get_mapping_recipe(self):
+        """Get the right map recipe out of the YAML file."""
         for key in self._yaml_dict.keys():
-            if key == 'format':
-                pass
-            else:
+            if key != 'format':
                 if self.version in self._yaml_dict[key]['infofile versions']:
-                    self.map_recipe = self._yaml_dict[key]
+                    self._map_recipe = self._yaml_dict[key]
 
     def _create_mappings(self):
         """Create mappings out of the map recipe."""
-        if 'copy key' in self.map_recipe.keys():
-            for i in range(len(self.map_recipe['copy key'])):
+        if 'copy key' in self._map_recipe.keys():
+            for i in range(len(self._map_recipe['copy key'])):
                 mapping = \
-                    [self.map_recipe['copy key'][i]['in dict'],
-                     'copy_key', [self.map_recipe['copy key'][i]['old key'],
-                                  self.map_recipe['copy key'][i]['new key']]]
+                    [self._map_recipe['copy key'][i]['in dict'],
+                     'copy_key',
+                     [self._map_recipe['copy key'][i]['old key'],
+                      self._map_recipe['copy key'][i]['new key']]]
                 self.mappings.append(mapping)
-        if 'combine items' in self.map_recipe.keys():
-            for i in range(len(self.map_recipe['combine items'])):
+        if 'combine items' in self._map_recipe.keys():
+            for i in range(len(self._map_recipe['combine items'])):
                 mapping = \
-                    [self.map_recipe['combine items'][i]['in dict'],
-                     'combine_items', [self.map_recipe['combine items'][i]['old keys'],
-                                       self.map_recipe['combine items'][i]['new key'],
-                     self.map_recipe['combine items'][i]['pattern']]]
+                    [self._map_recipe['combine items'][i]['in dict'],
+                     'combine_items',
+                     [self._map_recipe['combine items'][i]['old keys'],
+                      self._map_recipe['combine items'][i]['new key'],
+                      self._map_recipe['combine items'][i]['pattern']]]
                 self.mappings.append(mapping)
-        if 'rename key' in self.map_recipe.keys():
-            for i in range(len(self.map_recipe['rename key'])):
+        if 'rename key' in self._map_recipe.keys():
+            for i in range(len(self._map_recipe['rename key'])):
                 mapping = \
-                    [self.map_recipe['rename key'][i]['in dict'],
-                     'rename_key', [self.map_recipe['rename key'][i]['old key'],
-                                    self.map_recipe['rename key'][i]['new key']]]
+                    [self._map_recipe['rename key'][i]['in dict'],
+                     'rename_key',
+                     [self._map_recipe['rename key'][i]['old key'],
+                      self._map_recipe['rename key'][i]['new key']]]
                 self.mappings.append(mapping)
-        if 'move item' in self.map_recipe.keys():
-            for i in range(len(self.map_recipe['move item'])):
+        if 'move item' in self._map_recipe.keys():
+            for i in range(len(self._map_recipe['move item'])):
                 mapping = \
-                    ['', 'move_item', [self.map_recipe['move item'][i]['key'],
-                                       self.map_recipe['move item'][i][
-                                           'source dict'],
-                                       self.map_recipe['move item'][i][
-                                           'target dict'], True]]
+                    ['', 'move_item',
+                     [self._map_recipe['move item'][i]['key'],
+                      self._map_recipe['move item'][i]['source dict'],
+                      self._map_recipe['move item'][i]['target dict'], True]]
                 self.mappings.append(mapping)
         else:
             pass
 
-    def _map_metadata(self):
-        """Map the metadata with the created mappings."""
-        aspecd.metadata.MetadataMapper.map(self)
-
 
 if __name__ == '__main__':
-    map = MetadataMapper()
+    map_ = MetadataMapper()

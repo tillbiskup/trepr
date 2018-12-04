@@ -13,6 +13,4 @@ The trepr package addresses every scientist working with EPR data (both, measure
 Motivation and general ideas
 ============================
 
-The motivation and general idea behind the ASpecD framework is to ensure reproducibility and---as much as possible---replicability of data processing, starting from recording data and ending with their final (graphical) representation, e.g., in a peer-reviewed publication. This is done by mostly automatically creating a gap-less record of each processing step.
-
-Every scientist should be well familiar with the concept of reproducibility and its importance for science in general. Nevetheless, those not taking care of these aspects will probably have hard time with the ASpecD framework and with some of its aspects, particulary those regaring their personal freedom of doing things their way.
+The motivation an general idea behind the trepr package is to ensure reproducibility and replicability for TREPR data processing, using the ASpecD frameowrk.

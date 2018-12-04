@@ -27,11 +27,8 @@ yaml_loader
 """
 
 from .caller import *
-from .coloring import *
 from .dataset import *
 from .io import *
-from .plotter import *
+from .plotting import *
 from .processing import *
 from .report import *
-from .saver import *
-from .yaml_loader import *

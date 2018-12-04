@@ -1,19 +1,17 @@
 """
-Importer.
+General facilities for input and output.
 
-Trepr raw data consists of multiple timetraces, each stored in a text file.
-To analyze the raw data, it's necessary to bring the timetraces all together
-in form which can be stored as one dataset.
-
-This module imports raw data, defines the axis and hands all over to a dataset.
+With this module either a trepr raw data or a YAML file can be imported.
 """
 
+import collections
 import glob
-import io as io_
+import io
 import os
 import re
 
 import numpy as np
+import oyaml
 
 import aspecd.annotation
 import aspecd.dataset
@@ -22,18 +20,27 @@ import aspecd.infofile
 from trepr import dataset
 
 
-class Importer(aspecd.io.Importer):
-    """Import a dataset including its metadata.
+class SpeksimImporter(aspecd.io.Importer):
+    """Import trepr raw data in Freiburg Speksim format including its metadata.
+
+    Trepr raw data consist of several time traces, each of which is stored in a
+    text file. In order to analyze the raw data, it is necessary to store the
+    time traces all together in one dataset.
 
     Parameters
     ----------
-    path : str
+    source : str
         Path to the dataset.
 
     Attributes
     ----------
     dataset : :obj:`trepr.dataset.Dataset`
         Object of the dataset class.
+
+    Raises
+    ------
+    FileNotFoundError
+        Raised if no infofile could be found.
 
     """
 
@@ -46,60 +53,47 @@ class Importer(aspecd.io.Importer):
         self._path = source
         self._data = np.array([])
         self._file_format = ''
-        self._timestamps = list()
+        self._time_stamps = list()
         self._freq = np.array([])
-        self._commentline = ''
-        self._timeunit = ''
-        self._fieldunit = ''
-        self._intensityunit = ''
-        self._frequnit = ''
-        self._timeaxis = np.array([])
-        self._fieldaxis = np.array([])
-        self._infofile = dict()
+        self._comment_line = ''
+        self._time_unit = ''
+        self._field_unit = ''
+        self._intensity_unit = ''
+        self._frequency_unit = ''
+        self._time_axis = np.array([])
+        self._field_axis = np.array([])
+        self._infofile = aspecd.infofile.Infofile()
         self._header = list()
-        self._formatno = int()
+        self._format_no = int()
         self._time_start = float()
         self._time_stop = float()
-        self._timepoints = int()
+        self._time_points = int()
 
     def _import(self):
         """Execute all necessary methods and write the data to a dataset."""
         self._import_raw_data()
-        self._create_timeaxis()
+        self._create_time_axis()
         self._load_infofile()
         self._map_infofile()
         self._hand_data_to_dataset()
         self._hand_axes_to_dataset()
 
     def _import_raw_data(self):
-        """Import the timetraces and cut off the header lines."""
-        filenames = sorted(glob.glob(os.path.join(self._path, '*.[0-9][0-9][0-9]')))
+        """Import the time traces and cut off the header lines."""
+        filenames = sorted(glob.glob(os.path.join(self._path,
+                                                  '*.[0-9][0-9][0-9]')))
         for filename in filenames:
             with open(filename) as file:
                 raw_data = file.read()
             lines = raw_data.splitlines()
-            self._header = lines[0:5]
+            self._header = lines[0:self._HEADERLINES]
             self._parse_header()
-            numeric_data = np.loadtxt(io_.StringIO(raw_data), skiprows=5)
-            numeric_data = np.reshape(numeric_data, self._timepoints)
+            numeric_data = np.loadtxt(io.StringIO(raw_data),
+                                      skiprows=self._HEADERLINES)
+            numeric_data = np.reshape(numeric_data, self._time_points)
             self._data = np.append(self._data, numeric_data)
         self._data = \
-            np.reshape(self._data, [len(filenames), self._timepoints])
-
-    def _hand_data_to_dataset(self):
-        """Hand the data to the dataset structure."""
-        self.dataset.data.data = self._data
-
-    def _hand_axes_to_dataset(self):
-        """Hand the axes and intensity to the dataset structure."""
-        self.dataset.data.axes[0].values = self._timeaxis
-        self.dataset.data.axes[0].unit = self._timeunit
-        self.dataset.data.axes[0].quantity = 'time'
-        self.dataset.data.axes[1].values = self._fieldaxis
-        self.dataset.data.axes[1].unit = self._fieldunit
-        self.dataset.data.axes[1].quantity = 'magnetic field'
-        self.dataset.data.axes[2].unit = self._intensityunit
-        self.dataset.data.axes[2].quantity = 'intensity'
+            np.reshape(self._data, [len(filenames), self._time_points])
 
     def _parse_header(self):
         """Execute the methods which parse the header lines."""
@@ -110,65 +104,148 @@ class Importer(aspecd.io.Importer):
         self._parse_header_5th_line()
 
     def _parse_header_1st_line(self):
-        """Parse the first header line and extract the time and date."""
+        """Parse the 1st header line and extract the time and date.
+
+        Example::
+
+            Source : transient; Time : Wed Jun 7 08:44:57 2017
+
+        """
         entries = self._header[0].split(';')
         self._file_format = entries[0].split(':')[1].strip()
-        timestamp = entries[1].split(' : ')[1]
-        self._timestamps.append(timestamp)
+        time_stamp = entries[1].split(' : ')[1]
+        self._time_stamps.append(time_stamp)
 
     def _parse_header_2nd_line(self):
-        """Extract the field- and frequency-unit from the second header line."""
+        """Extract the field and frequency unit from the 2nd header line.
+
+        Example::
+
+            B0 = 4080.000000 Gauss, mw = 9.684967 GHz
+
+        """
         def parse_line(line):
             obj = re.search('([A-Za-z0-9]*) = ([0-9.]*) ([A-Za-z]*)', line)
             return float(obj.group(2)), obj.group(3)
         entries = self._header[1].split(',')
-        field, self._fieldunit = parse_line(entries[0])
-        freq, self._frequnit = parse_line(entries[1])
-        self._fieldaxis = np.append(self._fieldaxis, field)
+        field, self._field_unit = parse_line(entries[0])
+        freq, self._frequency_unit = parse_line(entries[1])
+        self._field_axis = np.append(self._field_axis, field)
         self._freq = np.append(self._freq, freq)
 
     def _parse_header_3rd_line(self):
-        """Parse the third header line."""
-        self._commentline = self._header[2]
+        """Parse the 3rd header line.
+
+        Example::
+
+             NDI-T2 sa64 20/2 42/25 523nm/1mJ
+
+        """
+        self._comment_line = self._header[2]
 
     def _parse_header_4th_line(self):
-        """Extract the format number, time information from the fourth header line."""
+        """Extract format number and time information from 4th header line.
+
+        Example::
+
+            1 5000 -1.001e-06 8.997e-06 0 0
+
+        """
         entries = self._header[3].split()[0:4]
-        self._formatno = int(entries[0])
-        self._timepoints = int(entries[1])
+        self._format_no = int(entries[0])
+        self._time_points = int(entries[1])
         self._time_start = float(entries[2])
         self._time_stop = float(entries[3])
 
     def _parse_header_5th_line(self):
-        """Extract the time- and intensity-unit from the fifth header line."""
-        self._timeunit, self._intensityunit = self._header[4].split()
+        """Extract the time- and intensity-unit from the 5th header line.
 
-    def _create_timeaxis(self):
-        """Create the timeaxis using the startpoint, endpoint and timepoints."""
-        self._timeaxis = \
-            np.linspace(self._time_start, self._time_stop, num=self._timepoints)
+        Example::
+
+            s                        V
+
+        """
+        self._time_unit, self._intensity_unit = self._header[4].split()
+
+    def _create_time_axis(self):
+        """Create the time axis using the start, end, and time points."""
+        self._time_axis = \
+            np.linspace(self._time_start,
+                        self._time_stop,
+                        num=self._time_points)
 
     def _load_infofile(self):
         """Import the infofile and parse it."""
         infofile_name = glob.glob(os.path.join(self._path, '*.info'))
         if not infofile_name:
-            print('Besorg dir ein Infofile!')
-            return
+            raise FileNotFoundError('Infofile not found.')
         self._infofile = aspecd.infofile.Infofile(infofile_name[0])
         self._infofile.parse()
 
     def _map_infofile(self):
         """Bring the metadata to a given format."""
-        self._infofile_version = self._infofile.infofile_info['version']
-        new_infofile = dataset.MetadataMapper(version=self._infofile_version,
-                                              metadata=self._infofile.parameters)
-        self.dataset.metadata.from_dict(new_infofile.metadata)
+        infofile_version = self._infofile.infofile_info['version']
+        mapper = dataset.MetadataMapper(version=infofile_version,
+                                        metadata=self._infofile.parameters)
+        self.dataset.metadata.from_dict(mapper.metadata)
         comment = aspecd.annotation.Comment()
         comment.comment = self._infofile.parameters['COMMENT']
         self.dataset.annotate(comment)
 
+    def _hand_data_to_dataset(self):
+        """Hand the data to the dataset structure."""
+        self.dataset.data.data = self._data
+
+    def _hand_axes_to_dataset(self):
+        """Hand the axes and intensity to the dataset structure."""
+        self.dataset.data.axes[0].values = self._time_axis
+        self.dataset.data.axes[0].unit = self._time_unit
+        self.dataset.data.axes[0].quantity = 'time'
+        self.dataset.data.axes[1].values = self._field_axis
+        self.dataset.data.axes[1].unit = self._field_unit
+        self.dataset.data.axes[1].quantity = 'magnetic field'
+        self.dataset.data.axes[2].unit = self._intensity_unit
+        self.dataset.data.axes[2].quantity = 'intensity'
+
+
+class YamlLoader:
+    """Load YAML files and write the information to a dictionary.
+
+    YAML files are a good way to generate files that are both human and machine
+    readable.
+
+    Parameters
+    ----------
+    filename : str
+        Name of the yaml-file to load.
+
+    Attributes
+    ----------
+    yaml_dict : dict
+        Contents of YAML file.
+
+    """
+
+    def __init__(self, filename=''):
+        # public properties
+        self.yaml_dict = collections.OrderedDict()
+        # protected properties
+        self._filename = filename
+        # calls to methods
+        self._read_yaml_file()
+
+    def _read_yaml_file(self):
+        with open(self._filename, 'r') as stream:
+            self.yaml_dict = oyaml.load(stream)
+
 
 if __name__ == '__main__':
+    obj = YamlLoader('metadata_mapper.yaml')
+    for key in obj.yaml_dict.keys():
+        if key != 'format':
+            print(obj.yaml_dict[key]['infofile versions'])
+
     PATH = '../../Daten/messung01/'
-    io = Importer(source=PATH)
-    io.dataset.import_from(io)
+    imp = SpeksimImporter(source=PATH)
+    imp.dataset.import_from(imp)
+    print(imp.dataset.metadata.measurement.start)

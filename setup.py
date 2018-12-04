@@ -50,7 +50,7 @@ setup(
         'numpy',
         'pyparsing',
         'python-dateutil',
-        'pyyaml',
+        'oyaml',
         'six'
     ],
     python_requires='>=3',

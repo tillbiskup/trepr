@@ -9,14 +9,6 @@ trepr.caller module
     :undoc-members:
     :show-inheritance:
 
-trepr.coloring module
----------------------
-
-.. automodule:: trepr.coloring
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 trepr.dataset module
 --------------------
 
@@ -33,10 +25,10 @@ trepr.io module
     :undoc-members:
     :show-inheritance:
 
-trepr.plotter module
-----------------------
+trepr.plotting module
+---------------------
 
-.. automodule:: trepr.plotter
+.. automodule:: trepr.plotting
     :members:
     :undoc-members:
     :show-inheritance:
@@ -53,22 +45,6 @@ trepr.report module
 -------------------
 
 .. automodule:: trepr.report
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-trepr.saver module
-------------------
-
-.. automodule:: trepr.saver
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-trepr.yaml_loader module
-------------------------
-
-.. automodule:: trepr.yaml_loader
     :members:
     :undoc-members:
     :show-inheritance:

@@ -22,6 +22,8 @@ pyflakes:
     - F403
 
 pylint:
+  options:
+    max-attributes: 20
   disable:
     - invalid-name
     - import-error
