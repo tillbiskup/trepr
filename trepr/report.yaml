@@ -9,12 +9,14 @@ figures:
   - Plotter2D:
      pretrigger compensation: True
      averaging: False
-     filename: 2D_plot
+     filename: 1test
+     save options: {format: pdf}
   - Plotter1D:
      pretrigger compensation: True
      averaging: True
      average range: [4.8e-07, 5.2e-07]
      average dimension: 0
      average unit: axis
-     filename: 1D_plot
+     filename: test2
+     save options: False
 report: True

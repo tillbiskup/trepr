@@ -3,13 +3,14 @@ General facilities for input and output.
 
 With this module either a trepr raw data or a YAML file can be imported.
 """
-
+import matplotlib.pyplot as plt
 import collections
 import glob
 import io
 import os
 import re
 
+from datetime import datetime
 import numpy as np
 import oyaml
 
@@ -53,7 +54,7 @@ class SpeksimImporter(aspecd.io.Importer):
         self._path = source
         self._data = np.array([])
         self._file_format = ''
-        self._time_stamps = list()
+        self._time_stamps = np.array([])
         self._freq = np.array([])
         self._comment_line = ''
         self._time_unit = ''
@@ -77,6 +78,8 @@ class SpeksimImporter(aspecd.io.Importer):
         self._map_infofile()
         self._hand_data_to_dataset()
         self._hand_axes_to_dataset()
+        self._create_time_stamp_data()
+        self._create_mw_freq_data()
 
     def _import_raw_data(self):
         """Import the time traces and cut off the header lines."""
@@ -114,7 +117,8 @@ class SpeksimImporter(aspecd.io.Importer):
         entries = self._header[0].split(';')
         self._file_format = entries[0].split(':')[1].strip()
         time_stamp = entries[1].split(' : ')[1]
-        self._time_stamps.append(time_stamp)
+        time_stamp = datetime.strptime(time_stamp, '%a %b %d %H:%M:%S %Y')
+        self._time_stamps = np.append(self._time_stamps, time_stamp)
 
     def _parse_header_2nd_line(self):
         """Extract the field and frequency unit from the 2nd header line.
@@ -166,6 +170,22 @@ class SpeksimImporter(aspecd.io.Importer):
 
         """
         self._time_unit, self._intensity_unit = self._header[4].split()
+
+    def _create_time_stamp_data(self):
+        self.dataset.time_stamp.data = self._time_stamps
+        self.dataset.time_stamp.axes[0].values = self._field_axis
+        self.dataset.time_stamp.axes[0].unit = self._field_unit
+        self.dataset.time_stamp.axes[0].quantity = 'magnetic field'
+        self.dataset.time_stamp.axes[1].quantity = 'date'
+
+    def _create_mw_freq_data(self):
+        self.dataset.microwave_frequency.data = self._freq
+        self.dataset.microwave_frequency.axes[0].values = self._field_axis
+        self.dataset.microwave_frequency.axes[0].unit = self._field_unit
+        self.dataset.microwave_frequency.axes[0].quantity = 'magnetic field'
+        self.dataset.microwave_frequency.axes[1].unit = self._frequency_unit
+        self.dataset.microwave_frequency.axes[1].quantity = \
+            'microwave frequency'
 
     def _create_time_axis(self):
         """Create the time axis using the start, end, and time points."""
@@ -241,11 +261,6 @@ class YamlLoader:
 
 if __name__ == '__main__':
     obj = YamlLoader('metadata_mapper.yaml')
-    for key in obj.yaml_dict.keys():
-        if key != 'format':
-            print(obj.yaml_dict[key]['infofile versions'])
-
     PATH = '../../Daten/messung01/'
     imp = SpeksimImporter(source=PATH)
     imp.dataset.import_from(imp)
-    print(imp.dataset.metadata.measurement.start)

@@ -28,6 +28,8 @@ class Dataset(aspecd.dataset.Dataset):
         super().__init__()
         # public properties
         self.metadata = DatasetMetadata()
+        self.time_stamp = aspecd.dataset.Data()
+        self.microwave_frequency = aspecd.dataset.Data()
 
 
 class DatasetMetadata(aspecd.metadata.DatasetMetadata):

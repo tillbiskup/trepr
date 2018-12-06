@@ -11,6 +11,7 @@ out.
 
 import os
 
+import aspecd.plotting
 from aspecd import utils
 from trepr import dataset
 from trepr import io
@@ -82,11 +83,16 @@ class Caller:
                 plotter_obj.dataset = self._dataset
                 plot = self._dataset.plot(plotter_obj)
                 if figure[key]['filename']:
-                    figure_filename = figure[key]['filename'] + '.pdf'
+                    figure_filename = figure[key]['filename']
                 else:
                     figure_filename = key + '.pdf'
                 saver_obj = \
-                    plotting.Saver(os.path.join(self._path, figure_filename))
+                    aspecd.plotting.Saver()
+                saver_obj.filename = os.path.join(self._path, figure_filename)
+                if figure[key]['save options']:
+                    saver_obj.parameters = figure[key]['save options']
+                else:
+                    pass
                 plot.save(saver_obj)
 
     def _create_report(self):

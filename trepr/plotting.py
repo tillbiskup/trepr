@@ -18,7 +18,7 @@ from trepr import io
 from trepr import processing
 
 
-class Plotter2D(aspecd.plotting.Plotter):
+class Plotter2D(aspecd.plotting.SinglePlotter):
     """Create a scaled image of a given dataset.
 
     Parameters
@@ -53,16 +53,13 @@ class Plotter2D(aspecd.plotting.Plotter):
         self._get_extent()
         if self.style == 'xkcd':
             plt.xkcd()
-        axes = plt.subplot()
         style_dict = {'interpolation': 'bilinear', 'cmap': 'seismic',
                       'origin': 'lower', 'aspect': 'auto'}
-        axes.imshow(self.dataset.data.data,
+        self.axes.imshow(self.dataset.data.data,
                     norm=ColormapAdjuster(dataset_=self.dataset).norm,
                     extent=self._extent, **style_dict)
         plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0),
                              useMathText=True)
-        plt.xlabel(self._create_axis_label(self.dataset.data.axes[0]))
-        plt.ylabel(self._create_axis_label(self.dataset.data.axes[1]))
 
     def _get_extent(self):
         """Define the start and end values of the axes."""
@@ -72,14 +69,8 @@ class Plotter2D(aspecd.plotting.Plotter):
         y_axis_end = self.dataset.data.axes[1].values[-1]
         self._extent = [x_axis_start, x_axis_end, y_axis_start, y_axis_end]
 
-    @staticmethod
-    def _create_axis_label(axis):
-        """Create the axes labels out of the axis quantity and unit."""
-        axis_label = '$' + axis.quantity + '$' + ' / ' + axis.unit
-        return axis_label
 
-
-class Plotter1D(aspecd.plotting.Plotter):
+class Plotter1D(aspecd.plotting.SinglePlotter):
     """Create a 1D plot of a given dataset.
 
     Parameters
@@ -111,39 +102,11 @@ class Plotter1D(aspecd.plotting.Plotter):
         """Plot the given dataset with axes labels and a zero line."""
         if self.style == 'xkcd':
             plt.xkcd()
-        plt.subplots()
-        plt.plot(self.dataset.data.axes[0].values, self.dataset.data.data)
-        axes = plt.gca()
-        axes.set_xlim([self.dataset.data.axes[0].values[0],
-                       self.dataset.data.axes[0].values[-1]])
+        self.axes.plot(self.dataset.data.axes[0].values, self.dataset.data.data)
+        self.axes.set_xlim([self.dataset.data.axes[0].values[0],
+                            self.dataset.data.axes[0].values[-1]])
         plt.ticklabel_format(style='sci', scilimits=(-2, 4), useMathText=True)
-        plt.xlabel(self._create_axis_label(self.dataset.data.axes[0]))
-        plt.ylabel(self._create_axis_label(self.dataset.data.axes[1]))
         plt.axhline(y=0, color='#999999')
-
-    @staticmethod
-    def _create_axis_label(axis):
-        """Create the axes labels out of the axis quantity and unit."""
-        axis_label = '$' + axis.quantity + '$' + ' / ' + axis.unit
-        return axis_label
-
-
-class Saver(aspecd.plotting.Saver):
-    """Save a given plot.
-
-    Parameters
-    ----------
-    filename : str
-        Path, including the filename, where to save the plot.
-
-    """
-
-    def __init__(self, filename=None):
-        # pylint: disable=useless-super-delegation
-        super().__init__(filename)
-
-    def _save_plot(self):
-        plt.savefig(self.filename)
 
 
 class ColormapAdjuster:
@@ -189,20 +152,21 @@ class ColormapAdjuster:
 if __name__ == '__main__':
     PATH = '../../Daten/messung17/'
     importer = io.SpeksimImporter(source=PATH)
-    dataset = aspecd.dataset.Dataset()
-    dataset.import_from(importer)
+    dataset_ = dataset.Dataset()
+    dataset_.import_from(importer)
 
     obj = processing.PretriggerOffsetCompensation()
-    process1 = dataset.process(obj)
-    saver_obj1 = Saver(PATH + 'fig1.pdf')
+    process1 = dataset_.process(obj)
+    saver_obj1 = aspecd.plotting.Saver(filename='plotter.pdf')
     plotter_obj1 = Plotter2D()
-    plot1 = dataset.plot(plotter_obj1)
+    plot1 = dataset_.plot(plotter_obj1)
     plot1.save(saver_obj1)
 
     averaging_obj = processing.Averaging(dimension=0,
                                          avg_range=[4.8e-07, 5.2e-07],
                                          unit='axis')
-    process = dataset.process(averaging_obj)
-    saver_obj = Saver(PATH + 'fig2.pdf')
+    process = dataset_.process(averaging_obj)
+    saver_obj = aspecd.plotting.Saver(filename='plotterli.pdf')
     plotter_obj = Plotter1D()
-    dataset.plot(plotter_obj).save(saver_obj)
+    plot2 = dataset_.plot(plotter_obj)
+    plot2.save(saver_obj)
