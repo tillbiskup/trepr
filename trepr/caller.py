@@ -96,9 +96,11 @@ class Caller:
                 plot.save(saver_obj)
 
     def _create_report(self):
+        template = self._yaml_dict['report']['template']
+        filename = self._yaml_dict['report']['filename']
         if self._yaml_dict['report']:
             self.report = \
-                report.Reporter(dataset_=self._dataset, source=self._path)
+                report.Reporter(dataset_=self._dataset, source=self._path, template=template, filename=filename)
         else:
             pass
 

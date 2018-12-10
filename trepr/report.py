@@ -20,8 +20,10 @@ import time
 import jinja2
 import numpy as np
 
+import aspecd.report
 
-class Reporter:
+
+class Reporter(aspecd.report.LaTeXReporter):
     """
     Generate a report based on a LaTeX template provided.
 
@@ -43,14 +45,18 @@ class Reporter:
 
     """
 
-    def __init__(self, dataset_=None, source=''):
+    def __init__(self, dataset_=None, source='', template='', filename=''):
         """
         Create a report rendering a template and store all files in the
         dataset repository.
         """
         # public properties
+        super().__init__()
         self.dataset = dataset_
         self.path = source
+        self.template = template
+        self.filename = filename
+        self.context = None
         # protected properties
         self._latex_jinja_env = jinja2.Environment()
         self._temp_dir = tempfile.mkdtemp()
@@ -58,38 +64,14 @@ class Reporter:
         self._date = None
         self._processing_steps = collections.OrderedDict()
         self._avg_parameter = dict()
-        self._render_dict = collections.OrderedDict()
+        self.context = collections.OrderedDict()
         # calls to methods
-        self._define_jinja_env()
-        self._copy_figures_to_temp_dir()
         self._prepare_metadata()
         self._get_processing_steps()
         self._get_current_date()
-        self._create_render_dict()
-        self._create_report()
-        self._copy_files_to_path()
-
-    def _define_jinja_env(self):
-        """Define the commands for Jinja2."""
-        self._latex_jinja_env = jinja2.Environment(
-            block_start_string='%{',
-            block_end_string='}%',
-            variable_start_string='{@',
-            variable_end_string='}',
-            comment_start_string='%#{',
-            comment_end_string='}',
-            line_statement_prefix='%%',
-            line_comment_prefix='%#',
-            trim_blocks=True,
-            autoescape=False,
-            loader=jinja2.FileSystemLoader(os.path.abspath('.'))
-        )
-
-    def _copy_figures_to_temp_dir(self):
-        shutil.copy2(os.path.join(self.path, 'Plotter1D.pdf'),
-                     os.path.join(self._temp_dir, 'Plotter1D.pdf'))
-        shutil.copy2(os.path.join(self.path, 'Plotter2D.pdf'),
-                     os.path.join(self._temp_dir, 'Plotter2D.pdf'))
+        self._create_context()
+        self.create()
+        self.compile()
 
     def _prepare_metadata(self):
         """Prepare the metadata the way it can be rendered."""
@@ -108,7 +90,7 @@ class Reporter:
             if history_record.processing.description == 'Averaging':
                 self._avg_parameter['Schnitt bei'] = \
                     np.average(history_record.processing.parameters['range'])
-                self._avg_parameter['gemittelt über'] = \
+                self._avg_parameter['gemittelt ueber'] = \
                     history_record.processing.parameters['range'][1] - \
                     history_record.processing.parameters['range'][0]
         self._processing_steps = \
@@ -127,46 +109,18 @@ class Reporter:
         """Get the current date."""
         self._date = time.strftime('%d.%m.%Y')
 
-    def _create_render_dict(self):
+    def _create_context(self):
         """Create a dictionary containing all data to write the report."""
-        self._render_dict['PROCESSINGSTEPS'] = self._processing_steps
-        self._render_dict['METADATA'] = self._metadata
-        self._render_dict['DATE'] = self._date
-        self._render_dict['PROCESSINGPARAMETERS'] = self._avg_parameter
-
-    def _create_report(self):
-        self._render_template()
-        self._compile_report(self._temp_dir)
-
-    def _render_template(self):
-        """Render the template and generate a latex report."""
-        template = self._latex_jinja_env.get_template('report.tex')
-        report = template.render(self._render_dict)
-        with open(os.path.join(self.path, 'report.tex'), mode='w+') as f:
-            f.write(report)
-        shutil.copy2(os.path.join(self.path, 'report.tex'),
-                     os.path.join(self._temp_dir, 'report.tex'))
-
-    @staticmethod
-    def _compile_report(temp_dir=None):
-        """Compile the latex report to a pdf."""
-        dir_path = os.getcwd()
-        os.chdir(temp_dir)
-        input_path = os.path.join(temp_dir, 'report.tex')
-        output_path = temp_dir
-        subprocess.run(["pdflatex", '-output-directory', output_path,
-                        input_path])
-        os.chdir(dir_path)
-
-    def _copy_files_to_path(self):
-        """
-        Copy all files to the repository containing the dataset and delete
-        the temporary repository.
-        """
-        shutil.copy2(os.path.join(self._temp_dir, 'report.pdf'),
-                     os.path.join(self.path, 'report.pdf'))
-        shutil.rmtree(self._temp_dir)
+        self.context['PROCESSINGSTEPS'] = self._processing_steps
+        self.context['METADATA'] = self._metadata
+        self.context['DATE'] = self._date
+        self.context['PROCESSINGPARAMETERS'] = self._avg_parameter
 
 
 if __name__ == '__main__':
-    obj = Reporter()
+    template = 'report.tex'
+    filename = 'test.tex'
+    report_ = LaTeXReporter(template, filename)
+    report_.create()
+    report_.compile()
+
