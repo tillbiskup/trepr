@@ -70,8 +70,6 @@ class Reporter(aspecd.report.LaTeXReporter):
         self._get_processing_steps()
         self._get_current_date()
         self._create_context()
-        self.create()
-        self.compile()
 
     def _prepare_metadata(self):
         """Prepare the metadata the way it can be rendered."""

@@ -42,6 +42,7 @@ class Caller:
         self._dataset = dataset.Dataset()
         self._path = ''
         self._yaml_dict = None
+        self._figures = list()
         # calls to methods
         self._load_yaml()
         self._import_dataset()
@@ -84,8 +85,12 @@ class Caller:
                 plot = self._dataset.plot(plotter_obj)
                 if figure[key]['filename']:
                     figure_filename = figure[key]['filename']
+                    self._figures.append(os.path.join(
+                        self._path, figure_filename))
                 else:
                     figure_filename = key + '.pdf'
+                    self._figures.append(os.path.join(
+                        self._path, figure_filename))
                 saver_obj = \
                     aspecd.plotting.Saver()
                 saver_obj.filename = os.path.join(self._path, figure_filename)
@@ -99,8 +104,12 @@ class Caller:
         template = self._yaml_dict['report']['template']
         filename = self._yaml_dict['report']['filename']
         if self._yaml_dict['report']:
-            self.report = \
-                report.Reporter(dataset_=self._dataset, source=self._path, template=template, filename=filename)
+            report_ = \
+                report.Reporter(dataset_=self._dataset, source=self._path,
+                                template=template, filename=filename)
+            report_.includes = self._figures
+            report_.create()
+            report_.compile()
         else:
             pass
 

@@ -4,7 +4,7 @@ format:
   version: 0.0.1
 
 dataset:
-  path: /home/jara/Dokumente/python/Daten/messung03/
+  path: /home/popp/nas/Python/Daten/messung03/
 figures:
   - Plotter2D:
      pretrigger compensation: True
@@ -21,4 +21,4 @@ figures:
      save options: False
 report:
   template: report.tex
-  filename: /home/jara/Dokumente/python/Daten/messung03/test.tex
+  filename: /home/popp/nas/Python/Daten/messung03/test.tex
