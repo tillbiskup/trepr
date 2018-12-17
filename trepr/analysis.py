@@ -1,9 +1,11 @@
 import numpy as np
 from scipy import constants
 from datetime import datetime
+import matplotlib.pyplot as plt
+
+
 
 import aspecd.analysis
-import trepr.dataset
 import trepr.io
 
 
@@ -69,17 +71,22 @@ class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
         for i in range(len(self.dataset.time_stamp.data)):
             time_stamp = self.dataset.time_stamp.data[i].timestamp()
             self._time_stamp_floats[i] = time_stamp
-        self._time_field_matrix = np.zeros((2, len(self._time_stamp_floats)))
-        self._time_field_matrix[0, :] = self._time_stamp_floats
-        self._time_field_matrix[1, :] = self.dataset.time_stamp.axes[0].values
-        self._time_field_matrix.
+        self._time_field_matrix = np.zeros((len(self._time_stamp_floats), 2))
+        self._time_field_matrix[:, 0] = self._time_stamp_floats
+        self._time_field_matrix[:, 1] = self.dataset.time_stamp.axes[0].values
+        self._time_field_matrix = self._time_field_matrix[self._time_field_matrix[:, 0].argsort()]
+        for i in range(len(self._time_field_matrix)):
+            time_stamp = datetime.fromtimestamp(self._time_field_matrix[i, 0])
+            self._time_field_matrix[i, 0] = time_stamp
         print(self._time_field_matrix)
 
-        #self._time_field_matrix[0, :] = shape
-        #print(self._time_field_matrix)
-
     def _calculate_time_stamp_delta(self):
-        pass
+        for i in range(len(self._time_field_matrix)-1):
+            self._time_field_matrix[i, 0] = self._time_field_matrix[i+1, 0] - self._time_field_matrix[i, 0]
+        self._time_field_matrix = np.delete(self._time_field_matrix, -1, axis=0)
+        self._time_field_matrix = self._time_field_matrix[self._time_field_matrix[:, 1].argsort()]
+        #plt.plot(self._time_field_matrix[:, 1], self._time_field_matrix[:, 0], linestyle = '', marker='.')
+        #plt.show()
 
 
 if __name__ == '__main__':

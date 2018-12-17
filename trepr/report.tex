@@ -8,6 +8,8 @@
 \usepackage{blindtext}
 \usepackage{multicol}
 \setlength{\parindent}{0cm}
+\newcommand{\FilenameTwoD}{{@FIGURENAMES['Figure2D']}}
+\newcommand{\FilenameOneD}{{@FIGURENAMES['Figure1D']}}
 
 \begin{document}
 
@@ -32,10 +34,13 @@
 %{endfor}%
 \end{tabbing}
 
+\IfFileExists{\FilenameTwoD}{
+
 \begin{figure}[H]
-	\includegraphics[width=\textwidth]{Plotter2D}
+	\includegraphics[width=\textwidth]{\FilenameTwoD}
 	\caption{\textbf{TREPR-Signal von {@METADATA['Sample']['Name']} bei {@METADATA['Temperature control']['Temperature']['Value']}~{@METADATA['Temperature control']['Temperature']['Unit']}.} {@METADATA['Recorder']['Averages']}~spp; MW: {@METADATA['Bridge']['Attenuation']['Value']}~{@METADATA['Bridge']['Attenuation']['Unit']}, {@METADATA['Bridge']['Power']['Value']}~{@METADATA['Bridge']['Power']['Unit']}; VAmp: {@METADATA['Video amplifier']['Amplification']['Value']}~{@METADATA['Video amplifier']['Amplification']['Unit']}, {@METADATA['Video amplifier']['Bandwidth']['Value']}~{@METADATA['Video amplifier']['Bandwidth']['Unit']}; Laser: {@METADATA['Pump']['Wavelength']['Value']}~{@METADATA['Pump']['Wavelength']['Unit']} (OPO Pos. {@METADATA['Pump']['Tunable position']}), {@METADATA['Pump']['Repetition rate']['Value']}~{@METADATA['Pump']['Repetition rate']['Unit']}, {@METADATA['Pump']['Power']['Value']}~{@METADATA['Pump']['Power']['Unit']} pro Puls.} 
-\end{figure}
+\end{figure}}
+{}
 
 \clearpage
 \section*{Experimentelle Parameter}
@@ -78,12 +83,13 @@
 
 
 
-
+\IfFileExists{\FilenameOneD}{
 
 \begin{figure}[H]
-	\includegraphics[width=\textwidth]{Plotter1D}
+	\includegraphics[width=\textwidth]{\FilenameOneD}
 \caption{\textbf{TREPR-Signal von {@METADATA['Sample']['Name']} bei {@METADATA['Temperature control']['Temperature']['Value']}~{@METADATA['Temperature control']['Temperature']['Unit']}: Schnitt bei {@PROCESSINGPARAMETERS['Schnitt bei']} (gemittelt über {@PROCESSINGPARAMETERS['gemittelt über']}).} {@METADATA['Recorder']['Averages']}~spp; MW: {@METADATA['Bridge']['Attenuation']['Value']}~{@METADATA['Bridge']['Attenuation']['Unit']}, {@METADATA['Bridge']['Power']['Value']}~{@METADATA['Bridge']['Power']['Unit']}; VAmp: {@METADATA['Video amplifier']['Amplification']['Value']}~{@METADATA['Video amplifier']['Amplification']['Unit']}, {@METADATA['Video amplifier']['Bandwidth']['Value']}~{@METADATA['Video amplifier']['Bandwidth']['Unit']}; Laser: {@METADATA['Pump']['Wavelength']['Value']}~{@METADATA['Pump']['Wavelength']['Unit']} (OPO Pos. {@METADATA['Pump']['Tunable position']}), {@METADATA['Pump']['Repetition rate']['Value']}~{@METADATA['Pump']['Repetition rate']['Unit']}, {@METADATA['Pump']['Power']['Value']}~{@METADATA['Pump']['Power']['Unit']} pro Puls.}  
-\end{figure}
+\end{figure}}
+{}
 
 \section*{Prozessierung}
 

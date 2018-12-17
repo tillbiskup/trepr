@@ -81,19 +81,18 @@ class Caller:
                 else:
                     pass
                 plotter_obj = utils.object_from_class_name('plotting.' + key)
-                plotter_obj.dataset = self._dataset
-                plot = self._dataset.plot(plotter_obj)
                 if figure[key]['filename']:
-                    figure_filename = figure[key]['filename']
+                    plotter_obj.filename = figure[key]['filename']
                     self._figures.append(os.path.join(
-                        self._path, figure_filename))
+                        self._path, plotter_obj.filename))
                 else:
-                    figure_filename = key + '.pdf'
+                    plotter_obj.filename = key + '.pdf'
                     self._figures.append(os.path.join(
-                        self._path, figure_filename))
+                        self._path, plotter_obj.filename))
+                plot = self._dataset.plot(plotter_obj)
                 saver_obj = \
                     aspecd.plotting.Saver()
-                saver_obj.filename = os.path.join(self._path, figure_filename)
+                saver_obj.filename = os.path.join(self._path, plotter_obj.filename)
                 if figure[key]['save options']:
                     saver_obj.parameters = figure[key]['save options']
                 else:

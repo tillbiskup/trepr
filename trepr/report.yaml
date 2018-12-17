@@ -9,15 +9,15 @@ figures:
   - Plotter2D:
      pretrigger compensation: True
      averaging: False
-     filename: False
-     save options: {format: pdf}
+     filename: Blabediblub.pdf
+     save options: False
   - Plotter1D:
      pretrigger compensation: True
      averaging: True
      average range: [4.8e-07, 5.2e-07]
      average dimension: 0
      average unit: axis
-     filename: False
+     filename: Blabediblib.pdf
      save options: False
 report:
   template: report.tex

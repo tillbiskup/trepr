@@ -64,10 +64,12 @@ class Reporter(aspecd.report.LaTeXReporter):
         self._date = None
         self._processing_steps = collections.OrderedDict()
         self._avg_parameter = dict()
+        self._figure_names = dict()
         self.context = collections.OrderedDict()
         # calls to methods
         self._prepare_metadata()
         self._get_processing_steps()
+        self._get_figure_name()
         self._get_current_date()
         self._create_context()
 
@@ -103,6 +105,19 @@ class Reporter(aspecd.report.LaTeXReporter):
             tmp_dict[key.replace('_', ' ').capitalize()] = dict_[key]
         return tmp_dict
 
+    def _get_figure_name(self):
+        for i in range(len(self.dataset.representations)):
+            if self.dataset.representations[i].plot.description \
+                    == '2D plot as scaled image.':
+                self._figure_names['Figure2D'] = \
+                    self.dataset.representations[i].plot.filename
+            elif self.dataset.representations[i].plot.description \
+                    == '1D line plot.':
+                self._figure_names['Figure1D'] = \
+                    self.dataset.representations[i].plot.filename
+            else:
+                pass
+
     def _get_current_date(self):
         """Get the current date."""
         self._date = time.strftime('%d.%m.%Y')
@@ -113,6 +128,7 @@ class Reporter(aspecd.report.LaTeXReporter):
         self.context['METADATA'] = self._metadata
         self.context['DATE'] = self._date
         self.context['PROCESSINGPARAMETERS'] = self._avg_parameter
+        self.context['FIGURENAMES'] = self._figure_names
 
 
 if __name__ == '__main__':

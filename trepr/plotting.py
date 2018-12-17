@@ -45,6 +45,7 @@ class Plotter2D(aspecd.plotting.SinglePlotter):
         self.style = ''
         self.dataset = dataset_
         self.description = '2D plot as scaled image.'
+        self.filename = ''
         # protected properties
         self._extent = list()
 
@@ -97,6 +98,7 @@ class Plotter1D(aspecd.plotting.SinglePlotter):
         self.dataset = dataset_
         self.style = ''
         self.description = '1D line plot.'
+        self.filename = ''
 
     def _create_plot(self):
         """Plot the given dataset with axes labels and a zero line."""
