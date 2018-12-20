@@ -11,9 +11,6 @@ parameters.
 """
 
 import collections
-import os
-import shutil
-import subprocess
 import tempfile
 import time
 
@@ -35,6 +32,12 @@ class Reporter(aspecd.report.LaTeXReporter):
     source : str
         Path to the dataset.
 
+    template : str
+        Path to template file used to generate report.
+
+    filename : str
+        Path of the resulting template file.
+
     Attributes
     ----------
     dataset : :obj:`trepr.dataset.Dataset`
@@ -42,6 +45,9 @@ class Reporter(aspecd.report.LaTeXReporter):
 
     path : str
         Path to the dataset.
+
+    context : :obj:`collections.OrderedDict`
+        Variables of a template that are replaced with the given content.
 
     """
 
@@ -51,11 +57,9 @@ class Reporter(aspecd.report.LaTeXReporter):
         dataset repository.
         """
         # public properties
-        super().__init__()
+        super().__init__(template=template, filename=filename)
         self.dataset = dataset_
         self.path = source
-        self.template = template
-        self.filename = filename
         self.context = None
         # protected properties
         self._latex_jinja_env = jinja2.Environment()
@@ -84,6 +88,7 @@ class Reporter(aspecd.report.LaTeXReporter):
                     self._metadata[key]
 
     def _get_processing_steps(self):
+        """Get processing steps from history."""
         for history_record in self.dataset.history:
             self._processing_steps[history_record.processing.description] = \
                 history_record.processing.parameters
@@ -106,6 +111,7 @@ class Reporter(aspecd.report.LaTeXReporter):
         return tmp_dict
 
     def _get_figure_name(self):
+        """Get the names of the figures used for the report."""
         for i in range(len(self.dataset.representations)):
             if self.dataset.representations[i].plot.description \
                     == '2D plot as scaled image.':

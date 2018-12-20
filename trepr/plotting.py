@@ -37,6 +37,9 @@ class Plotter2D(aspecd.plotting.SinglePlotter):
     description : str
         Describes the aim of the class.
 
+    filename : str
+        Name of the resulting plot file.
+
     """
 
     def __init__(self, dataset_=None):
@@ -89,6 +92,9 @@ class Plotter1D(aspecd.plotting.SinglePlotter):
 
     description : str
         Describes the aim of the class.
+
+    filename : str
+        Name of the resulting plot file.
 
     """
 

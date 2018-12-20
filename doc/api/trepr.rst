@@ -1,8 +1,17 @@
 trepr package
 =============
 
-trepr.caller module
+
+trepr.analysis module
 ---------------------
+
+.. automodule:: trepr.analysis
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+trepr.caller module
+-------------------
 
 .. automodule:: trepr.caller
     :members:

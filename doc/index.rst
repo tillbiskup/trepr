@@ -51,7 +51,6 @@ The project licensed under the BSD license.
    :caption: Contents:
 
    audience
-   introduction
    concepts
    usecases
 

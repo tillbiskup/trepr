@@ -46,12 +46,11 @@ class SpeksimImporter(aspecd.io.Importer):
     """
 
     def __init__(self, source=''):
-        super().__init__()
+        super().__init__(source=source)
         # public properties
         self.dataset = dataset.Dataset()
         # protected properties
         self._HEADERLINES = 5
-        self._path = source
         self._data = np.array([])
         self._file_format = ''
         self._time_stamps = np.array([])
@@ -83,7 +82,7 @@ class SpeksimImporter(aspecd.io.Importer):
 
     def _import_raw_data(self):
         """Import the time traces and cut off the header lines."""
-        filenames = sorted(glob.glob(os.path.join(self._path,
+        filenames = sorted(glob.glob(os.path.join(self.source,
                                                   '*.[0-9][0-9][0-9]')))
         for filename in filenames:
             with open(filename) as file:
@@ -196,7 +195,7 @@ class SpeksimImporter(aspecd.io.Importer):
 
     def _load_infofile(self):
         """Import the infofile and parse it."""
-        infofile_name = glob.glob(os.path.join(self._path, '*.info'))
+        infofile_name = glob.glob(os.path.join(self.source, '*.info'))
         if not infofile_name:
             raise FileNotFoundError('Infofile not found.')
         self._infofile = aspecd.infofile.Infofile(infofile_name[0])

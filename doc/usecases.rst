@@ -53,24 +53,30 @@ Automatic processing
 
 The trepr package offers automatic processing. Therefore a YAML file needs to be passed to the caller. The YAML file has the following structure::
 
-    ---
-    format:
-        type: trepr report
-        version: 0.0.1
+	---
+	format:
+	  type: trepr report
+	  version: 0.0.1
 
-    dataset:
-        path: /path/to/your/dataset
-    figures:
-        - Plotter2D:
-            pretrigger compensation: True
-            averaging: False
-        - Plotter1D:
-            pretrigger compensation: True
-            averaging: True
-            average range: [3400, 3500]
-            average dimension: 1
-            average unit: axis
-    report: True
+	dataset:
+	  path: /path/to/your/data
+	figures:
+	  - Plotter2D:
+	     pretrigger compensation: True
+	     averaging: False
+	     filename: NameOf2DPlot.pdf
+	     save options: False
+	  - Plotter1D:
+	     pretrigger compensation: True
+	     averaging: True
+	     average range: [4.8e-07, 5.2e-07]
+	     average dimension: 0
+	     average unit: axis
+	     filename: NameOf1DPlot.pdf
+	     save options: False
+	report:
+	  template: template.tex
+	  filename: /path/to/your/report.tex
 
 In the YAML file you specify which processing will be carried out, which figures will be created and whether a report will be generated.
 Passing the YAML file to the caller is very simple::
