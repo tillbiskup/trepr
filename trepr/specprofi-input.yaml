@@ -44,7 +44,7 @@ fitting:
     outputfilename: /home/popp/nas/Python/Daten/
     maxiter: 10
     algorithm: "Nelder-Mead"
-    nLHS: 2
+    nLHS: 10
 
   Vary:
     - D: [1000, 50]

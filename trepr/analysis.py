@@ -48,7 +48,7 @@ class MwFreqAnalysis(aspecd.analysis.AnalysisStep):
         self._calculate_step_size()
         self._compare_B0_with_step_size()
         self.results['frequency drift'] = aspecd.metadata.PhysicalQuantity(value=self._delta_B0, unit='T')
-        self.results['ratio frequency drift/step size'] = value=self._ratio
+        self.results['ratio frequency drift/step size'] = self._ratio
 
     def _calculate_mw_freq_amplitude(self):
         """Calculate the amplitude of the microwave frequency."""
@@ -143,16 +143,25 @@ class FittingAnalysis(aspecd.analysis.AnalysisStep):
         super().__init__()
 
     def _perform_task(self):
-        SpecProFi.trepr_interface.TREPRInterface(fitting_parameters=self.parameters)
+        fit = SpecProFi.trepr_interface.TREPRInterface(fitting_parameters=self.parameters, dataset_=self.dataset)
+        fit.fit()
+
+
 
 
 if __name__ == '__main__':
-
+    imp = trepr.io.SpeksimImporter('/home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung06/')
+    dataset_ = trepr.dataset.Dataset()
+    dataset_.import_from(imp)
+    pretrigger = trepr.processing.PretriggerOffsetCompensation()
+    dataset_.process(pretrigger)
+    averaging = trepr.processing.Averaging(dimension=0, avg_range=[4.e-7, 6.e-7], unit='axis')
+    dataset_.process(averaging)
     yaml = trepr.io.YamlLoader('specprofi-input.yaml')
     parameter_dict = yaml.yaml_dict
     fitting_obj = FittingAnalysis()
     fitting_obj.parameters = parameter_dict
-    fitting_obj.analyse()
+    fitting_obj.analyse(dataset=dataset_)
 
     """
     imp = trepr.io.SpeksimImporter(source=
