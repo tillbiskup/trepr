@@ -15,6 +15,8 @@ import numpy as np
 from scipy import constants
 
 import aspecd.analysis
+import aspecd.metadata
+import SpecProFi.trepr_interface
 import trepr.io
 
 
@@ -35,15 +37,18 @@ class MwFreqAnalysis(aspecd.analysis.AnalysisStep):
         self.description = 'Microwave frequency analysis'
         # protected properties
         self._delta_mw_freq = float()
-        self._B0 = float()
+        self._delta_B0 = float()
         self._step_size_in_T = float()
+        self._ratio = float()
 
-    def analyse(self, dataset=None):
+    def _perform_task(self):
         """Perform all methods to do analysis."""
         self._calculate_mw_freq_amplitude()
         self._convert_delta_mw_freq_to_magnetic_field()
         self._calculate_step_size()
         self._compare_B0_with_step_size()
+        self.results['frequency drift'] = aspecd.metadata.PhysicalQuantity(value=self._delta_B0, unit='T')
+        self.results['ratio frequency drift/step size'] = value=self._ratio
 
     def _calculate_mw_freq_amplitude(self):
         """Calculate the amplitude of the microwave frequency."""
@@ -55,8 +60,8 @@ class MwFreqAnalysis(aspecd.analysis.AnalysisStep):
         electron_g_factor = constants.value('electron g factor')
         bohr_magneton = constants.value('Bohr magneton')
         planck_constant = constants.value('Planck constant')
-        self._B0 = self._delta_mw_freq * 1e9 * planck_constant / \
-                   (-1 * electron_g_factor * bohr_magneton)
+        self._delta_B0 = self._delta_mw_freq * 1e9 * planck_constant / \
+                         (-1 * electron_g_factor * bohr_magneton)
 
     def _calculate_step_size(self):
         """Calculate the step size of the given dataset."""
@@ -67,11 +72,11 @@ class MwFreqAnalysis(aspecd.analysis.AnalysisStep):
 
     def _compare_B0_with_step_size(self):
         """Calculate the ratio between B0 and the step size."""
-        ratio = self._B0 / self._step_size_in_T
+        self._ratio = self._delta_B0 / self._step_size_in_T
         print('step size: ' + str(self._step_size_in_T * 1e3) +
-              ' mT\nfrequency shift: ' + str(self._B0 * 1e3) +
-              ' mT\nratio frequency shift/step size: ' +
-              str(ratio))
+              ' mT\nfrequency drift: ' + str(self._delta_B0 * 1e3) +
+              ' mT\nratio frequency drift/step size: ' +
+              str(self._ratio))
 
 
 class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
@@ -94,10 +99,11 @@ class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
         self._time_field_matrix = None
         self._time_stamp_datetimes = list()
 
-    def analyse(self, dataset=None):
+    def _perform_task(self):
         """Perform all methods to do analysis."""
         self._create_time_field_matrix()
         self._calculate_time_stamp_delta()
+        self.results['time spent per timetrace'] = self._time_stamp_datetimes
 
     def _create_time_field_matrix(self):
         time_stamp_floats = np.zeros((len(self.dataset.time_stamp.data)))
@@ -131,7 +137,24 @@ class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
         plt.show()
 
 
+class FittingAnalysis(aspecd.analysis.AnalysisStep):
+
+    def __init__(self):
+        super().__init__()
+
+    def _perform_task(self):
+        SpecProFi.trepr_interface.TREPRInterface(fitting_parameters=self.parameters)
+
+
 if __name__ == '__main__':
+
+    yaml = trepr.io.YamlLoader('specprofi-input.yaml')
+    parameter_dict = yaml.yaml_dict
+    fitting_obj = FittingAnalysis()
+    fitting_obj.parameters = parameter_dict
+    fitting_obj.analyse()
+
+    """
     imp = trepr.io.SpeksimImporter(source=
                                    '/home/popp/nas/Python/Daten/messung17/')
     dataset_ = trepr.dataset.Dataset()
@@ -139,3 +162,4 @@ if __name__ == '__main__':
     obj = TimeStampAnalysis()
     obj.dataset = dataset_
     dataset_.analyse(obj)
+    """

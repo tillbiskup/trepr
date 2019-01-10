@@ -43,7 +43,8 @@ class Caller:
         self._path = ''
         self._yaml_dict = None
         self._figures = list()
-        # calls to methods
+
+    def generate_report(self):
         self._load_yaml()
         self._import_dataset()
         self._create_figures()
@@ -115,3 +116,4 @@ class Caller:
 
 if __name__ == '__main__':
     obj = Caller('report.yaml')
+    obj.generate_report()

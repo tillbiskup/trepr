@@ -1,0 +1,57 @@
+---
+format:
+  type: SpecProFi input
+  version: 0.0.1
+
+datasets:
+  - /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung06/
+
+processing:
+  pretrigger compensation:
+    - /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung06/
+  averaging:
+    /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung06/:
+      range: [4.e-7, 6.e-7]
+      dimension: 0
+      unit: axis
+
+fitting:
+  Sys:
+    - D: [1500.0, 50.0]
+      g: 2.002
+      Population: [0.3, 0.35, 0.65]
+      lw: [1.5, 2.0]
+      Harmonic: 0
+      S: 1
+    - D: [200.0, 10.0]
+      g: 2.002
+      Population: [0.5, 0.4, 0.3]
+      lw: [1.5, 2.0]
+      Harmonic: 0
+      S: 1
+
+  Exp:
+    mwFreq: 9.70434
+    Range: [280.0, 410.0]
+
+  Opt:
+    nKnots: 12
+    nPoints: 326
+    oritheta: [0, 0.6]
+
+  FitOpt:
+    thetaoff: [45]
+    outputfilename: /home/popp/nas/Python/Daten/
+    maxiter: 10
+    algorithm: "Nelder-Mead"
+    nLHS: 2
+
+  Vary:
+    - D: [1000, 50]
+      oritheta: [0.2, 0.4]
+      lw: [1., 1.5]
+      Population: [0.3, 0.3, 0.6]
+    - D: [100, 5]
+      oritheta: [0.2, 0.4]
+      lw: [1., 1.5]
+      Population: [0.3, 0.3, 0.3]

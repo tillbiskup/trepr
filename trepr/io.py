@@ -21,7 +21,7 @@ import aspecd.infofile
 from trepr import dataset
 
 
-class SpeksimImporter(aspecd.io.Importer):
+class SpeksimImporter(aspecd.io.DatasetImporter):
     """Import trepr raw data in Freiburg Speksim format including its metadata.
 
     Trepr raw data consist of several time traces, each of which is stored in a
