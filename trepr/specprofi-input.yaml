@@ -23,12 +23,6 @@ fitting:
       lw: [1.5, 2.0]
       Harmonic: 0
       S: 1
-    - D: [200.0, 10.0]
-      g: 2.002
-      Population: [0.5, 0.4, 0.3]
-      lw: [1.5, 2.0]
-      Harmonic: 0
-      S: 1
 
   Exp:
     mwFreq: 9.70434
@@ -44,14 +38,10 @@ fitting:
     outputfilename: /home/popp/nas/Python/Daten/
     maxiter: 10
     algorithm: "Nelder-Mead"
-    nLHS: 10
+    nLHS: 2
 
   Vary:
     - D: [1000, 50]
       oritheta: [0.2, 0.4]
       lw: [1., 1.5]
       Population: [0.3, 0.3, 0.6]
-    - D: [100, 5]
-      oritheta: [0.2, 0.4]
-      lw: [1., 1.5]
-      Population: [0.3, 0.3, 0.3]

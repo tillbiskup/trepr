@@ -143,8 +143,9 @@ class FittingAnalysis(aspecd.analysis.AnalysisStep):
         super().__init__()
 
     def _perform_task(self):
-        fit = SpecProFi.trepr_interface.TREPRInterface(fitting_parameters=self.parameters, dataset_=self.dataset)
-        fit.fit()
+        SpecProFi.trepr_interface.TREPRInterface(fitting_parameters=self.parameters, dataset_=self.dataset)
+
+
 
 
 
