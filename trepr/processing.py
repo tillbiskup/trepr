@@ -1,8 +1,11 @@
 """
 General processing facilities.
 
-For the sake of simplicity, the two processing classes averaging and
-pretrigger_offset_compensation are combined in one module.
+Due to the inheritance from :class:`aspecd.processing` all provided processing
+steps are fully self-documenting in order of adding all necessary information
+to reproduce each processing step to the :attr:`trepr.dataset.Dataset.history`
+attribute of a dataset.
+
 """
 
 
@@ -71,6 +74,15 @@ class Averaging(aspecd.processing.ProcessingStep):
     one-dimensional spectrum. The one-dimensional spectrum can either be a cut
     along the field or the time axis. To get a representative spectrum, the
     average over several measurement points is calculated.
+
+    All parameters, implicit and explicit, necessary to perform the averaging
+    processing step, will be stored in the attribute
+    :attr:`trepr.processing.Averaging.parameters`.
+
+    An example for using the averaging processing step may look like this::
+
+        processing_step = Averaging(dimension=0, avg_range=[4.e-7, 6.e-7], unit='axis')
+        dataset.process(processing_step)
 
     Parameters
     ----------
@@ -182,6 +194,16 @@ class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
     One of the first processing steps after measuring TREPR data is to set the
     average of the pretrigger time trace to zero. The so called pretrigger
     offset compensation.
+
+    All parameters, implicit and explicit, necessary to perform the averaging
+    processing step, will be stored in the attribute
+    :attr:`trepr.processing.PretriggerOffsetCompensation.parameters`.
+
+    An example for using the pretrigger offset compensation processing step may
+    look like this::
+
+        processing_step = PretriggerOffsetCompensation()
+        dataset.process(processing_step)
 
     Attributes
     ----------

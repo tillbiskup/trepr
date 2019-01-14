@@ -577,7 +577,6 @@ class MetadataMapper(aspecd.metadata.MetadataMapper):
         self._load_yaml()
         self._get_mapping_recipe()
         self._create_mappings()
-        self.map()
 
     def _load_yaml(self):
         """Load the YAML file containing the map recipes."""

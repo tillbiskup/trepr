@@ -81,7 +81,7 @@ class MwFreqAnalysis(aspecd.analysis.AnalysisStep):
 
 class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
     """
-    Calculate the measurement time of each timetrace and plot them against the
+    Calculate the measurement time of each time trace and plot them against the
     magnetic field.
 
     Attributes
@@ -143,8 +143,7 @@ class FittingAnalysis(aspecd.analysis.AnalysisStep):
         super().__init__()
 
     def _perform_task(self):
-        SpecProFi.trepr_interface.TREPRInterface(fitting_parameters=self.parameters, dataset_=self.dataset)
-
+        SpecProFi.trepr_interface.TREPRInterface(fitting_parameters=self.parameters, dataset_=self.dataset).fit()
 
 
 
@@ -163,13 +162,3 @@ if __name__ == '__main__':
     fitting_obj = FittingAnalysis()
     fitting_obj.parameters = parameter_dict
     fitting_obj.analyse(dataset=dataset_)
-
-    """
-    imp = trepr.io.SpeksimImporter(source=
-                                   '/home/popp/nas/Python/Daten/messung17/')
-    dataset_ = trepr.dataset.Dataset()
-    dataset_.import_from(imp)
-    obj = TimeStampAnalysis()
-    obj.dataset = dataset_
-    dataset_.analyse(obj)
-    """
