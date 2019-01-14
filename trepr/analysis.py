@@ -47,7 +47,8 @@ class MwFreqAnalysis(aspecd.analysis.AnalysisStep):
         self._convert_delta_mw_freq_to_magnetic_field()
         self._calculate_step_size()
         self._compare_B0_with_step_size()
-        self.results['frequency drift'] = aspecd.metadata.PhysicalQuantity(value=self._delta_B0, unit='T')
+        self.results['frequency drift'] = aspecd.metadata.PhysicalQuantity(
+            value=self._delta_B0, unit='T')
         self.results['ratio frequency drift/step size'] = self._ratio
 
     def _calculate_mw_freq_amplitude(self):
@@ -141,9 +142,11 @@ class FittingAnalysis(aspecd.analysis.AnalysisStep):
 
     def __init__(self):
         super().__init__()
+        self.description = 'Fitting analysis.'
 
     def _perform_task(self):
-        SpecProFi.trepr_interface.TREPRInterface(fitting_parameters=self.parameters, dataset_=self.dataset).fit()
+        SpecProFi.trepr_interface.TREPRInterface(
+            fitting_parameters=self.parameters, dataset_=self.dataset).fit()
 
 
 
