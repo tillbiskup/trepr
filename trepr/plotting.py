@@ -32,7 +32,7 @@ class Plotter2D(aspecd.plotting.SinglePlotter):
         Defines whether the plot is done in xkcd style or not.
 
     dataset : :obj:`trepr.dataset.Dataset`
-        Object of the class Dataset.
+        Dataset to work with.
 
     description : str
         Describes the aim of the class.

@@ -25,10 +25,7 @@ yaml_loader
     Load a given YAML file
 
 """
-
-from .caller import *
-from .dataset import *
-from .io import *
-from .plotting import *
-from .processing import *
-from .report import *
+import trepr.dataset
+import trepr.io
+import trepr.plotting
+import trepr.processing

@@ -170,22 +170,6 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         """
         self._time_unit, self._intensity_unit = self._header[4].split()
 
-    def _create_time_stamp_data(self):
-        self.dataset.time_stamp.data = self._time_stamps
-        self.dataset.time_stamp.axes[0].values = self._field_axis
-        self.dataset.time_stamp.axes[0].unit = self._field_unit
-        self.dataset.time_stamp.axes[0].quantity = 'magnetic field'
-        self.dataset.time_stamp.axes[1].quantity = 'date'
-
-    def _create_mw_freq_data(self):
-        self.dataset.microwave_frequency.data = self._freq
-        self.dataset.microwave_frequency.axes[0].values = self._field_axis
-        self.dataset.microwave_frequency.axes[0].unit = self._field_unit
-        self.dataset.microwave_frequency.axes[0].quantity = 'magnetic field'
-        self.dataset.microwave_frequency.axes[1].unit = self._frequency_unit
-        self.dataset.microwave_frequency.axes[1].quantity = \
-            'microwave frequency'
-
     def _create_time_axis(self):
         """Create the time axis using the start, end, and time points."""
         self._time_axis = \
@@ -206,6 +190,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         infofile_version = self._infofile.infofile_info['version']
         mapper = dataset.MetadataMapper(version=infofile_version,
                                         metadata=self._infofile.parameters)
+        mapper.map()
         self.dataset.metadata.from_dict(mapper.metadata)
         comment = aspecd.annotation.Comment()
         comment.comment = self._infofile.parameters['COMMENT']
@@ -226,6 +211,22 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         self.dataset.data.axes[2].unit = self._intensity_unit
         self.dataset.data.axes[2].quantity = 'intensity'
 
+    def _create_time_stamp_data(self):
+        self.dataset.time_stamp.data = self._time_stamps
+        self.dataset.time_stamp.axes[0].values = self._field_axis
+        self.dataset.time_stamp.axes[0].unit = self._field_unit
+        self.dataset.time_stamp.axes[0].quantity = 'magnetic field'
+        self.dataset.time_stamp.axes[1].quantity = 'date'
+
+    def _create_mw_freq_data(self):
+        self.dataset.microwave_frequency.data = self._freq
+        self.dataset.microwave_frequency.axes[0].values = self._field_axis
+        self.dataset.microwave_frequency.axes[0].unit = self._field_unit
+        self.dataset.microwave_frequency.axes[0].quantity = 'magnetic field'
+        self.dataset.microwave_frequency.axes[1].unit = self._frequency_unit
+        self.dataset.microwave_frequency.axes[1].quantity = \
+            'microwave frequency'
+
 
 class YamlLoader:
     """Load YAML files and write the information to a dictionary.
@@ -236,18 +237,18 @@ class YamlLoader:
     Parameters
     ----------
     filename : str
-        Name of the yaml-file to load.
+        Name of the YAML file to load.
 
     Attributes
     ----------
-    yaml_dict : dict
+    yaml_as_dict : dict
         Contents of YAML file.
 
     """
 
     def __init__(self, filename=''):
         # public properties
-        self.yaml_dict = collections.OrderedDict()
+        self.yaml_as_dict = collections.OrderedDict()
         # protected properties
         self._filename = filename
         # calls to methods
@@ -255,7 +256,7 @@ class YamlLoader:
 
     def _read_yaml_file(self):
         with open(self._filename, 'r') as stream:
-            self.yaml_dict = oyaml.load(stream)
+            self.yaml_as_dict = oyaml.load(stream)
 
 
 if __name__ == '__main__':

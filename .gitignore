@@ -18,6 +18,7 @@
 /*.egg
 
 bla.py
+/abstellgleis/
 
 # Sphinx templates and build
 doc/_build

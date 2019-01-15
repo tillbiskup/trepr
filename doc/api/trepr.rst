@@ -1,5 +1,5 @@
-trepr package
-=============
+Submodules
+==========
 
 
 trepr.analysis module

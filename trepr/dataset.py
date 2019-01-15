@@ -1,26 +1,30 @@
 """
 To produce replicable results it's important not to change the raw data.
 
-This module creates a dataset structure, inheriting from the ASpecD dataset
-class. The dataset structure contains metadata, consisting of different
-classes, which contain the individual information about the experiment.
+This module creates a dataset structure, inheriting from
+:class:`aspecd.dataset.Dataset`. The dataset structure contains metadata,
+consisting of different classes, which contain the individual information about
+the experiment.
 """
 
 import aspecd.dataset
 import aspecd.metadata
-from trepr import io
+import trepr.io
 
 
 class Dataset(aspecd.dataset.Dataset):
     """Define the structure for a given dataset, inheriting from ASpecD.
 
-    The "raison d'être" for this class is mainly to extend the metadata
-    contained in the metadata property.
+    On one hand this class extends the metadata contained in the metadata
+    property. On the other hand this class extends the dataset by further
+    :class:`aspecd.dataset.Data` objects.
 
     Attributes
     ----------
     metadata : :class:`trepr.dataset.DatasetMetadata`
         Metadata of dataset.
+
+    time_stamp : :class:`aspecd.dataset.Data`
 
     """
 
@@ -580,8 +584,8 @@ class MetadataMapper(aspecd.metadata.MetadataMapper):
 
     def _load_yaml(self):
         """Load the YAML file containing the map recipes."""
-        yaml_file = io.YamlLoader('metadata_mapper.yaml')
-        self._yaml_dict = yaml_file.yaml_dict
+        yaml_file = trepr.io.YamlLoader('metadata_mapper.yaml')
+        self._yaml_dict = yaml_file.yaml_as_dict
 
     def _get_mapping_recipe(self):
         """Get the right map recipe out of the YAML file."""
