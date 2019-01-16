@@ -39,6 +39,7 @@ fitting:
     maxiter: 10
     algorithm: "Nelder-Mead"
     nLHS: 2
+    normalise: maximum
 
   Vary:
     - D: [1000, 50]

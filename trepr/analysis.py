@@ -1,8 +1,8 @@
 """
 General analysis facilities.
 
-In order to quantify the quality of a measured spectrum, it may be helpful to
-perform some analysis steps.
+In order to quantify the quality of a measured spectrum or to interpret it, it
+may be helpful to perform some analysis steps.
 
 Due to the inheritance from :class:`aspecd.analysis` all provided analysis
 steps are fully self-documenting in order of adding all necessary information
