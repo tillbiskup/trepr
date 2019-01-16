@@ -24,7 +24,7 @@ class Plotter2D(aspecd.plotting.SinglePlotter):
     Parameters
     ----------
     dataset_ : :obj:`trepr.dataset.Dataset`
-        Object of the class Dataset.
+        Dataset structure containing raw data as well as metadata.
 
     Attributes
     ----------
@@ -60,8 +60,8 @@ class Plotter2D(aspecd.plotting.SinglePlotter):
         style_dict = {'interpolation': 'bilinear', 'cmap': 'seismic',
                       'origin': 'lower', 'aspect': 'auto'}
         self.axes.imshow(self.dataset.data.data,
-                    norm=ColormapAdjuster(dataset_=self.dataset).norm,
-                    extent=self._extent, **style_dict)
+                         norm=ColormapAdjuster(dataset_=self.dataset).norm,
+                         extent=self._extent, **style_dict)
         plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0),
                              useMathText=True)
 
@@ -88,7 +88,7 @@ class Plotter1D(aspecd.plotting.SinglePlotter):
         Defines whether the plot is done in xkcd style or not.
 
     dataset : :obj:`trepr.dataset.Dataset`
-        Dataset structure containing raw data as well as metadata.
+        Dataset to work with.
 
     description : str
         Describes the aim of the class.
@@ -131,7 +131,7 @@ class ColormapAdjuster:
     Attributes
     ----------
     dataset : :obj:`trepr.dataset.Dataset`
-        Dataset structure containing raw data as well as metadata.
+        Dataset to work with.
 
     """
 

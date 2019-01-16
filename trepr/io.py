@@ -3,7 +3,6 @@ General facilities for input and output.
 
 With this module either a trepr raw data or a YAML file can be imported.
 """
-import matplotlib.pyplot as plt
 import collections
 import glob
 import io

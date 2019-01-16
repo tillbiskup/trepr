@@ -2,9 +2,9 @@
 To produce replicable results it's important not to change the raw data.
 
 This module creates a dataset structure, inheriting from
-:class:`aspecd.dataset.Dataset`. The dataset structure contains metadata,
-consisting of different classes, which contain the individual information about
-the experiment.
+:class:`aspecd.dataset.Dataset`. The dataset structure contains data and
+metadata, the latter consisting of different classes, which contain the
+individual information about the experiment.
 """
 
 import aspecd.dataset
@@ -12,12 +12,34 @@ import aspecd.metadata
 import trepr.io
 
 
-class Dataset(aspecd.dataset.Dataset):
-    """Define the structure for a given dataset, inheriting from ASpecD.
+class Error(Exception):
+    """Base class for exceptions in this module."""
 
-    On one hand this class extends the metadata contained in the metadata
+    pass
+
+
+class RecipeNotFoundError(Error):
+    """Exception raised when a recipe could not be found.
+
+    Attributes
+    ----------
+    message : `str`
+        explanation of the error
+
+    """
+
+    def __init__(self, message=''):
+        super().__init__()
+        self.message = message
+
+
+class Dataset(aspecd.dataset.Dataset):
+    """Entity consisting of data and metadata.
+
+    On the one hand this class extends the metadata contained in the metadata
     property. On the other hand this class extends the dataset by further
-    :class:`aspecd.dataset.Data` objects.
+    :class:`aspecd.dataset.Data` objects containing additional variable
+    parameters with independent axes useful for further analysis.
 
     Attributes
     ----------
@@ -25,6 +47,10 @@ class Dataset(aspecd.dataset.Dataset):
         Metadata of dataset.
 
     time_stamp : :class:`aspecd.dataset.Data`
+        Time stamp of each individual time trace.
+
+    microwave_frequency : :class:`aspecd.dataset.Data`
+        Microwave frequency of each individual time trace.
 
     """
 
@@ -65,7 +91,7 @@ class DatasetMetadata(aspecd.metadata.DatasetMetadata):
     bridge : :obj:`trepr.dataset.Bridge`
         Metadata corresponding to the bridge.
 
-    viedo_amplifier : :obj:`trepr.dataset.VideoAmplifier`
+    video_amplifier : :obj:`trepr.dataset.VideoAmplifier`
         Metadata corresponding to the video amplifier.
 
     recorder : :obj:`trepr.dataset.Recorder`
@@ -243,7 +269,7 @@ class MagneticField(aspecd.metadata.Metadata):
 
     Attributes
     ----------
-    fiels_probe_type : str
+    field_probe_type : str
         Type of field probe used.
 
     field_probe_model : str
@@ -295,7 +321,7 @@ class Background(aspecd.metadata.Metadata):
     field : :obj:`aspecd.metadata.PhysicalQuantity`
         Magnetic field position of background trace.
 
-    occurence : int
+    occurrence : int
         Number of time traces after which a background trace is recorded.
 
     polarisation: str
@@ -546,10 +572,56 @@ class TemperatureControl(aspecd.metadata.TemperatureControl):
 
 
 class MetadataMapper(aspecd.metadata.MetadataMapper):
-    """Bring the metadata into a unified layout using mappings.
+    """
 
-    Given the version number and metadata read from an infofile, the metadata
-    are converted into a structure compatible to the dataset.
+    Bring the metadata from an external source into a layout understood by
+    the :class:`trepr.dataset.DatasetMetadata` class using mappings.
+
+    Mapping recipes are stored in an external file (currently a YAML file whose
+    filename is stored in :attr:`_filename`) in their own format described
+    hereafter. From there, the recipes are read and converted into mappings
+    understood by the :class:`aspecd.metadata.MetadataMapper` class.
+
+    Based on the version number of the format the metadata from an external
+    source are stored in, the correct recipe is selected.
+
+    Following is an example of a YAML file containing recipes. Each map can
+    contain several types of mappings and the latter can contain several
+    entries::
+
+        ---
+
+        format:
+          type: metadata mapper
+          version: 0.0.1
+
+        map 1:
+          infofile versions:
+            - 0.1.6
+            - 0.1.5
+          combine items:
+            - old keys: ['Date start', 'Time start']
+              new key: start
+              pattern: ' '
+              in dict: GENERAL
+          rename key:
+            - old key: GENERAL
+              new key: measurement
+              in dict:
+
+        map 2:
+          infofile versions:
+            - 0.1.4
+          copy key:
+            - old key: Date
+              new key: Date end
+              in dict: GENERAL
+          move item:
+            - key: model
+              source dict: measurement
+              target dict: spectrometer
+
+    Unknown mappings are silently ignored.
 
     Parameters
     ----------
@@ -575,62 +647,68 @@ class MetadataMapper(aspecd.metadata.MetadataMapper):
         self.version = version
         self.metadata = metadata
         # protected properties
-        self._map_recipe = dict()
-        self._yaml_dict = dict()
-        # calls to methods
-        self._load_yaml()
-        self._get_mapping_recipe()
+        self._filename = 'metadata_mapper.yaml'
+        self._mapping_recipe = dict()
+        self._mapping_recipes = dict()
+
+    def map(self):
+        self._load_mapping_recipes()
+        self._choose_mapping_recipe()
         self._create_mappings()
+        super().map()
 
-    def _load_yaml(self):
-        """Load the YAML file containing the map recipes."""
-        yaml_file = trepr.io.YamlLoader('metadata_mapper.yaml')
-        self._yaml_dict = yaml_file.yaml_as_dict
+    def _load_mapping_recipes(self):
+        """Load the file containing the mapping recipes."""
+        yaml_file = trepr.io.YamlLoader(self._filename)
+        self._mapping_recipes = yaml_file.yaml_as_dict
 
-    def _get_mapping_recipe(self):
-        """Get the right map recipe out of the YAML file."""
-        for key in self._yaml_dict.keys():
+    def _choose_mapping_recipe(self):
+        """Get the right mapping recipe out of the recipes."""
+        for key in self._mapping_recipes.keys():
             if key != 'format':
-                if self.version in self._yaml_dict[key]['infofile versions']:
-                    self._map_recipe = self._yaml_dict[key]
+                if self.version in \
+                        self._mapping_recipes[key]['infofile versions']:
+                    self._mapping_recipe = self._mapping_recipes[key]
+                else:
+                    raise RecipeNotFoundError(
+                        message='No matching recipe found.')
 
     def _create_mappings(self):
-        """Create mappings out of the map recipe."""
-        if 'copy key' in self._map_recipe.keys():
-            for i in range(len(self._map_recipe['copy key'])):
+        """Create mappings out of the mapping recipe."""
+        if 'copy key' in self._mapping_recipe.keys():
+            for i in range(len(self._mapping_recipe['copy key'])):
                 mapping = \
-                    [self._map_recipe['copy key'][i]['in dict'],
+                    [self._mapping_recipe['copy key'][i]['in dict'],
                      'copy_key',
-                     [self._map_recipe['copy key'][i]['old key'],
-                      self._map_recipe['copy key'][i]['new key']]]
+                     [self._mapping_recipe['copy key'][i]['old key'],
+                      self._mapping_recipe['copy key'][i]['new key']]]
                 self.mappings.append(mapping)
-        if 'combine items' in self._map_recipe.keys():
-            for i in range(len(self._map_recipe['combine items'])):
+        if 'combine items' in self._mapping_recipe.keys():
+            for i in range(len(self._mapping_recipe['combine items'])):
                 mapping = \
-                    [self._map_recipe['combine items'][i]['in dict'],
+                    [self._mapping_recipe['combine items'][i]['in dict'],
                      'combine_items',
-                     [self._map_recipe['combine items'][i]['old keys'],
-                      self._map_recipe['combine items'][i]['new key'],
-                      self._map_recipe['combine items'][i]['pattern']]]
+                     [self._mapping_recipe['combine items'][i]['old keys'],
+                      self._mapping_recipe['combine items'][i]['new key'],
+                      self._mapping_recipe['combine items'][i]['pattern']]]
                 self.mappings.append(mapping)
-        if 'rename key' in self._map_recipe.keys():
-            for i in range(len(self._map_recipe['rename key'])):
+        if 'rename key' in self._mapping_recipe.keys():
+            for i in range(len(self._mapping_recipe['rename key'])):
                 mapping = \
-                    [self._map_recipe['rename key'][i]['in dict'],
+                    [self._mapping_recipe['rename key'][i]['in dict'],
                      'rename_key',
-                     [self._map_recipe['rename key'][i]['old key'],
-                      self._map_recipe['rename key'][i]['new key']]]
+                     [self._mapping_recipe['rename key'][i]['old key'],
+                      self._mapping_recipe['rename key'][i]['new key']]]
                 self.mappings.append(mapping)
-        if 'move item' in self._map_recipe.keys():
-            for i in range(len(self._map_recipe['move item'])):
+        if 'move item' in self._mapping_recipe.keys():
+            for i in range(len(self._mapping_recipe['move item'])):
                 mapping = \
                     ['', 'move_item',
-                     [self._map_recipe['move item'][i]['key'],
-                      self._map_recipe['move item'][i]['source dict'],
-                      self._map_recipe['move item'][i]['target dict'], True]]
+                     [self._mapping_recipe['move item'][i]['key'],
+                      self._mapping_recipe['move item'][i]['source dict'],
+                      self._mapping_recipe['move item'][i]['target dict'],
+                      True]]
                 self.mappings.append(mapping)
-        else:
-            pass
 
 
 if __name__ == '__main__':

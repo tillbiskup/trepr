@@ -4,9 +4,9 @@ General analysis facilities.
 In order to quantify the quality of a measured spectrum or to interpret it, it
 may be helpful to perform some analysis steps.
 
-Due to the inheritance from :class:`aspecd.analysis` all provided analysis
+Due to the inheritance from :mod:`aspecd.analysis` all provided analysis
 steps are fully self-documenting in order of adding all necessary information
-to reproduce each analysis step to the :attr:`trepr.dataset.Dataset.history`
+to reproduce each analysis step to the :attr:`aspecd.dataset.Dataset.history`
 attribute of a dataset.
 
 """
@@ -152,7 +152,7 @@ class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
 
     def _calculate_time_stamp_delta(self):
         zero = datetime(2018, 1, 1)
-        for i in range(len(self._time_stamp_datetimes)-1):
+        for i in range(len(self._time_stamp_datetimes) - 1):
             self._time_stamp_datetimes[i] = self._time_stamp_datetimes[i+1] - \
                                             self._time_stamp_datetimes[i] + \
                                             zero

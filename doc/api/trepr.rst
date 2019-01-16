@@ -10,14 +10,6 @@ trepr.analysis module
     :undoc-members:
     :show-inheritance:
 
-trepr.caller module
--------------------
-
-.. automodule:: trepr.caller
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 trepr.dataset module
 --------------------
 
@@ -50,10 +42,3 @@ trepr.processing module
     :undoc-members:
     :show-inheritance:
 
-trepr.report module
--------------------
-
-.. automodule:: trepr.report
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -86,14 +86,14 @@ class Averaging(aspecd.processing.ProcessingStep):
 
     Parameters
     ----------
-    dimension : 0,1
+    dimension : {0,1}, optional
         Dimension along the averaging is done. 0 is along the field axis and 1
         is along the time axis. Default is 0.
 
     avg_range : list
         Range in which the averaging will take place.
 
-    unit : 'axis', 'index'
+    unit : {'axis', 'index'}, optional
         Unit in which the average range is given. Either 'axis' for axis values
         or 'index' for indices. Default is axis.
 
