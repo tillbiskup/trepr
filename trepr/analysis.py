@@ -4,42 +4,38 @@ General analysis facilities.
 In order to quantify the quality of a measured spectrum or to interpret it, it
 may be helpful to perform some analysis steps.
 
-Due to the inheritance from :mod:`aspecd.analysis` all provided analysis
-steps are fully self-documenting in order of adding all necessary information
+Due to inheritance from the :mod:`aspecd.analysis` module all analysis steps
+provided are fully self-documenting, i.e. they add all necessary information
 to reproduce each analysis step to the :attr:`aspecd.dataset.Dataset.history`
-attribute of a dataset.
+attribute of the dataset.
 
 """
 
-
-from datetime import datetime
+import datetime
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 
 import numpy as np
-from scipy import constants
+import scipy.constants
 
 import aspecd.analysis
 import aspecd.metadata
-import SpecProFi.trepr_interface
-import trepr.io
+import trepr.specprofi_interface
 
 
 class MwFreqAnalysis(aspecd.analysis.AnalysisStep):
     """
-    Calculate the frequency shift and compare it with the step size.
+    Calculate the frequency drift and compare it with the step size.
 
     In order to estimate the quality of a spectrum, it can be helpful to know
-    the frequency shift of the measurement.
+    the extent the frequency drifted during the measurement.
 
     An example for using the microwave frequency analysis step may look like
     this::
 
-        import trepr.dataset
-
-        dataset_ = trepr.dataset.Dataset()
+        dataset = trepr.dataset.Dataset()
         analysis_step = MwFreqAnalysis()
-        analysis_step.analyse(dataset=dataset_)
+        analysis_step.analyse(dataset=dataset)
 
     Attributes
     ----------
@@ -51,11 +47,11 @@ class MwFreqAnalysis(aspecd.analysis.AnalysisStep):
     def __init__(self):
         super().__init__()
         # public properties
-        self.description = 'Microwave frequency analysis'
+        self.description = 'Microwave frequency drift analysis.'
         # protected properties
         self._delta_mw_freq = float()
         self._delta_B0 = float()
-        self._step_size_in_T = float()
+        self._step_size_in_mT = float()
         self._ratio_frequency_drift_to_step_size = float()
 
     def _perform_task(self):
@@ -73,25 +69,25 @@ class MwFreqAnalysis(aspecd.analysis.AnalysisStep):
 
     def _convert_delta_mw_freq_to_delta_B0(self):
         """Calculate delta B0 by using the resonance condition."""
-        electron_g_factor = constants.value('electron g factor')
-        bohr_magneton = constants.value('Bohr magneton')
-        planck_constant = constants.value('Planck constant')
+        electron_g_factor = scipy.constants.value('electron g factor')
+        bohr_magneton = scipy.constants.value('Bohr magneton')
+        planck_constant = scipy.constants.value('Planck constant')
         self._delta_B0 = self._delta_mw_freq * 1e9 * planck_constant \
                          / (-1 * electron_g_factor * bohr_magneton)
 
     def _calculate_step_size(self):
         """Calculate the step size of the given dataset."""
-        step_size_in_gauss = \
+        self._step_size_in_mT = \
             self.dataset.microwave_frequency.axes[0].values[1] \
             - self.dataset.microwave_frequency.axes[0].values[0]
-        self._step_size_in_T = step_size_in_gauss * 1e-4
 
     def _compare_delta_B0_with_step_size(self):
         """Calculate the ratio between delta B0 and the step size."""
         self._ratio_frequency_drift_to_step_size = \
-            self._delta_B0 / self._step_size_in_T
+            self._delta_B0 / self._step_size_in_mT
 
     def _write_results(self):
+        """Write the results in the results dictionary."""
         self.results['frequency drift'] = aspecd.metadata.PhysicalQuantity(
             value=self._delta_B0, unit='T')
         self.results['ratio frequency drift/step size'] = \
@@ -100,16 +96,12 @@ class MwFreqAnalysis(aspecd.analysis.AnalysisStep):
 
 class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
     """
-    Calculate the measurement time of each time trace and plot them against the
-    magnetic field.
+    Calculate the time spent for recording each time trace.
 
-    In order to estimate the quality of a spectrum, it can be helpful to know
-    the measurement time of the each time trace.
+    Can be helpful for debugging the spectrometer.
 
     An example for using the time stamp analysis step may look like
     this::
-
-        import trepr.dataset
 
         dataset_ = trepr.dataset.Dataset()
         analysis_step = TimeStampAnalysis()
@@ -148,10 +140,10 @@ class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
             self._time_field_matrix[self._time_field_matrix[:, 0].argsort()]
         for time_stamp in self._time_field_matrix[:, 0]:
             self._time_stamp_datetimes.append(
-                datetime.fromtimestamp(time_stamp))
+                datetime.datetime.fromtimestamp(time_stamp))
 
     def _calculate_time_stamp_delta(self):
-        zero = datetime(2018, 1, 1)
+        zero = datetime.datetime(2018, 1, 1)
         for i in range(len(self._time_stamp_datetimes) - 1):
             self._time_stamp_datetimes[i] = self._time_stamp_datetimes[i+1] - \
                                             self._time_stamp_datetimes[i] + \
@@ -176,20 +168,25 @@ class FittingAnalysis(aspecd.analysis.AnalysisStep):
     Fit a given spectrum with a set of parameters.
 
     In order to interpret a spectrum, it is essential to know the parameters
-    that make up the shape of the spectrum. To achieve this, the spectrum can
-    be fitted and the best possible parameters determined using a least-square.
+    that make up the shape of the spectrum. To achieve this, a parametrised
+    simulation can be fitted to the experimental data and the best possible
+    parameters determined by using a least-square algorithm.
 
-    An example for using the fitting analysis analysis step may look like
-    this::
+    Currently the fitting relies on the SpecProFi package. For further
+    information see: https://www.specprofi.de/
 
-        import trepr.io
+    An example for using the fitting analysis step, including reading the
+    parameters from a YAML file, may look like this::
 
-        dataset_ = trepr.dataset.Dataset()
-        yaml_file = trepr.io.YamlLoader('path/to/your/yaml/file')
-        input_parameters = yaml_file.yaml_dict
+        dataset = trepr.dataset.Dataset()
+
+        yaml_file = aspecd.utils.Yaml()
+        yaml_file.import_from('path/to/your/YAML/file')
+        input_parameters = yaml_file.dict
+
         analysis_step = FittingAnalysis()
         analysis_step.parameters = input_parameters
-        analysis_step.analyse(dataset=dataset_)
+        analysis_step.analyse(dataset=dataset)
 
     Attributes
     ----------
@@ -203,11 +200,15 @@ class FittingAnalysis(aspecd.analysis.AnalysisStep):
         self.description = 'Fitting analysis.'
 
     def _perform_task(self):
-        SpecProFi.trepr_interface.TREPRInterface(
-            fitting_parameters=self.parameters, dataset_=self.dataset).fit()
+        trepr.specprofi_interface.SpecProFiInterface(
+            fitting_parameters=self.parameters, dataset=self.dataset).fit()
 
 
 if __name__ == '__main__':
+    import trepr.io
+    import trepr.processing
+    import trepr.dataset
+
     imp = trepr.io.SpeksimImporter(
         '/home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung06/')
     dataset_ = trepr.dataset.Dataset()
@@ -221,8 +222,9 @@ if __name__ == '__main__':
     dataset_.process(pretrigger)
     averaging = trepr.processing.Averaging(dimension=0, avg_range=[4.e-7, 6.e-7], unit='axis')
     dataset_.process(averaging)
-    yaml = trepr.io.YamlLoader('specprofi-input.yaml')
-    parameter_dict = yaml.yaml_as_dict
+    yaml = aspecd.utils.Yaml()
+    yaml.read_from('specprofi-input.yaml')
+    parameter_dict = yaml.dict
     fitting_obj = FittingAnalysis()
     fitting_obj.parameters = parameter_dict
     fitting_obj.analyse(dataset=dataset_)

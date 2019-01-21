@@ -9,7 +9,7 @@ individual information about the experiment.
 
 import aspecd.dataset
 import aspecd.metadata
-import trepr.io
+import aspecd.utils
 
 
 class Error(Exception):
@@ -659,8 +659,9 @@ class MetadataMapper(aspecd.metadata.MetadataMapper):
 
     def _load_mapping_recipes(self):
         """Load the file containing the mapping recipes."""
-        yaml_file = trepr.io.YamlLoader(self._filename)
-        self._mapping_recipes = yaml_file.yaml_as_dict
+        yaml_file = aspecd.utils.Yaml()
+        yaml_file.read_from(self._filename)
+        self._mapping_recipes = yaml_file.dict
 
     def _choose_mapping_recipe(self):
         """Get the right mapping recipe out of the recipes."""
@@ -669,9 +670,8 @@ class MetadataMapper(aspecd.metadata.MetadataMapper):
                 if self.version in \
                         self._mapping_recipes[key]['infofile versions']:
                     self._mapping_recipe = self._mapping_recipes[key]
-                else:
-                    raise RecipeNotFoundError(
-                        message='No matching recipe found.')
+        if not self._mapping_recipe:
+            raise RecipeNotFoundError(message='No matching recipe found.')
 
     def _create_mappings(self):
         """Create mappings out of the mapping recipe."""

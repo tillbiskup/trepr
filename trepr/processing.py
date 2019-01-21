@@ -1,10 +1,10 @@
 """
 General processing facilities.
 
-Due to the inheritance from :class:`aspecd.processing` all provided processing
-steps are fully self-documenting in order of adding all necessary information
-to reproduce each processing step to the :attr:`trepr.dataset.Dataset.history`
-attribute of a dataset.
+Due to the inheritance from the :mod:`aspecd.processing` module, all processing
+steps provided are fully self-documenting, i.e. they add all necessary
+information to reproduce each processing step to the
+:attr:`trepr.dataset.Dataset.history` attribute of the dataset.
 
 """
 
@@ -12,7 +12,6 @@ attribute of a dataset.
 import numpy as np
 
 import aspecd.processing
-from trepr import io
 
 
 class Error(Exception):
@@ -70,10 +69,10 @@ class Averaging(aspecd.processing.ProcessingStep):
     """Averaging of two-dimensional data along a given axis.
 
     When measuring TREPR data, the resulting spectrum is always
-    two-dimensional. To analyse the data it's necessary to extract a
+    two-dimensional. To analyse the data it's often necessary to extract a
     one-dimensional spectrum. The one-dimensional spectrum can either be a cut
     along the field or the time axis. To get a representative spectrum, the
-    average over several measurement points is calculated.
+    average over several points along the respective axis is calculated.
 
     All parameters, implicit and explicit, necessary to perform the averaging
     processing step, will be stored in the attribute
@@ -81,14 +80,14 @@ class Averaging(aspecd.processing.ProcessingStep):
 
     An example for using the averaging processing step may look like this::
 
-        processing_step = Averaging(dimension=0, avg_range=[4.e-7, 6.e-7], unit='axis')
-        dataset.process(processing_step)
+        avg = Averaging(dimension=0, avg_range=[4.e-7, 6.e-7], unit='axis')
+        dataset.process(avg)
 
     Parameters
     ----------
     dimension : {0,1}, optional
-        Dimension along the averaging is done. 0 is along the field axis and 1
-        is along the time axis. Default is 0.
+        Dimension along which the averaging is done. 0 is along the field axis
+        and 1 is along the time axis. Default is 0.
 
     avg_range : list
         Range in which the averaging will take place.
@@ -134,25 +133,32 @@ class Averaging(aspecd.processing.ProcessingStep):
 
     def _perform_task(self):
         """Perform the processing step."""
-        avg_range = self.parameters['range']
+        avg_range = self._get_avg_range()
+        self._execute_averaging(avg_range)
+
+    def _get_avg_range(self):
         if self.parameters['unit'] == 'axis':
-            start_index =\
+            start_index = \
                 self._get_index(self.dataset.data.axes[self._dim].values,
-                                avg_range[0])
+                                self.parameters['range'][0])
             end_index = \
                 self._get_index(self.dataset.data.axes[self._dim].values,
-                                avg_range[-1])
+                                self.parameters['range'][-1])
             avg_range = [start_index, end_index]
+        else:
+            avg_range = self.parameters['range']
+        return avg_range
+
+    def _execute_averaging(self, avg_range):
         if self._dim == 0:
             axes = [self.dataset.data.axes[1], self.dataset.data.axes[2]]
             self.dataset.data.data = \
                 np.average(self.dataset.data.data[:, avg_range], axis=1)
-            self.dataset.data.axes = axes
         else:
             axes = [self.dataset.data.axes[0], self.dataset.data.axes[2]]
             self.dataset.data.data = \
                 np.average(self.dataset.data.data[avg_range, :], axis=0)
-            self.dataset.data.axes = axes
+        self.dataset.data.axes = axes
 
     @staticmethod
     def _get_index(vector, value):
@@ -164,11 +170,11 @@ class Averaging(aspecd.processing.ProcessingStep):
         if self.parameters['unit'] not in ['index', 'axis']:
             raise UnitError('Wrong unit. Choose "axis" or "index".')
         if self.parameters['unit'] == 'index':
-            if self.parameters['range'][0] \
-                    not in range(len(self.dataset.data.axes[self._dim].values)):
+            if self.parameters['range'][0] not in \
+                    range(len(self.dataset.data.axes[self._dim].values)):
                 raise RangeError('Lower index out of range.')
-            if self.parameters['range'][1] \
-                    not in range(len(self.dataset.data.axes[self._dim].values)):
+            if self.parameters['range'][1] not in \
+                    range(len(self.dataset.data.axes[self._dim].values)):
                 raise RangeError('Upper index out of range.')
         if self.parameters['unit'] == 'axis':
             if not self._value_within_vector_range(
@@ -192,7 +198,7 @@ class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
     Pretrigger offset compensation.
 
     One of the first processing steps after measuring TREPR data is to set the
-    average of the pretrigger time trace to zero. The so called pretrigger
+    average of the pretrigger time trace to zero. The so-called pretrigger
     offset compensation.
 
     All parameters, implicit and explicit, necessary to perform the averaging
@@ -202,8 +208,8 @@ class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
     An example for using the pretrigger offset compensation processing step may
     look like this::
 
-        processing_step = PretriggerOffsetCompensation()
-        dataset.process(processing_step)
+        poc = PretriggerOffsetCompensation()
+        dataset.process(poc)
 
     Attributes
     ----------
@@ -225,16 +231,19 @@ class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
     def _perform_task(self):
         """Perform the processing step and return the processed data."""
         self._get_zeropoint_index()
-        range_end = self.parameters['zeropoint_index']
-        for field_point, time_trace in enumerate(self.dataset.data.data):
-            pretrig_avg = self._get_pretrigger_average(time_trace, range_end)
-            self.dataset.data.data[field_point] = time_trace - pretrig_avg
+        self._execute_compensation(self.parameters['zeropoint_index'])
 
     def _get_zeropoint_index(self):
         """Get the index of the last time value before the trigger."""
         zeropoint_index = \
             np.argmin(np.cumsum(self.dataset.data.axes[0].values))
         self.parameters['zeropoint_index'] = int(zeropoint_index)
+
+    def _execute_compensation(self, range_end):
+        """Execute the pretrigger offset compensation."""
+        for field_point, time_trace in enumerate(self.dataset.data.data):
+            pretrig_avg = self._get_pretrigger_average(time_trace, range_end)
+            self.dataset.data.data[field_point] = time_trace - pretrig_avg
 
     @staticmethod
     def _get_pretrigger_average(time_trace, range_end=1):
@@ -244,8 +253,10 @@ class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
 
 
 if __name__ == '__main__':
+    import trepr.io
+
     PATH = '../../Daten/messung17/'
-    importer = io.SpeksimImporter(source=PATH)
+    importer = trepr.io.SpeksimImporter(source=PATH)
     dataset = aspecd.dataset.Dataset()
     dataset.import_from(importer)
 

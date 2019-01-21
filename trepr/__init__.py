@@ -5,27 +5,15 @@ Package for reproducible and traceable analysis of trepr data.
 
 Available modules
 -----------------
-caller
-    Call all necessary processing and plotting classes and generate a report.
-coloring
-    Generate a colormap corresponding to the given dataset.
-dataset
-    Generate a unit containing data and mapped metadata.
-io
-    Import trepr data into datasets.
-plotter
+:mod:`trepr.dataset`
+    Organise dataset, consisting of data and metadata, and the metadata.
+:mod:`trepr.io`
+    Import trepr raw data in Freiburg Speksim format including its metadata.
+:mod:`trepr.processing`
+    Process data in datasets.
+:mod:`trepr.analysis`
+    Analyse data in datasets.
+:mod:`trepr.plotting`
     Plot data in datasets.
-processing
-    Do processing steps on the given dataset.
-report
-    Generate a report.
-saver
-    Save given plots.
-yaml_loader
-    Load a given YAML file
 
 """
-import trepr.dataset
-import trepr.io
-import trepr.plotting
-import trepr.processing

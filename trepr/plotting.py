@@ -3,7 +3,7 @@ General plotting facilities.
 
 Graphical representations of TREPR data are an indispensable aspect of data
 analysis. To facilitate this, a series of different plotters are available.
-Additionally, stylers and savers are implemented.
+Additionally, savers (and stylers) are implemented.
 
 """
 
@@ -13,17 +13,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import aspecd.plotting
-from trepr import dataset
-from trepr import io
-from trepr import processing
+import trepr.dataset
 
 
-class Plotter2D(aspecd.plotting.SinglePlotter):
+class ScaledImagePlot(aspecd.plotting.SinglePlotter):
     """Create a scaled image of a given dataset.
 
     Parameters
     ----------
-    dataset_ : :obj:`trepr.dataset.Dataset`
+    dataset : :obj:`trepr.dataset.Dataset`
         Dataset structure containing raw data as well as metadata.
 
     Attributes
@@ -42,28 +40,44 @@ class Plotter2D(aspecd.plotting.SinglePlotter):
 
     """
 
-    def __init__(self, dataset_=None):
+    def __init__(self, dataset=None):
         super().__init__()
         # public properties
         self.style = ''
-        self.dataset = dataset_
+        self.dataset = dataset
         self.description = '2D plot as scaled image.'
         self.filename = ''
         # protected properties
         self._extent = list()
+        self._style_dict = {'interpolation': 'bilinear',
+                            'cmap': 'seismic',
+                            'origin': 'lower',
+                            'aspect': 'auto'}
+        self._ticklabel_format = {'style': 'sci',
+                                  'scilimits': (0, 0),
+                                  'useMathText': True}
 
     def _create_plot(self):
         """Plot the given dataset with axes labels and a normed colormap."""
         self._get_extent()
+        self._set_style()
+        self._display_data()
+        self._format_ticklabels()
+
+    def _set_style(self):
         if self.style == 'xkcd':
             plt.xkcd()
-        style_dict = {'interpolation': 'bilinear', 'cmap': 'seismic',
-                      'origin': 'lower', 'aspect': 'auto'}
+
+    def _display_data(self):
+        colormap_adjuster = ColormapAdjuster(dataset=self.dataset)
+        colormap_adjuster.adjust()
         self.axes.imshow(self.dataset.data.data,
-                         norm=ColormapAdjuster(dataset_=self.dataset).norm,
-                         extent=self._extent, **style_dict)
-        plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0),
-                             useMathText=True)
+                         norm=colormap_adjuster.normalised_colormap,
+                         extent=self._extent,
+                         **self._style_dict)
+
+    def _format_ticklabels(self):
+        plt.ticklabel_format(axis='x', **self._ticklabel_format)
 
     def _get_extent(self):
         """Define the start and end values of the axes."""
@@ -74,12 +88,12 @@ class Plotter2D(aspecd.plotting.SinglePlotter):
         self._extent = [x_axis_start, x_axis_end, y_axis_start, y_axis_end]
 
 
-class Plotter1D(aspecd.plotting.SinglePlotter):
-    """Create a 1D plot of a given dataset.
+class LinePlot(aspecd.plotting.SinglePlotter):
+    """Create a 1D line plot of a given dataset.
 
     Parameters
     ----------
-    dataset_ : :obj:`trepr.dataset.Dataset`
+    dataset : :obj:`trepr.dataset.Dataset`
         Dataset structure containing raw data as well as metadata.
 
     Attributes
@@ -98,23 +112,42 @@ class Plotter1D(aspecd.plotting.SinglePlotter):
 
     """
 
-    def __init__(self, dataset_=None):
+    def __init__(self, dataset=None):
         super().__init__()
         # public properties
-        self.dataset = dataset_
+        self.dataset = dataset
         self.style = ''
         self.description = '1D line plot.'
         self.filename = ''
+        # protected properties
+        self._zero_line_style = {'y': 0,
+                                 'color': '#999999'}
+        self._ticklabel_format = {'style': 'sci',
+                                  'scilimits': (-2, 4),
+                                  'useMathText': True}
 
     def _create_plot(self):
         """Plot the given dataset with axes labels and a zero line."""
-        if self.style == 'xkcd':
-            plt.xkcd()
-        self.axes.plot(self.dataset.data.axes[0].values, self.dataset.data.data)
+        self._set_style()
+        self._display_data()
+        self._set_axes()
+        self._display_zero_line()
+
+    def _display_zero_line(self):
+        plt.axhline(**self._zero_line_style)
+
+    def _set_axes(self):
         self.axes.set_xlim([self.dataset.data.axes[0].values[0],
                             self.dataset.data.axes[0].values[-1]])
-        plt.ticklabel_format(style='sci', scilimits=(-2, 4), useMathText=True)
-        plt.axhline(y=0, color='#999999')
+        plt.ticklabel_format(**self._ticklabel_format)
+
+    def _display_data(self):
+        self.axes.plot(self.dataset.data.axes[0].values,
+                       self.dataset.data.data)
+
+    def _set_style(self):
+        if self.style == 'xkcd':
+            plt.xkcd()
 
 
 class ColormapAdjuster:
@@ -125,7 +158,7 @@ class ColormapAdjuster:
 
     Parameters
     ----------
-    dataset_ : :obj:`trepr.dataset.Dataset`
+    dataset : :obj:`trepr.dataset.Dataset`
         Dataset structure containing raw data as well as metadata.
 
     Attributes
@@ -133,15 +166,19 @@ class ColormapAdjuster:
     dataset : :obj:`trepr.dataset.Dataset`
         Dataset to work with.
 
+    normalised_colormap : :class:`matplotlib.colormap`
+        Colormap normalised to data of dataset.
+
     """
 
-    def __init__(self, dataset_=dataset.Dataset()):
+    def __init__(self, dataset=trepr.dataset.Dataset()):
         # public properties
-        self.dataset = dataset_
-        self.norm = None
+        self.dataset = dataset
+        self.normalised_colormap = None
         # protected properties
         self._bound = None
-        # calls to methods
+
+    def adjust(self):
         self._get_min_and_max()
         self._set_norm()
 
@@ -153,28 +190,31 @@ class ColormapAdjuster:
 
     def _set_norm(self):
         """Normalize the colormap."""
-        self.norm = \
+        self.normalised_colormap = \
             mpl.colors.Normalize(vmin=self._bound * -1, vmax=self._bound)
 
 
 if __name__ == '__main__':
+    import trepr.processing
+    import trepr.io
     PATH = '../../Daten/messung17/'
-    importer = io.SpeksimImporter(source=PATH)
-    dataset_ = dataset.Dataset()
+    importer = trepr.io.SpeksimImporter(source=PATH)
+    dataset_ = trepr.dataset.Dataset()
     dataset_.import_from(importer)
 
-    obj = processing.PretriggerOffsetCompensation()
+    obj = trepr.processing.PretriggerOffsetCompensation()
     process1 = dataset_.process(obj)
     saver_obj1 = aspecd.plotting.Saver(filename='plotter.pdf')
-    plotter_obj1 = Plotter2D()
+    plotter_obj1 = ScaledImagePlot()
     plot1 = dataset_.plot(plotter_obj1)
     plot1.save(saver_obj1)
 
-    averaging_obj = processing.Averaging(dimension=0,
-                                         avg_range=[4.8e-07, 5.2e-07],
-                                         unit='axis')
+    averaging_obj = \
+        trepr.processing.Averaging(dimension=0,
+                                   avg_range=[4.8e-07, 5.2e-07],
+                                   unit='axis')
     process = dataset_.process(averaging_obj)
     saver_obj = aspecd.plotting.Saver(filename='plotterli.pdf')
-    plotter_obj = Plotter1D()
+    plotter_obj = LinePlot()
     plot2 = dataset_.plot(plotter_obj)
     plot2.save(saver_obj)

@@ -1,0 +1,397 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>trepr.importer &mdash; trepr package 0.1.0.dev19 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="trepr package 0.1.0.dev19 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> trepr package
+          
+
+          
+            
+            <img src="../../_static/trepr-sphinx.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../audience.html">Target audience</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../concepts.html">Concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usecases.html">Use cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">trepr package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">trepr package</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>trepr.importer</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for trepr.importer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Importer.</span>
+
+<span class="sd">Trepr raw data consists of multiple timetraces, each stored in a text file.</span>
+<span class="sd">To analyze the raw data, it&#39;s necessary to bring the timetraces all together</span>
+<span class="sd">in form which can be stored as one dataset.</span>
+
+<span class="sd">This module imports raw data, defines the axis and hands all over to a dataset.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">aspecd.annotation</span>
+<span class="kn">import</span> <span class="nn">aspecd.dataset</span>
+<span class="kn">import</span> <span class="nn">aspecd.io</span>
+<span class="kn">import</span> <span class="nn">aspecd.infofile</span>
+<span class="kn">from</span> <span class="nn">trepr</span> <span class="k">import</span> <span class="n">dataset</span>
+
+
+<div class="viewcode-block" id="Importer"><a class="viewcode-back" href="../../api/trepr.html#trepr.importer.Importer">[docs]</a><span class="k">class</span> <span class="nc">Importer</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">Importer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Import a dataset including its metadata.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path : str</span>
+<span class="sd">        Path to the dataset.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset : :obj:`trepr.dataset.Dataset`</span>
+<span class="sd">        Object of the dataset class.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">Dataset</span><span class="p">()</span>
+        <span class="c1"># protected properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_HEADERLINES</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_file_format</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commentline</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timeunit</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fieldunit</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_intensityunit</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_frequnit</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timeaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fieldaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_infofile</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_header</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_formatno</span> <span class="o">=</span> <span class="nb">int</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timepoints</span> <span class="o">=</span> <span class="nb">int</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_import</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Execute all necessary methods and write the data to a dataset.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_import_raw_data</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_timeaxis</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_infofile</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_map_infofile</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hand_data_to_dataset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hand_axes_to_dataset</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_import_raw_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Import the timetraces and cut off the header lines.&quot;&quot;&quot;</span>
+        <span class="n">filenames</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">,</span> <span class="s1">&#39;*.[0-9][0-9][0-9]&#39;</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">raw_data</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_header</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">5</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_parse_header</span><span class="p">()</span>
+            <span class="n">numeric_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">raw_data</span><span class="p">),</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+            <span class="n">numeric_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">numeric_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timepoints</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">numeric_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> \
+            <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">filenames</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timepoints</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_hand_data_to_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Hand the data to the dataset structure.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
+
+    <span class="k">def</span> <span class="nf">_hand_axes_to_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Hand the axes and intensity to the dataset structure.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeaxis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeunit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">quantity</span> <span class="o">=</span> <span class="s1">&#39;time&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fieldaxis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fieldunit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">quantity</span> <span class="o">=</span> <span class="s1">&#39;magnetic field&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_intensityunit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">quantity</span> <span class="o">=</span> <span class="s1">&#39;intensity&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_parse_header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Execute the methods which parse the header lines.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_header_1st_line</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_header_2nd_line</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_header_3rd_line</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_header_4th_line</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_header_5th_line</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_parse_header_1st_line</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse the first header line and extract the time and date.&quot;&quot;&quot;</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_file_format</span> <span class="o">=</span> <span class="n">entries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">entries</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; : &#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_parse_header_2nd_line</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract the field- and frequency-unit from the second header line.&quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">parse_line</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;([A-Za-z0-9]*) = ([0-9.]*) ([A-Za-z]*)&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span> <span class="n">obj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+        <span class="n">field</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fieldunit</span> <span class="o">=</span> <span class="n">parse_line</span><span class="p">(</span><span class="n">entries</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">freq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frequnit</span> <span class="o">=</span> <span class="n">parse_line</span><span class="p">(</span><span class="n">entries</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fieldaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fieldaxis</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_freq</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_parse_header_3rd_line</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse the third header line.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commentline</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_parse_header_4th_line</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract the format number, time information from the fourth header line.&quot;&quot;&quot;</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_formatno</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">entries</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timepoints</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">entries</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">entries</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">entries</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_parse_header_5th_line</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract the time- and intensity-unit from the fifth header line.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timeunit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_intensityunit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_create_timeaxis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create the timeaxis using the startpoint, endpoint and timepoints.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timeaxis</span> <span class="o">=</span> \
+            <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_stop</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_timepoints</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_load_infofile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Import the infofile and parse it.&quot;&quot;&quot;</span>
+        <span class="n">infofile_name</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">,</span> <span class="s1">&#39;*.info&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">infofile_name</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Besorg dir ein Infofile!&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_infofile</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">infofile</span><span class="o">.</span><span class="n">Infofile</span><span class="p">(</span><span class="n">infofile_name</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_infofile</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_map_infofile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Bring the metadata to a given format.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_infofile_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_infofile</span><span class="o">.</span><span class="n">infofile_info</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+        <span class="n">new_infofile</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">MetadataMapper</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_infofile_version</span><span class="p">,</span>
+                                              <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_infofile</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">new_infofile</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
+        <span class="n">comment</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">annotation</span><span class="o">.</span><span class="n">Comment</span><span class="p">()</span>
+        <span class="n">comment</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_infofile</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;COMMENT&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">PATH</span> <span class="o">=</span> <span class="s1">&#39;../../Daten/messung01/&#39;</span>
+    <span class="n">importer</span> <span class="o">=</span> <span class="n">Importer</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">PATH</span><span class="p">)</span>
+    <span class="n">importer</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">import_from</span><span class="p">(</span><span class="n">importer</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Jara Popp.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> and ❤️  using a custom <a href="https://github.com/LinxiFan/Sphinx-theme">theme</a> based on <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.0.dev19',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

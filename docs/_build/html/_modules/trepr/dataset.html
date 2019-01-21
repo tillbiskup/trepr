@@ -1,0 +1,936 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>trepr.dataset &mdash; trepr package 0.1.0.dev37 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="trepr package 0.1.0.dev37 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> trepr package
+          
+
+          
+            
+            <img src="../../_static/trepr-sphinx.png" class="logo" />
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../audience.html">Target audience</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../concepts.html">Concepts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usecases.html">Use cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/index.html">API documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">trepr package</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>trepr.dataset</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for trepr.dataset</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">To produce replicable results it&#39;s important not to change the raw data.</span>
+
+<span class="sd">This module creates a dataset structure, inheriting from</span>
+<span class="sd">:class:`aspecd.dataset.Dataset`. The dataset structure contains data and</span>
+<span class="sd">metadata, the latter consisting of different classes, which contain the</span>
+<span class="sd">individual information about the experiment.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">aspecd.dataset</span>
+<span class="kn">import</span> <span class="nn">aspecd.metadata</span>
+<span class="kn">import</span> <span class="nn">trepr.io</span>
+
+
+<div class="viewcode-block" id="Error"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.Error">[docs]</a><span class="k">class</span> <span class="nc">Error</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for exceptions in this module.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="RecipeNotFoundError"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.RecipeNotFoundError">[docs]</a><span class="k">class</span> <span class="nc">RecipeNotFoundError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception raised when a recipe could not be found.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    message : `str`</span>
+<span class="sd">        explanation of the error</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
+
+
+<div class="viewcode-block" id="Dataset"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.Dataset">[docs]</a><span class="k">class</span> <span class="nc">Dataset</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Entity consisting of data and metadata.</span>
+
+<span class="sd">    On the one hand this class extends the metadata contained in the metadata</span>
+<span class="sd">    property. On the other hand this class extends the dataset by further</span>
+<span class="sd">    :class:`aspecd.dataset.Data` objects containing additional variable</span>
+<span class="sd">    parameters with independent axes useful for further analysis.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    metadata : :class:`trepr.dataset.DatasetMetadata`</span>
+<span class="sd">        Metadata of dataset.</span>
+
+<span class="sd">    time_stamp : :class:`aspecd.dataset.Data`</span>
+<span class="sd">        Time stamp of each individual time trace.</span>
+
+<span class="sd">    microwave_frequency : :class:`aspecd.dataset.Data`</span>
+<span class="sd">        Microwave frequency of each individual time trace.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">DatasetMetadata</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_stamp</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">Data</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">microwave_frequency</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">Data</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DatasetMetadata"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.DatasetMetadata">[docs]</a><span class="k">class</span> <span class="nc">DatasetMetadata</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">DatasetMetadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metadata for a TREPR dataset.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    measurement : :obj:`trepr.dataset.Measurement`</span>
+<span class="sd">        Metadata corresponding to the measurement.</span>
+
+<span class="sd">    sample : :obj:`trepr.dataset.Sample`</span>
+<span class="sd">        Metadata corresponding to the sample.</span>
+
+<span class="sd">    transient : :obj:`trepr.dataset.Transient`</span>
+<span class="sd">        Metadata corresponding to the transient.</span>
+
+<span class="sd">    experiment : :obj:`trepr.dataset.Experiment`</span>
+<span class="sd">        Metadata corresponding to the experiment.</span>
+
+<span class="sd">    spectrometer : :obj:`trepr.dataset.Spectrometer`</span>
+<span class="sd">        Metadata corresponding to the spectrometer.</span>
+
+<span class="sd">    magnetic_field : :obj:`trepr.dataset.MagneticField`</span>
+<span class="sd">        Metadata corresponding to the magnetic field.</span>
+
+<span class="sd">    background : :obj:`trepr.dataset.Background`</span>
+<span class="sd">        Metadata corresponding to the background.</span>
+
+<span class="sd">    bridge : :obj:`trepr.dataset.Bridge`</span>
+<span class="sd">        Metadata corresponding to the bridge.</span>
+
+<span class="sd">    video_amplifier : :obj:`trepr.dataset.VideoAmplifier`</span>
+<span class="sd">        Metadata corresponding to the video amplifier.</span>
+
+<span class="sd">    recorder : :obj:`trepr.dataset.Recorder`</span>
+<span class="sd">        Metadata corresponding to the recorder.</span>
+
+<span class="sd">    probehead : :obj:`trepr.dataset.Probehead`</span>
+<span class="sd">        Metadata corresponding to the probehead.</span>
+
+<span class="sd">    pump : :obj:`trepr.dataset.Pump`</span>
+<span class="sd">        Metadata corresponding to the pump.</span>
+
+<span class="sd">    temperature_control : :obj:`trepr.dataset.TemperatureControl`</span>
+<span class="sd">        Metadata corresponding to the temperature control.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">measurement</span> <span class="o">=</span> <span class="n">Measurement</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample</span> <span class="o">=</span> <span class="n">Sample</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transient</span> <span class="o">=</span> <span class="n">Transient</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spectrometer</span> <span class="o">=</span> <span class="n">Spectrometer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">magnetic_field</span> <span class="o">=</span> <span class="n">MagneticField</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">background</span> <span class="o">=</span> <span class="n">Background</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bridge</span> <span class="o">=</span> <span class="n">Bridge</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">video_amplifier</span> <span class="o">=</span> <span class="n">VideoAmplifier</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recorder</span> <span class="o">=</span> <span class="n">Recorder</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">probehead</span> <span class="o">=</span> <span class="n">Probehead</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pump</span> <span class="o">=</span> <span class="n">Pump</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temperature_control</span> <span class="o">=</span> <span class="n">TemperatureControl</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Measurement"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.Measurement">[docs]</a><span class="k">class</span> <span class="nc">Measurement</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Measurement</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metadata corresponding to the measurement.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict_ : dict</span>
+<span class="sd">        Dictionary containing properties to set.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    label : str</span>
+<span class="sd">        Label of the sample, including the sample-number.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_</span><span class="o">=</span><span class="n">dict_</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Sample"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.Sample">[docs]</a><span class="k">class</span> <span class="nc">Sample</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Sample</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metadata corresponding to the sample.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict_ : dict</span>
+<span class="sd">        Dictionary containing properties to set.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    description : str</span>
+<span class="sd">        Description of the measured sample.</span>
+
+<span class="sd">    solvent : str</span>
+<span class="sd">        Name of the solvent used.</span>
+
+<span class="sd">    preparation : str</span>
+<span class="sd">        Type of sample preparation.</span>
+
+<span class="sd">    tube : str</span>
+<span class="sd">        Dimension of the tube used.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solvent</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">preparation</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tube</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_</span><span class="o">=</span><span class="n">dict_</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Transient"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.Transient">[docs]</a><span class="k">class</span> <span class="nc">Transient</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metadata corresponding to the transient.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict_ : dict</span>
+<span class="sd">        Dictionary containing properties to set.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    points : int</span>
+<span class="sd">        Number of measuring points.</span>
+
+<span class="sd">    length : object</span>
+<span class="sd">        Object of the PhysicalQuantity class from ASpecD.</span>
+
+<span class="sd">    trigger_position : int</span>
+<span class="sd">        Position of the trigger.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trigger_position</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_</span><span class="o">=</span><span class="n">dict_</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Experiment"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.Experiment">[docs]</a><span class="k">class</span> <span class="nc">Experiment</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metadata corresponding to the experiment.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict_ : dict</span>
+<span class="sd">        Dictionary containing properties to set.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    runs : int</span>
+<span class="sd">        Number of recorded runs.</span>
+
+<span class="sd">    shot_repetition_rate : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Shot repetition rate of the experiment.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shot_repetition_rate</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_</span><span class="o">=</span><span class="n">dict_</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Spectrometer"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.Spectrometer">[docs]</a><span class="k">class</span> <span class="nc">Spectrometer</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metadata corresponding to the spectrometer.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict_ : dict</span>
+<span class="sd">        Dictionary containing properties to set.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : str</span>
+<span class="sd">        Model of the spectrometer used.</span>
+
+<span class="sd">    software : str</span>
+<span class="sd">        Name and version of the software used.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">software</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_</span><span class="o">=</span><span class="n">dict_</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MagneticField"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.MagneticField">[docs]</a><span class="k">class</span> <span class="nc">MagneticField</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metadata corresponding to the magnetic field.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict_ : dict</span>
+<span class="sd">        Dictionary containing properties to set.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    field_probe_type : str</span>
+<span class="sd">        Type of field probe used.</span>
+
+<span class="sd">    field_probe_model : str</span>
+<span class="sd">        Model of field probe used.</span>
+
+<span class="sd">    start : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Start of the magnetic field sweep.</span>
+
+<span class="sd">    stop: :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        End of the magnetic field sweep.</span>
+
+<span class="sd">    step : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Step size of the magnetic field sweep.</span>
+
+<span class="sd">    sequence : str</span>
+<span class="sd">        Sequence of field steps.</span>
+
+<span class="sd">    controller : str</span>
+<span class="sd">        Model of the controller used.</span>
+
+<span class="sd">    power_supply : str</span>
+<span class="sd">        Model of the power supply used.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_probe_type</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field_probe_model</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">power_supply</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_</span><span class="o">=</span><span class="n">dict_</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Background"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.Background">[docs]</a><span class="k">class</span> <span class="nc">Background</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metadata corresponding to the background.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict_ : dict</span>
+<span class="sd">        Dictionary containing properties to set.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    field : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Magnetic field position of background trace.</span>
+
+<span class="sd">    occurrence : int</span>
+<span class="sd">        Number of time traces after which a background trace is recorded.</span>
+
+<span class="sd">    polarisation: str</span>
+<span class="sd">        Type of background polarisation.</span>
+
+<span class="sd">    intensity : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Amplitude of background signal.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">field</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">occurrence</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">polarisation</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intensity</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_</span><span class="o">=</span><span class="n">dict_</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Bridge"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.Bridge">[docs]</a><span class="k">class</span> <span class="nc">Bridge</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metadata corresponding to the bridge.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict_ : dict</span>
+<span class="sd">        Dictionary containing properties to set.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : str</span>
+<span class="sd">        Model of the microwave bridge used.</span>
+
+<span class="sd">    controller : str</span>
+<span class="sd">        Model of the bridge controller used.</span>
+
+<span class="sd">    attenuation : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Attenuation of the microwave in dB.</span>
+
+<span class="sd">    power : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Output power of the microwave.</span>
+
+<span class="sd">    detection : str</span>
+<span class="sd">        Type of the detection used.</span>
+
+<span class="sd">    frequency_counter : str</span>
+<span class="sd">        Model of the frequency counter used.</span>
+
+<span class="sd">    mw_frequency : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Microwave frequency.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attenuation</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">power</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detection</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frequency_counter</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mw_frequency</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_</span><span class="o">=</span><span class="n">dict_</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="VideoAmplifier"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.VideoAmplifier">[docs]</a><span class="k">class</span> <span class="nc">VideoAmplifier</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metadata corresponding to the video amplifier.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict_ : dict</span>
+<span class="sd">        Dictionary containing properties to set.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bandwidth : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Bandwidth of the video amplifier.</span>
+
+<span class="sd">    amplification : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Amplification in dB.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bandwidth</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amplification</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_</span><span class="o">=</span><span class="n">dict_</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Recorder"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.Recorder">[docs]</a><span class="k">class</span> <span class="nc">Recorder</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metadata corresponding to the recorder.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict_ : dict</span>
+<span class="sd">        Dictionary containing properties to set.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : str</span>
+<span class="sd">        Model of the recorder used.</span>
+
+<span class="sd">    averages : int</span>
+<span class="sd">        Number of accumulations measured.</span>
+
+<span class="sd">    time_base : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Time base of the recorder.</span>
+
+<span class="sd">    bandwidth : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Bandwidth of the recorder.</span>
+
+<span class="sd">    pretrigger : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Length of time trace before trigger.</span>
+
+<span class="sd">    coupling : str</span>
+<span class="sd">        Type of coupling.</span>
+
+<span class="sd">    impedance : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Impedance of the recorder input channel.</span>
+
+<span class="sd">    sensitivity : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Sensitivity of the recorder.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">averages</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_base</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bandwidth</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pretrigger</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">impedance</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sensitivity</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_</span><span class="o">=</span><span class="n">dict_</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Probehead"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.Probehead">[docs]</a><span class="k">class</span> <span class="nc">Probehead</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metadata corresponding to the probehead.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict_ : dict</span>
+<span class="sd">        Dictionary containing properties to set.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    type : str</span>
+<span class="sd">        Type of the probehead used.</span>
+
+<span class="sd">    model : str</span>
+<span class="sd">        Model of the probehead used.</span>
+
+<span class="sd">    coupling : str</span>
+<span class="sd">        Type of coupling.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coupling</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_</span><span class="o">=</span><span class="n">dict_</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Pump"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.Pump">[docs]</a><span class="k">class</span> <span class="nc">Pump</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">Metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metadata corresponding to the optical excitation..</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict_ : dict</span>
+<span class="sd">        Dictionary containing properties to set.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    type : str</span>
+<span class="sd">        Type of the pump used.</span>
+
+<span class="sd">    model : str</span>
+<span class="sd">        Model of the pump used.</span>
+
+<span class="sd">    wavelength : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Wavelength of the optical excitation.</span>
+
+<span class="sd">    power : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Power of the optical excitation.</span>
+
+<span class="sd">    repetition_rate : :obj:`aspecd.metadata.PhysicalQuantity`</span>
+<span class="sd">        Repetition rate of the optical excitation.</span>
+
+<span class="sd">    tunable_type : str</span>
+<span class="sd">        Type of the tunable used.</span>
+
+<span class="sd">    tunable_model : str</span>
+<span class="sd">        Model of the tunable used.</span>
+
+<span class="sd">    tunable_dye : str</span>
+<span class="sd">        Name of Laser dye.</span>
+
+<span class="sd">    tunable_position : int</span>
+<span class="sd">        Position of the tunable used.</span>
+
+<span class="sd">    filter : str</span>
+<span class="sd">        Type of the filter(s) used.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">power</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repetition_rate</span> <span class="o">=</span> <span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">PhysicalQuantity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tunable_type</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tunable_model</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tunable_dye</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tunable_position</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_</span><span class="o">=</span><span class="n">dict_</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TemperatureControl"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.TemperatureControl">[docs]</a><span class="k">class</span> <span class="nc">TemperatureControl</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">TemperatureControl</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metadata corresponding to the temperature control.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict_ : dict</span>
+<span class="sd">        Dictionary containing properties to set.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cryostat : str</span>
+<span class="sd">        Model of the cryostat used.</span>
+
+<span class="sd">    cryogen : str</span>
+<span class="sd">        Cryogen used.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dict_</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cryostat</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cryogen</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_</span><span class="o">=</span><span class="n">dict_</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MetadataMapper"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.MetadataMapper">[docs]</a><span class="k">class</span> <span class="nc">MetadataMapper</span><span class="p">(</span><span class="n">aspecd</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">MetadataMapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Bring the metadata from an external source into a layout understood by</span>
+<span class="sd">    the :class:`trepr.dataset.DatasetMetadata` class using mappings.</span>
+
+<span class="sd">    Mapping recipes are stored in an external file (currently a YAML file whose</span>
+<span class="sd">    filename is stored in :attr:`_filename`) in their own format described</span>
+<span class="sd">    hereafter. From there, the recipes are read and converted into mappings</span>
+<span class="sd">    understood by the :class:`aspecd.metadata.MetadataMapper` class.</span>
+
+<span class="sd">    Based on the version number of the format the metadata from an external</span>
+<span class="sd">    source are stored in, the correct recipe is selected.</span>
+
+<span class="sd">    Following is an example of a YAML file containing recipes. Each map can</span>
+<span class="sd">    contain several types of mappings and the latter can contain several</span>
+<span class="sd">    entries::</span>
+
+<span class="sd">        ---</span>
+
+<span class="sd">        format:</span>
+<span class="sd">          type: metadata mapper</span>
+<span class="sd">          version: 0.0.1</span>
+
+<span class="sd">        map 1:</span>
+<span class="sd">          infofile versions:</span>
+<span class="sd">            - 0.1.6</span>
+<span class="sd">            - 0.1.5</span>
+<span class="sd">          combine items:</span>
+<span class="sd">            - old keys: [&#39;Date start&#39;, &#39;Time start&#39;]</span>
+<span class="sd">              new key: start</span>
+<span class="sd">              pattern: &#39; &#39;</span>
+<span class="sd">              in dict: GENERAL</span>
+<span class="sd">          rename key:</span>
+<span class="sd">            - old key: GENERAL</span>
+<span class="sd">              new key: measurement</span>
+<span class="sd">              in dict:</span>
+
+<span class="sd">        map 2:</span>
+<span class="sd">          infofile versions:</span>
+<span class="sd">            - 0.1.4</span>
+<span class="sd">          copy key:</span>
+<span class="sd">            - old key: Date</span>
+<span class="sd">              new key: Date end</span>
+<span class="sd">              in dict: GENERAL</span>
+<span class="sd">          move item:</span>
+<span class="sd">            - key: model</span>
+<span class="sd">              source dict: measurement</span>
+<span class="sd">              target dict: spectrometer</span>
+
+<span class="sd">    Unknown mappings are silently ignored.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    version : str</span>
+<span class="sd">        Version of the imported infofile.</span>
+
+<span class="sd">    metadata : dict</span>
+<span class="sd">        Dictionary containing all metadata from the infofile.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    version : str</span>
+<span class="sd">        Version of the imported infofile.</span>
+
+<span class="sd">    metadata : dict</span>
+<span class="sd">        Dictionary containing all metadata from the infofile.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># public properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span>
+        <span class="c1"># protected properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span> <span class="o">=</span> <span class="s1">&#39;metadata_mapper.yaml&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MetadataMapper.map"><a class="viewcode-back" href="../../api/trepr.dataset.html#trepr.dataset.MetadataMapper.map">[docs]</a>    <span class="k">def</span> <span class="nf">map</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_mapping_recipes</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_choose_mapping_recipe</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_mappings</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">map</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_load_mapping_recipes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load the file containing the mapping recipes.&quot;&quot;&quot;</span>
+        <span class="n">yaml_file</span> <span class="o">=</span> <span class="n">trepr</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">YamlLoader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipes</span> <span class="o">=</span> <span class="n">yaml_file</span><span class="o">.</span><span class="n">yaml_as_dict</span>
+
+    <span class="k">def</span> <span class="nf">_choose_mapping_recipe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the right mapping recipe out of the recipes.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipes</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="s1">&#39;format&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="ow">in</span> \
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipes</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;infofile versions&#39;</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipes</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">RecipeNotFoundError</span><span class="p">(</span>
+                        <span class="n">message</span><span class="o">=</span><span class="s1">&#39;No matching recipe found.&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_create_mappings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create mappings out of the mapping recipe.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s1">&#39;copy key&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;copy key&#39;</span><span class="p">])):</span>
+                <span class="n">mapping</span> <span class="o">=</span> \
+                    <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;copy key&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;in dict&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;copy_key&#39;</span><span class="p">,</span>
+                     <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;copy key&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;old key&#39;</span><span class="p">],</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;copy key&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;new key&#39;</span><span class="p">]]]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mappings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;combine items&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;combine items&#39;</span><span class="p">])):</span>
+                <span class="n">mapping</span> <span class="o">=</span> \
+                    <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;combine items&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;in dict&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;combine_items&#39;</span><span class="p">,</span>
+                     <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;combine items&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;old keys&#39;</span><span class="p">],</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;combine items&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;new key&#39;</span><span class="p">],</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;combine items&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;pattern&#39;</span><span class="p">]]]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mappings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;rename key&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;rename key&#39;</span><span class="p">])):</span>
+                <span class="n">mapping</span> <span class="o">=</span> \
+                    <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;rename key&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;in dict&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;rename_key&#39;</span><span class="p">,</span>
+                     <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;rename key&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;old key&#39;</span><span class="p">],</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;rename key&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;new key&#39;</span><span class="p">]]]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mappings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;move item&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;move item&#39;</span><span class="p">])):</span>
+                <span class="n">mapping</span> <span class="o">=</span> \
+                    <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;move_item&#39;</span><span class="p">,</span>
+                     <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;move item&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;key&#39;</span><span class="p">],</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;move item&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;source dict&#39;</span><span class="p">],</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_recipe</span><span class="p">[</span><span class="s1">&#39;move item&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;target dict&#39;</span><span class="p">],</span>
+                      <span class="kc">True</span><span class="p">]]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mappings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">map_</span> <span class="o">=</span> <span class="n">MetadataMapper</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Jara Popp.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> and ❤️  using a custom <a href="https://github.com/LinxiFan/Sphinx-theme">theme</a> based on <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.0.dev37',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

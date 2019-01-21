@@ -5,12 +5,24 @@ format:
 
 datasets:
   - /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung06/
+  - /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung07/
+  - /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung08/
 
 processing:
   pretrigger compensation:
     - /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung06/
+    - /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung07/
+    - /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung08/
   averaging:
     /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung06/:
+      range: [4.e-7, 6.e-7]
+      dimension: 0
+      unit: axis
+    /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung07/:
+      range: [4.e-7, 6.e-7]
+      dimension: 0
+      unit: axis
+    /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung08/:
       range: [4.e-7, 6.e-7]
       dimension: 0
       unit: axis
@@ -20,6 +32,12 @@ fitting:
     - D: [1500.0, 50.0]
       g: 2.002
       Population: [0.3, 0.35, 0.65]
+      lw: [1.5, 2.0]
+      Harmonic: 0
+      S: 1
+    - D: [100.0, 10.0]
+      g: 2.002
+      Population: [0.6, 0.35, 0.3]
       lw: [1.5, 2.0]
       Harmonic: 0
       S: 1
@@ -34,15 +52,20 @@ fitting:
     oritheta: [0, 0.6]
 
   FitOpt:
-    thetaoff: [45]
+    thetaoff: [45, 62.5, 90]
     outputfilename: /home/popp/nas/Python/Daten/
     maxiter: 10
     algorithm: "Nelder-Mead"
     nLHS: 2
     normalise: maximum
+    weight: auto
 
   Vary:
     - D: [1000, 50]
       oritheta: [0.2, 0.4]
       lw: [1., 1.5]
       Population: [0.3, 0.3, 0.6]
+    - D: [90, 5]
+      oritheta: [0.2, 0.4]
+      lw: [1., 1.5]
+      Population: [0.6, 0.3, 0.3]

@@ -54,7 +54,7 @@ The project licensed under the BSD license.
    concepts
    usecases
 
-   api/modules
+   api/index
 
 
 Indices and tables
