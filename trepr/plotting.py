@@ -211,7 +211,7 @@ if __name__ == '__main__':
 
     averaging_obj = \
         trepr.processing.Averaging(dimension=0,
-                                   avg_range=[4.8e-07, 5.2e-07],
+                                   range=[4.8e-07, 5.2e-07],
                                    unit='axis')
     process = dataset_.process(averaging_obj)
     saver_obj = aspecd.plotting.Saver(filename='plotterli.pdf')

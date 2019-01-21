@@ -120,13 +120,13 @@ class Averaging(aspecd.processing.ProcessingStep):
 
     """
 
-    def __init__(self, dimension=0, avg_range=None, unit='axis'):
+    def __init__(self, dimension=0, range=None, unit='axis'):
         super().__init__()
         # public properties
         self.description = 'Averaging'
         self.undoable = True
         self.parameters['dimension'] = dimension
-        self.parameters['range'] = avg_range
+        self.parameters['range'] = range
         self.parameters['unit'] = unit
         # protected properties:
         self._dim = self.parameters['dimension']
@@ -264,6 +264,6 @@ if __name__ == '__main__':
     process1 = importer.dataset.process(pretrigger)
     print(importer.dataset.history[0].processing.parameters)
 
-    avg = Averaging(dimension=1, avg_range=[2900, 2904], unit='axis')
+    avg = Averaging(dimension=1, range=[2900, 2904], unit='axis')
     process2 = dataset.process(avg)
     print(importer.dataset.history[1].processing.parameters)

@@ -220,7 +220,7 @@ if __name__ == '__main__':
     """
     pretrigger = trepr.processing.PretriggerOffsetCompensation()
     dataset_.process(pretrigger)
-    averaging = trepr.processing.Averaging(dimension=0, avg_range=[4.e-7, 6.e-7], unit='axis')
+    averaging = trepr.processing.Averaging(dimension=0, range=[4.e-7, 6.e-7], unit='axis')
     dataset_.process(averaging)
     yaml = aspecd.utils.Yaml()
     yaml.read_from('specprofi-input.yaml')
