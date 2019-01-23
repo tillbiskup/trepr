@@ -22,6 +22,8 @@ class LaTeXReporter(aspecd.report.LaTeXReporter):
     """
     Generate a report based on a LaTeX template provided.
 
+
+
     Parameters
     ----------
     template : str
@@ -135,7 +137,7 @@ if __name__ == '__main__':
     pro = trepr.processing.Averaging(
         range=[4.e-7, 6.e-7], dimension=0, unit='axis')
     dataset.process(pro)
-    report_ = LaTeXReporter(template_, filename_)
-    report_.dataset = dataset
-    report_.create()
-    report_.compile()
+    report = LaTeXReporter(template_, filename_)
+    report.dataset = dataset
+    report.create()
+    report.compile()

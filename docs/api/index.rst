@@ -18,6 +18,8 @@ An alphabetic list of the submodules available within the trepr package. The act
    trepr.io
    trepr.plotting
    trepr.processing
+   trepr.report
+   trepr.specprofi_interface
 
 Module contents
 ---------------

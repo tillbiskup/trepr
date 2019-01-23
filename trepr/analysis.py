@@ -201,7 +201,7 @@ class FittingAnalysis(aspecd.analysis.AnalysisStep):
 
     def _perform_task(self):
         trepr.specprofi_interface.SpecProFiInterface(
-            fitting_parameters=self.parameters, dataset=self.dataset).fit()
+            fitting_parameters=self.parameters, datasets=self.dataset).fit()
 
 
 if __name__ == '__main__':

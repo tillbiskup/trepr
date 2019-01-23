@@ -15,5 +15,11 @@ Available modules
     Analyse data in datasets.
 :mod:`trepr.plotting`
     Plot data in datasets.
+:mod:`trepr.specprofi_interface`
+    Call SpecProFi to fit datasets.
+:mod:`trepr.report`
+    Create reports with given datasets.
+
+
 
 """

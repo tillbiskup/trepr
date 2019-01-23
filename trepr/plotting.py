@@ -197,7 +197,7 @@ class ColormapAdjuster:
 if __name__ == '__main__':
     import trepr.processing
     import trepr.io
-    PATH = '../../Daten/messung17/'
+    PATH = '/home/popp/nas/DatenBA/PCDTBT-ODCB/X-Band/080K/messung17/'
     importer = trepr.io.SpeksimImporter(source=PATH)
     dataset_ = trepr.dataset.Dataset()
     dataset_.import_from(importer)
@@ -211,7 +211,7 @@ if __name__ == '__main__':
 
     averaging_obj = \
         trepr.processing.Averaging(dimension=0,
-                                   range=[4.8e-07, 5.2e-07],
+                                   range=[4.9e-07, 5.1e-07],
                                    unit='axis')
     process = dataset_.process(averaging_obj)
     saver_obj = aspecd.plotting.Saver(filename='plotterli.pdf')

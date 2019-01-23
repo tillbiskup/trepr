@@ -3,69 +3,44 @@ format:
   type: SpecProFi input
   version: 0.0.1
 
-datasets:
-  - /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung06/
-  - /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung07/
-  - /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung08/
-
-processing:
-  pretrigger compensation:
-    - /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung06/
-    - /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung07/
-    - /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung08/
-  averaging:
-    /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung06/:
-      range: [4.e-7, 6.e-7]
-      dimension: 0
-      unit: axis
-    /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung07/:
-      range: [4.e-7, 6.e-7]
-      dimension: 0
-      unit: axis
-    /home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung08/:
-      range: [4.e-7, 6.e-7]
-      dimension: 0
-      unit: axis
-
 fitting:
   Sys:
-    - D: [1500.0, 50.0]
+    - D: [1300.0, 350.0]
       g: 2.002
       Population: [0.3, 0.35, 0.65]
-      lw: [1.5, 2.0]
+      lw: [2, 2]
       Harmonic: 0
       S: 1
-    - D: [100.0, 10.0]
+    - D: [1300.0, 100]
       g: 2.002
-      Population: [0.6, 0.35, 0.3]
-      lw: [1.5, 2.0]
+      Population: [0.3, 0.35, 0.65]
+      lw: [2, 2]
       Harmonic: 0
       S: 1
 
   Exp:
-    mwFreq: 9.70434
+    mwFreq: 9.69
     Range: [280.0, 410.0]
 
   Opt:
+    oritheta: [0, 1]
     nKnots: 12
     nPoints: 326
-    oritheta: [0, 0.6]
 
   FitOpt:
-    thetaoff: [45, 62.5, 90]
-    outputfilename: /home/popp/nas/Python/Daten/
-    maxiter: 10
+    outputfilename: /home/popp/nas/Python/Daten/result
+    maxiter: 50
     algorithm: "Nelder-Mead"
-    nLHS: 2
-    normalise: maximum
+    nLHS: 3
+    normalise: area
     weight: auto
 
   Vary:
-    - D: [1000, 50]
-      oritheta: [0.2, 0.4]
-      lw: [1., 1.5]
+    - D: [200, 100]
+      lw: [1.5, 1.5]
       Population: [0.3, 0.3, 0.6]
-    - D: [90, 5]
-      oritheta: [0.2, 0.4]
-      lw: [1., 1.5]
-      Population: [0.6, 0.3, 0.3]
+      oritheta: [0.2, 0.6]
+    - D: [200, 50]
+      lw: [1.5, 1.5]
+      Population: [0.3, 0.3, 0.6]
+      oritheta: [0.2, 0.6]
