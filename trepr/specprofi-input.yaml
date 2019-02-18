@@ -5,27 +5,21 @@ format:
 
 fitting:
   Sys:
-    - D: [1300.0, 350.0]
-      g: 2.002
-      Population: [0.3, 0.35, 0.65]
-      lw: [2, 2]
-      Harmonic: 0
-      S: 1
-    - D: [1300.0, 100]
-      g: 2.002
-      Population: [0.3, 0.35, 0.65]
-      lw: [2, 2]
-      Harmonic: 0
-      S: 1
+    - d_values: [1300.0, 350.0]
+      g_values: 2.002
+      populations: [0.3, 0.35, 0.65]
+      line_width: [2, 2]
+      harmonic: 0
+      spin: 1
 
   Exp:
-    mwFreq: 9.69
-    Range: [280.0, 410.0]
+    microwave_frequency: 9.69
+    field_range: [280.0, 410.0]
 
   Opt:
-    oritheta: [0, 1]
-    nKnots: 12
-    nPoints: 326
+    orientation_theta: [0, 1]
+    knots: 12
+    points: 326
 
   FitOpt:
     outputfilename: /home/popp/nas/Python/Daten/result
@@ -36,11 +30,7 @@ fitting:
     weight: auto
 
   Vary:
-    - D: [200, 100]
-      lw: [1.5, 1.5]
-      Population: [0.3, 0.3, 0.6]
-      oritheta: [0.2, 0.6]
-    - D: [200, 50]
-      lw: [1.5, 1.5]
-      Population: [0.3, 0.3, 0.6]
-      oritheta: [0.2, 0.6]
+    - d_values: [200, 100]
+      line_width: [1.5, 1.5]
+      populations: [0.3, 0.3, 0.6]
+      orientation_theta: [0.2, 0.6]

@@ -9,6 +9,7 @@ import collections
 import numpy as np
 
 import SpecProFi.specprofi_oop as spf
+import spinpy.parameter_classes.parameters as prmt
 
 
 class Error(Exception):
@@ -55,8 +56,8 @@ class SpecProFiInterface:
         # public properties
         self.datasets = datasets
         # protected properties
-        self._exp = spf.Exp()
-        self._opt = spf.Opt()
+        self._exp = prmt.ExperimentalParameters()
+        self._opt = prmt.OptionalParameters()
         self._fit_opt = spf.FitOpt()
         self._sys = list()
         self._vary = list()
@@ -97,10 +98,10 @@ class SpecProFiInterface:
         """Prepare arrays for x and y data."""
         self._x_data = np.zeros(
             [self._number_of_datasets,
-             self._fitting_parameters['fitting']['Opt']['nPoints']])
+             self._fitting_parameters['fitting']['Opt']['points']])
         self._y_data = np.zeros(
             [self._number_of_datasets,
-             self._fitting_parameters['fitting']['Opt']['nPoints']])
+             self._fitting_parameters['fitting']['Opt']['points']])
 
     def _set_x_and_y_data(self):
         """Set x and y data to the prepared arrays."""
@@ -125,7 +126,7 @@ class SpecProFiInterface:
     def _set_sys_exp_opt_fitopt(self):
         """Set the sys, exp and opt attributes."""
         for i in range(len(self._fitting_parameters['fitting']['Sys'])):
-            self._sys.append(spf.Sys())
+            self._sys.append(prmt.SpinSystem())
             for key in self._fitting_parameters['fitting']['Sys'][i]:
                 setattr(self._sys[i], key,
                         self._fitting_parameters['fitting']['Sys'][i][key])
