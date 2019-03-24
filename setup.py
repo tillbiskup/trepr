@@ -47,6 +47,7 @@ setup(
         'kiwisolver',
         'markupsafe',
         'matplotlib',
+        'numexpr',
         'numpy',
         'pyDOE',
         'pyparsing',
