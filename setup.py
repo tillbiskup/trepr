@@ -48,9 +48,12 @@ setup(
         'markupsafe',
         'matplotlib',
         'numpy',
+        'pyDOE',
         'pyparsing',
         'python-dateutil',
+        'pywt',
         'oyaml',
+        'scipy',
         'six'
     ],
     python_requires='>=3',
