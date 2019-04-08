@@ -171,7 +171,7 @@ class ColormapAdjuster:
 
     """
 
-    def __init__(self, dataset=trepr.dataset.Dataset()):
+    def __init__(self, dataset=trepr.dataset.ExperimentalDataset()):
         # public properties
         self.dataset = dataset
         self.normalised_colormap = None
@@ -199,7 +199,7 @@ if __name__ == '__main__':
     import trepr.io
     PATH = '/home/popp/nas/DatenBA/PCDTBT-ODCB/X-Band/080K/messung17/'
     importer = trepr.io.SpeksimImporter(source=PATH)
-    dataset_ = trepr.dataset.Dataset()
+    dataset_ = trepr.dataset.ExperimentalDataset()
     dataset_.import_from(importer)
 
     obj = trepr.processing.PretriggerOffsetCompensation()

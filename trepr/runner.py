@@ -6,15 +6,15 @@ import trepr.specprofi_interface
 
 imp1 = trepr.io.SpeksimImporter(
     '/home/popp/nas/DatenBA/PCDTBT-ODCB/X-Band/080K/messung17/')
-data_set1 = trepr.dataset.Dataset()
+data_set1 = trepr.dataset.ExperimentalDataset()
 data_set1.import_from(imp1)
 imp2 = trepr.io.SpeksimImporter(
     '/home/popp/nas/Python/Daten/NDITBT-Sa542/messung01/')
-data_set2 = trepr.dataset.Dataset()
+data_set2 = trepr.dataset.ExperimentalDataset()
 data_set2.import_from(imp2)
 imp3 = trepr.io.SpeksimImporter(
     '/home/popp/nas/Python/Daten/NDITBT-Sa544/messung01/')
-data_set3 = trepr.dataset.Dataset()
+data_set3 = trepr.dataset.ExperimentalDataset()
 data_set3.import_from(imp3)
 pretrigger = trepr.processing.PretriggerOffsetCompensation()
 data_set1.process(pretrigger)

@@ -128,7 +128,7 @@ if __name__ == '__main__':
 
     template_ = 'report.tex'
     filename_ = 'test.tex'
-    dataset = trepr.dataset.Dataset()
+    dataset = trepr.dataset.ExperimentalDataset()
     imp = trepr.io.SpeksimImporter(
         source='/home/popp/nas/Python/Daten/messung01')
     dataset.import_from(imp)

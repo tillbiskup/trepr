@@ -34,3 +34,5 @@ fitting:
       line_width: [1.5, 1.5]
       populations: [0.3, 0.3, 0.6]
       orientation_theta: [0.2, 0.6]
+
+  FittingRoutine: spinpy.solid_state.solid_state.SolidStateSimulation

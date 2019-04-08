@@ -201,7 +201,7 @@ class FittingAnalysis(aspecd.analysis.AnalysisStep):
 
     def _perform_task(self):
         trepr.specprofi_interface.SpecProFiInterface(
-            fitting_parameters=self.parameters, datasets=self.dataset).fit()
+            input_dict=self.parameters, datasets=self.dataset).fit()
 
 
 if __name__ == '__main__':
@@ -211,7 +211,7 @@ if __name__ == '__main__':
 
     imp = trepr.io.SpeksimImporter(
         '/home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung06/')
-    dataset_ = trepr.dataset.Dataset()
+    dataset_ = trepr.dataset.ExperimentalDataset()
     dataset_.import_from(imp)
 
     """

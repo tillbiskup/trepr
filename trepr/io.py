@@ -50,7 +50,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
     def __init__(self, source=''):
         super().__init__(source=source)
         # public properties
-        self.dataset = trepr.dataset.Dataset()
+        self.dataset = trepr.dataset.ExperimentalDataset()
         # protected properties
         self._headerlines = 5
         self._data = np.array([])
@@ -280,7 +280,7 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
 if __name__ == '__main__':
     import trepr.plotting
     import trepr.processing
-    dataset = trepr.dataset.Dataset()
+    dataset = trepr.dataset.ExperimentalDataset()
     imp = SpeksimImporter(source='/home/popp/nas/Python/Daten/speksim-pentacen/speksim-pentacen/')
     dataset.import_from(imp)
     poc = trepr.processing.PretriggerOffsetCompensation()

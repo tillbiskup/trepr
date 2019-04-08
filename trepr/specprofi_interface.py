@@ -52,7 +52,7 @@ class SpecProFiInterface:
 
     """
 
-    def __init__(self, fitting_parameters, datasets):
+    def __init__(self, input_dict, datasets):
         # public properties
         self.datasets = datasets
         # protected properties
@@ -65,9 +65,10 @@ class SpecProFiInterface:
         self._x_data = None
         self._y_data = None
         self._yaml_obj = None
-        self._fitting_parameters = fitting_parameters
+        self._input_dict = input_dict
         self._path = None
         self._number_of_datasets = None
+        self._fitting_routine = None
 
     def fit(self):
         """Execute all necessary methods."""
@@ -77,6 +78,7 @@ class SpecProFiInterface:
         self._set_x_and_y_data()
         self._set_sys_exp_opt_fitopt()
         self._set_vary()
+        self._get_fitting_routine()
         self._perform_fitting()
 
     def _get_number_of_datasets(self):
@@ -88,20 +90,20 @@ class SpecProFiInterface:
 
     def _convert_angle_to_radian(self):
         """Convert all given angles to radians."""
-        if 'thetaoff' in self._fitting_parameters['fitting']['FitOpt'].keys():
-            self._fitting_parameters['fitting']['FitOpt']['thetaoff'] = \
+        if 'thetaoff' in self._input_dict['fitting']['FitOpt'].keys():
+            self._input_dict['fitting']['FitOpt']['thetaoff'] = \
                 [angle / 180 * np.pi
                  for angle in
-                 self._fitting_parameters['fitting']['FitOpt']['thetaoff']]
+                 self._input_dict['fitting']['FitOpt']['thetaoff']]
 
     def _preallocate_matrices_for_dataset(self):
         """Prepare arrays for x and y data."""
         self._x_data = np.zeros(
             [self._number_of_datasets,
-             self._fitting_parameters['fitting']['Opt']['points']])
+             self._input_dict['fitting']['Opt']['points']])
         self._y_data = np.zeros(
             [self._number_of_datasets,
-             self._fitting_parameters['fitting']['Opt']['points']])
+             self._input_dict['fitting']['Opt']['points']])
 
     def _set_x_and_y_data(self):
         """Set x and y data to the prepared arrays."""
@@ -125,31 +127,34 @@ class SpecProFiInterface:
 
     def _set_sys_exp_opt_fitopt(self):
         """Set the sys, exp and opt attributes."""
-        for i in range(len(self._fitting_parameters['fitting']['Sys'])):
+        for i in range(len(self._input_dict['fitting']['Sys'])):
             self._sys.append(prmt.SpinSystem())
-            for key in self._fitting_parameters['fitting']['Sys'][i]:
+            for key in self._input_dict['fitting']['Sys'][i]:
                 setattr(self._sys[i], key,
-                        self._fitting_parameters['fitting']['Sys'][i][key])
-        for key in self._fitting_parameters['fitting']['Exp']:
+                        self._input_dict['fitting']['Sys'][i][key])
+        for key in self._input_dict['fitting']['Exp']:
             setattr(self._exp, key,
-                    self._fitting_parameters['fitting']['Exp'][key])
+                    self._input_dict['fitting']['Exp'][key])
         for i in range(self._number_of_datasets):
             self._exp_list.append(self._exp)
-        for key in self._fitting_parameters['fitting']['Opt']:
+        for key in self._input_dict['fitting']['Opt']:
             setattr(self._opt, key,
-                    self._fitting_parameters['fitting']['Opt'][key])
-        for key in self._fitting_parameters['fitting']['FitOpt']:
+                    self._input_dict['fitting']['Opt'][key])
+        for key in self._input_dict['fitting']['FitOpt']:
             setattr(self._fit_opt, key,
-                    self._fitting_parameters['fitting']['FitOpt'][key])
+                    self._input_dict['fitting']['FitOpt'][key])
 
     def _set_vary(self):
         """Prepare the vary list."""
-        for i in range(len(self._fitting_parameters['fitting']['Vary'])):
+        for i in range(len(self._input_dict['fitting']['Vary'])):
             vary_dict = collections.OrderedDict()
-            for key in self._fitting_parameters['fitting']['Vary'][i]:
+            for key in self._input_dict['fitting']['Vary'][i]:
                 vary_dict[key] = \
-                    self._fitting_parameters['fitting']['Vary'][i][key]
+                    self._input_dict['fitting']['Vary'][i][key]
             self._vary.append(vary_dict)
+
+    def _get_fitting_routine(self):
+        self._fitting_routine = self._input_dict['fitting']['FittingRoutine']
 
     def _perform_fitting(self):
         """Call specprofi_oop.SpecProFi to fit the dataset."""
@@ -160,7 +165,8 @@ class SpecProFiInterface:
                           self._exp,
                           self._opt,
                           self._fit_opt,
-                          self._fitting_parameters).fit()
+                          self._fitting_routine,
+                          self._input_dict).fit()
         else:
             spf.SpecProFi(tuple(self._y_data),
                           self._sys,
@@ -168,7 +174,8 @@ class SpecProFiInterface:
                           tuple(self._exp_list),
                           self._opt,
                           self._fit_opt,
-                          self._fitting_parameters).fit()
+                          self._fitting_routine,
+                          self._input_dict).fit()
 
 
 if __name__ == '__main__':
@@ -178,15 +185,15 @@ if __name__ == '__main__':
     import aspecd.utils
     imp1 = trepr.io.SpeksimImporter(
         '/home/popp/nas/Python/Daten/NDITBT-Sa540/messung02/')
-    data_set1 = trepr.dataset.Dataset()
+    data_set1 = trepr.dataset.ExperimentalDataset()
     data_set1.import_from(imp1)
     imp2 = trepr.io.SpeksimImporter(
         '/home/popp/nas/Python/Daten/NDITBT-Sa542/messung01/')
-    data_set2 = trepr.dataset.Dataset()
+    data_set2 = trepr.dataset.ExperimentalDataset()
     data_set2.import_from(imp2)
     imp3 = trepr.io.SpeksimImporter(
         '/home/popp/nas/Python/Daten/NDITBT-Sa544/messung01/')
-    data_set3 = trepr.dataset.Dataset()
+    data_set3 = trepr.dataset.ExperimentalDataset()
     data_set3.import_from(imp3)
     pretrigger = trepr.processing.PretriggerOffsetCompensation()
     data_set1.process(pretrigger)

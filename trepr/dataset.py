@@ -34,6 +34,10 @@ class RecipeNotFoundError(Error):
 
 
 class Dataset(aspecd.dataset.Dataset):
+    pass
+
+
+class ExperimentalDataset(aspecd.dataset.ExperimentalDataset):
     """Entity consisting of data and metadata.
 
     On the one hand this class extends the metadata contained in the metadata
@@ -60,6 +64,11 @@ class Dataset(aspecd.dataset.Dataset):
         self.metadata = DatasetMetadata()
         self.time_stamp = aspecd.dataset.Data()
         self.microwave_frequency = aspecd.dataset.Data()
+
+
+class CalculatedDataset(aspecd.dataset.CalculatedDataset):
+
+    pass
 
 
 class DatasetMetadata(aspecd.metadata.DatasetMetadata):
