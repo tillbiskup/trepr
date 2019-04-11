@@ -71,7 +71,7 @@ class CalculatedDataset(aspecd.dataset.CalculatedDataset):
     pass
 
 
-class DatasetMetadata(aspecd.metadata.DatasetMetadata):
+class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
     """Metadata for a TREPR dataset.
 
     Attributes

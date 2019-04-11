@@ -24,9 +24,12 @@ averaging = trepr.processing.Averaging(0, [4.e-7, 6.e-7], 'axis')
 data_set1.process(averaging)
 data_set2.process(averaging)
 data_set3.process(averaging)
-data_sets = data_set1
+data_sets = data_set2
 yaml = aspecd.utils.Yaml()
 yaml.read_from('specprofi-input.yaml')
 parameter_dict = yaml.dict
-obj = trepr.specprofi_interface.SpecProFiInterface(parameter_dict, data_sets)
+
+obj = trepr.specprofi_interface.SpecProFiInterface()
+obj.datasets = data_sets
+obj.parameters = parameter_dict
 obj.fit()

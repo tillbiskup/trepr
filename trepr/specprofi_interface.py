@@ -52,9 +52,11 @@ class SpecProFiInterface:
 
     """
 
-    def __init__(self, input_dict, datasets):
+    def __init__(self):
         # public properties
-        self.datasets = datasets
+        self.datasets = None
+        self.parameters = None
+        self.result = None
         # protected properties
         self._exp = prmt.ExperimentalParameters()
         self._opt = prmt.OptionalParameters()
@@ -65,7 +67,6 @@ class SpecProFiInterface:
         self._x_data = None
         self._y_data = None
         self._yaml_obj = None
-        self._input_dict = input_dict
         self._path = None
         self._number_of_datasets = None
         self._fitting_routine = None
@@ -90,20 +91,20 @@ class SpecProFiInterface:
 
     def _convert_angle_to_radian(self):
         """Convert all given angles to radians."""
-        if 'thetaoff' in self._input_dict['fitting']['FitOpt'].keys():
-            self._input_dict['fitting']['FitOpt']['thetaoff'] = \
+        if 'thetaoff' in self.parameters['fitting']['FitOpt'].keys():
+            self.parameters['fitting']['FitOpt']['thetaoff'] = \
                 [angle / 180 * np.pi
                  for angle in
-                 self._input_dict['fitting']['FitOpt']['thetaoff']]
+                 self.parameters['fitting']['FitOpt']['thetaoff']]
 
     def _preallocate_matrices_for_dataset(self):
         """Prepare arrays for x and y data."""
         self._x_data = np.zeros(
             [self._number_of_datasets,
-             self._input_dict['fitting']['Opt']['points']])
+             self.parameters['fitting']['Opt']['points']])
         self._y_data = np.zeros(
             [self._number_of_datasets,
-             self._input_dict['fitting']['Opt']['points']])
+             self.parameters['fitting']['Opt']['points']])
 
     def _set_x_and_y_data(self):
         """Set x and y data to the prepared arrays."""
@@ -127,55 +128,59 @@ class SpecProFiInterface:
 
     def _set_sys_exp_opt_fitopt(self):
         """Set the sys, exp and opt attributes."""
-        for i in range(len(self._input_dict['fitting']['Sys'])):
+        for i in range(len(self.parameters['fitting']['Sys'])):
             self._sys.append(prmt.SpinSystem())
-            for key in self._input_dict['fitting']['Sys'][i]:
+            for key in self.parameters['fitting']['Sys'][i]:
                 setattr(self._sys[i], key,
-                        self._input_dict['fitting']['Sys'][i][key])
-        for key in self._input_dict['fitting']['Exp']:
+                        self.parameters['fitting']['Sys'][i][key])
+        for key in self.parameters['fitting']['Exp']:
             setattr(self._exp, key,
-                    self._input_dict['fitting']['Exp'][key])
+                    self.parameters['fitting']['Exp'][key])
         for i in range(self._number_of_datasets):
             self._exp_list.append(self._exp)
-        for key in self._input_dict['fitting']['Opt']:
+        for key in self.parameters['fitting']['Opt']:
             setattr(self._opt, key,
-                    self._input_dict['fitting']['Opt'][key])
-        for key in self._input_dict['fitting']['FitOpt']:
+                    self.parameters['fitting']['Opt'][key])
+        for key in self.parameters['fitting']['FitOpt']:
             setattr(self._fit_opt, key,
-                    self._input_dict['fitting']['FitOpt'][key])
+                    self.parameters['fitting']['FitOpt'][key])
 
     def _set_vary(self):
         """Prepare the vary list."""
-        for i in range(len(self._input_dict['fitting']['Vary'])):
+        for i in range(len(self.parameters['fitting']['Vary'])):
             vary_dict = collections.OrderedDict()
-            for key in self._input_dict['fitting']['Vary'][i]:
+            for key in self.parameters['fitting']['Vary'][i]:
                 vary_dict[key] = \
-                    self._input_dict['fitting']['Vary'][i][key]
+                    self.parameters['fitting']['Vary'][i][key]
             self._vary.append(vary_dict)
 
     def _get_fitting_routine(self):
-        self._fitting_routine = self._input_dict['fitting']['FittingRoutine']
+        self._fitting_routine = self.parameters['fitting']['FittingRoutine']
 
     def _perform_fitting(self):
         """Call specprofi_oop.SpecProFi to fit the dataset."""
         if self._number_of_datasets is 1:
-            spf.SpecProFi(self._y_data,
-                          self._sys,
-                          self._vary,
-                          self._exp,
-                          self._opt,
-                          self._fit_opt,
-                          self._fitting_routine,
-                          self._input_dict).fit()
+            fitting_object = spf.SpecProFi(self._y_data,
+                                           self._sys,
+                                           self._vary,
+                                           self._exp,
+                                           self._opt,
+                                           self._fit_opt,
+                                           self._fitting_routine,
+                                           self.parameters)
+            fitting_object.fit()
+            self.result = fitting_object.result
         else:
-            spf.SpecProFi(tuple(self._y_data),
-                          self._sys,
-                          self._vary,
-                          tuple(self._exp_list),
-                          self._opt,
-                          self._fit_opt,
-                          self._fitting_routine,
-                          self._input_dict).fit()
+            fitting_object = spf.SpecProFi(tuple(self._y_data),
+                                           self._sys,
+                                           self._vary,
+                                           tuple(self._exp_list),
+                                           self._opt,
+                                           self._fit_opt,
+                                           self._fitting_routine,
+                                           self.parameters)
+            fitting_object.fit()
+            self.result = fitting_object.result
 
 
 if __name__ == '__main__':

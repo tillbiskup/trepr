@@ -1,7 +1,0 @@
-        def parse_line(line):
-            obj = re.search('([A-Za-z0-9]*) = ([0-9.]*) ([A-Za-z]*)', line)
-            return float(obj.group(2)), obj.group(3)
-
-        def parse_line(line):
-            matches = re.search('([A-Za-z0-9]*) = ([0-9.]*) ([A-Za-z]*)', line)
-            return float(matches.group(2)), matches.group(3)

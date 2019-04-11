@@ -60,7 +60,7 @@ class MwFreqAnalysis(aspecd.analysis.AnalysisStep):
         self._convert_delta_mw_freq_to_delta_B0()
         self._calculate_step_size()
         self._compare_delta_B0_with_step_size()
-        self._write_results()
+        self._write_result()
 
     def _calculate_mw_freq_amplitude(self):
         """Calculate the amplitude of the microwave frequency."""
@@ -86,11 +86,11 @@ class MwFreqAnalysis(aspecd.analysis.AnalysisStep):
         self._ratio_frequency_drift_to_step_size = \
             self._delta_B0 / self._step_size_in_mT
 
-    def _write_results(self):
+    def _write_result(self):
         """Write the results in the results dictionary."""
-        self.results['frequency drift'] = aspecd.metadata.PhysicalQuantity(
+        self.result['frequency drift'] = aspecd.metadata.PhysicalQuantity(
             value=self._delta_B0, unit='T')
-        self.results['ratio frequency drift/step size'] = \
+        self.result['ratio frequency drift/step size'] = \
             self._ratio_frequency_drift_to_step_size
 
 
@@ -126,7 +126,7 @@ class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
         """Perform all methods to do analysis."""
         self._create_time_field_matrix()
         self._calculate_time_stamp_delta()
-        self._write_results()
+        self._write_result()
 
     def _create_time_field_matrix(self):
         time_stamp_floats = np.zeros(0)
@@ -159,8 +159,8 @@ class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
                  linestyle='', marker='.')
         plt.show()
 
-    def _write_results(self):
-        self.results['time spent per time trace'] = self._time_stamp_datetimes
+    def _write_result(self):
+        self.result['time spent per time trace'] = self._time_stamp_datetimes
 
 
 class FittingAnalysis(aspecd.analysis.AnalysisStep):
@@ -196,28 +196,40 @@ class FittingAnalysis(aspecd.analysis.AnalysisStep):
     """
 
     def __init__(self):
+        # public properties
         super().__init__()
         self.description = 'Fitting analysis.'
+        self.result = trepr.dataset.CalculatedDataset()
 
     def _perform_task(self):
-        trepr.specprofi_interface.SpecProFiInterface(
-            input_dict=self.parameters, datasets=self.dataset).fit()
+        fitting_obj = trepr.specprofi_interface.SpecProFiInterface()
+        fitting_obj.datasets = self.dataset
+        fitting_obj.parameters = self.parameters
+        fitting_obj.fit()
+        self.fitting_result = fitting_obj.result
+        self._write_result()
+
+    def _write_result(self):
+        for i in range(len(self.dataset.data.axes)-1):
+            self.result.data.axes[i].values = self.fitting_result[i]
+            self.result.data.axes[i].unit = self.dataset.data.axes[i].unit
+            self.result.data.axes[i].quantity = self.dataset.data.axes[i].quantity
+        self.result.data.data = self.fitting_result[-1]
+        self.result.data.axes[-1].unit = self.dataset.data.axes[-1].unit
+        self.result.data.axes[-1].quantity = self.dataset.data.axes[-1].quantity
 
 
 if __name__ == '__main__':
     import trepr.io
     import trepr.processing
     import trepr.dataset
+    import trepr.plotting
 
     imp = trepr.io.SpeksimImporter(
         '/home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung06/')
     dataset_ = trepr.dataset.ExperimentalDataset()
     dataset_.import_from(imp)
 
-    """
-    analysis_step = TimeStampAnalysis()
-    analysis_step.analyse(dataset=dataset_)
-    """
     pretrigger = trepr.processing.PretriggerOffsetCompensation()
     dataset_.process(pretrigger)
     averaging = trepr.processing.Averaging(dimension=0, range=[4.e-7, 6.e-7], unit='axis')
@@ -225,6 +237,11 @@ if __name__ == '__main__':
     yaml = aspecd.utils.Yaml()
     yaml.read_from('specprofi-input.yaml')
     parameter_dict = yaml.dict
-    fitting_obj = FittingAnalysis()
-    fitting_obj.parameters = parameter_dict
-    fitting_obj.analyse(dataset=dataset_)
+    fitting = FittingAnalysis()
+    fitting.parameters = parameter_dict
+    fit = dataset_.analyse(fitting)
+
+    plotter_obj = trepr.plotting.LinePlot()
+    plot = fit.result.plot(plotter_obj)
+    saver = aspecd.plotting.Saver(filename='plotterli.pdf')
+    plot.save(saver)
