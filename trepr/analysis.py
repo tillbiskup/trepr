@@ -20,6 +20,7 @@ import scipy.constants
 
 import aspecd.analysis
 import aspecd.metadata
+import aspecd.utils
 import trepr.specprofi_interface
 
 
@@ -213,13 +214,19 @@ class FittingAnalysis(aspecd.analysis.AnalysisStep):
 
     def _perform_task(self):
         """Perform all methods to do analysis."""
+        self._convert_parameters_to_dict()
         self._fit()
         self._write_result()
+
+    def _convert_parameters_to_dict(self):
+        yaml = aspecd.utils.Yaml()
+        yaml.read_from(self.parameters)
+        self._fitting_parameters = yaml.dict
 
     def _fit(self):
         fitting_obj = trepr.specprofi_interface.SpecProFiInterface()
         fitting_obj.datasets = self.dataset
-        fitting_obj.parameters = self.parameters
+        fitting_obj.parameters = self._fitting_parameters
         fitting_obj.fit()
         self._fitting_result = fitting_obj.result
 
@@ -242,7 +249,7 @@ if __name__ == '__main__':
     import trepr.plotting
 
     imp = trepr.io.SpeksimImporter(
-        '/home/popp/nas/DatenBA/PCDTBT-PET-RNK-asCast/X-Band/080K/messung06/')
+        '/home/jara/Dokumente/python/Daten/messung17/')
     dataset_ = trepr.dataset.ExperimentalDataset()
     dataset_.import_from(imp)
 
@@ -250,11 +257,8 @@ if __name__ == '__main__':
     dataset_.process(pretrigger)
     averaging = trepr.processing.Averaging(dimension=0, avg_range=[4.e-7, 6.e-7], unit='axis')
     dataset_.process(averaging)
-    yaml = aspecd.utils.Yaml()
-    yaml.read_from('specprofi-input.yaml')
-    parameter_dict = yaml.dict
     fitting = FittingAnalysis()
-    fitting.parameters = parameter_dict
+    fitting.parameters = 'specprofi-input.yaml'
     fit = dataset_.analyse(fitting)
 
     plotter_obj = trepr.plotting.LinePlot()

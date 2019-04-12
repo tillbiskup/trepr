@@ -63,3 +63,13 @@ Reports
 The trepr package aims at storing as much information as possible in a simple format, often within a dataset. However, such system can only show its strengths if this information is easily accessible and can be presented in an appealing way.
 
 The idea behind reports is to create well formatted representations of crucial aspects of a dataset or, eventually, several datasets. This is based on templates provided or adjusted by the user.
+
+
+Tasks
+=====
+
+*Constituents of a recipe-driven data analysis.*
+
+Processing data consists of lots of different single tasks that can mostly be automated. This is the idea behind recipe-driven data analysis: lists of datasets and tasks that can easily be created by a user and processed fully automated. "Tasks" has a broad meaning here, including basically every automatable aspect of data analysis, including processing and analysis steps, creating representations and annotations, and finally reports.
+
+Recipe-driven data analysis is carried out fully unattended (non-interactive). This allows to use it in context of separate hardware and a scheduling system. Situations particularly benefiting from this approach are either many datasets that need to be processed all in the same way, or few datasets requiring expensive processing such as simulation and fitting. The latter is even more true in context of global fitting and/or sampling of different starting parameters, such as Monte-Carlo or Latin-Hypercube sampling approaches.

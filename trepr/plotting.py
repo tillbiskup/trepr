@@ -202,6 +202,11 @@ class ColormapAdjuster:
             mpl.colors.Normalize(vmin=self._bound * -1, vmax=self._bound)
 
 
+class Saver(aspecd.plotting.Saver):
+
+    pass
+
+
 if __name__ == '__main__':
     import trepr.processing
     import trepr.io

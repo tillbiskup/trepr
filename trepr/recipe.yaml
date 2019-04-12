@@ -1,0 +1,32 @@
+---
+
+format:
+  type: recipe
+
+datasets:
+  - /home/jara/Dokumente/python/Daten/messung17/
+
+tasks:
+  - kind: processing
+    type: PretriggerOffsetCompensation
+  - kind: processing
+    type: Averaging
+    properties:
+      parameters:
+        dimension: 0
+        range: [4.e-7, 6.e-7]
+        unit: axis
+  - kind: analysis
+    type: FittingAnalysis
+    properties:
+      parameters: /home/jara/Dokumente/python/trepr/trepr/specprofi-input.yaml
+    apply_to:
+      - /home/jara/Dokumente/python/Daten/messung17/
+    result: /home/jara/Dokumente/python/Daten/messung17/bla
+  - kind: plot
+    type: LinePlot
+  - kind: plot
+    type: Saver
+    properties:
+      filename: /home/jara/Dokumente/python/trepr/trepr/plot.pdf
+

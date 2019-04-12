@@ -24,7 +24,7 @@ fitting:
     points: 326
 
   FitOpt:
-    outputfilename: /home/popp/nas/Python/Daten/result
+    outputfilename: /home/jara/Dokumente/python/Daten/result
     maxiter: 10
     algorithm: "Nelder-Mead"
     nLHS: 1
