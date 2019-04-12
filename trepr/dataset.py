@@ -10,6 +10,7 @@ individual information about the experiment.
 import aspecd.dataset
 import aspecd.metadata
 import aspecd.utils
+import trepr.io
 
 
 class Error(Exception):
@@ -70,6 +71,17 @@ class CalculatedDataset(aspecd.dataset.CalculatedDataset):
     """Entity consisting of calculated data and metadata."""
 
     pass
+
+
+class DatasetFactory(aspecd.dataset.DatasetFactory):
+
+    def __init__(self):
+        super().__init__()
+        self.importer_factory = trepr.io.DatasetImporterFactory()
+
+    @staticmethod
+    def _create_dataset(source=''):
+        return trepr.dataset.ExperimentalDataset()
 
 
 class ExperimentalDatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):

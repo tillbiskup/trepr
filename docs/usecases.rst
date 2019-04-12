@@ -64,5 +64,38 @@ This will generate objects of the class ``ScaledImagePlot`` and ``Saver`` and pr
 
 Recipe-driven data analysis
 ===========================
-The most important component of recipe-driven data analysis is the recipe. In case of the trepr package, this is a human readable and writeable YAML file containing all information to perform the data analysis fully unattended.
+The most important component of recipe-driven data analysis is the recipe. In case of the trepr package, this is a human readable and writeable YAML file containing all information to perform the data analysis fully unattended. The interested reader is referred to the more detailed documentation of recipe-driven data analysis (https://docs.aspecd.de/recipes.html).
 
+The recipe contains all datasets to analyse as well as the tasks to perform. Tasks can be processing steps, analysis steps, plots or reports. The following example shows how such a recipe may look like::
+
+    ---
+    format:
+      type: recipe
+
+    datasets:
+      - path/to/your/dataset/
+      - path/to/another/dataset/
+
+    tasks:
+      - kind: processing
+        type: PretriggerOffsetCompensation
+      - kind: processing
+        type: Averaging
+        properties:
+          parameters:
+            dimension: 0
+            range: [4.e-7, 6.e-7]
+            unit: axis
+      - kind: analysis
+        type: FittingAnalysis
+        properties:
+          parameters: path/to/your/fitting/input/file.yaml
+        apply_to:
+          - path/to/your/dataset/
+        result: path/where/you/want/to/store/the/result
+      - kind: plot
+        type: LinePlot
+      - kind: plot
+        type: Saver
+        properties:
+          filename: path/where/you/want/to/store/the/plot.pdf
