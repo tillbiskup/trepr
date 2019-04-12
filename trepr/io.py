@@ -218,6 +218,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         self.dataset.annotate(comment)
 
     def _map_metadata(self, infofile_version):
+        """Bring the metadata into a unified format."""
         mapper = \
             trepr.dataset.MetadataMapper(version=infofile_version,
                                          metadata=self._infofile.parameters)
@@ -246,6 +247,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         self.dataset.data.axes[2].quantity = 'intensity'
 
     def _create_time_stamp_data(self):
+        """Hand the time stamp data to the dataset structure."""
         self.dataset.time_stamp.data = self._time_stamps
         self.dataset.time_stamp.axes[0].values = self._field_axis
         self.dataset.time_stamp.axes[0].unit = self._field_unit
@@ -253,6 +255,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         self.dataset.time_stamp.axes[1].quantity = 'date'
 
     def _create_mw_freq_data(self):
+        """Hand the microwave frequency data to the dataset structure."""
         self.dataset.microwave_frequency.data = self._mwfreq
         self.dataset.microwave_frequency.axes[0].values = self._field_axis
         self.dataset.microwave_frequency.axes[0].unit = self._field_unit

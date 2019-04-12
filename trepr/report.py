@@ -22,7 +22,16 @@ class LaTeXReporter(aspecd.report.LaTeXReporter):
     """
     Generate a report based on a LaTeX template provided.
 
+    An example for using the :class:`trepr.report.LaTeXReporter` class may
+    look like this::
 
+        template_ = 'path/to/your/template.tex'
+        report_output = 'path/to/your/report_output.tex'
+        dataset_ = trepr.dataset.ExperimentalDataset()
+        report = LaTeXReporter(template_, report_output)
+        report.dataset = dataset_
+        report.create()
+        report.compile()
 
     Parameters
     ----------
@@ -46,7 +55,7 @@ class LaTeXReporter(aspecd.report.LaTeXReporter):
         """
         # public properties
         super().__init__(template=template, filename=filename)
-        self.dataset = None
+        self.dataset = trepr.dataset.Dataset()
         # protected properties
         self._latex_jinja_env = jinja2.Environment()
         self._metadata = dict()
@@ -56,6 +65,7 @@ class LaTeXReporter(aspecd.report.LaTeXReporter):
         self._figure_name = dict()
 
     def create(self):
+        """Perform all methods to generate a report."""
         self._prepare_metadata()
         self._get_processing_steps()
         self._get_figure_names()
@@ -71,6 +81,7 @@ class LaTeXReporter(aspecd.report.LaTeXReporter):
         self._collect_parameters()
 
     def _collect_parameters(self):
+        """Collect all the metadata keys."""
         for key in self._metadata.keys():
             if key not in ['Sample', 'Measurement', 'Parameter']:
                 self._metadata['Parameter'][key] = \
@@ -86,6 +97,9 @@ class LaTeXReporter(aspecd.report.LaTeXReporter):
 
     @staticmethod
     def _change_keys_in_dict_recursively(dict_=None):
+        """Replace all underscores in the keys with a space.
+        Note: This is done because LaTeX interprets the underscore not as
+        underscore but as command for subscription."""
         tmp_dict = collections.OrderedDict()
         for key, value in dict_.items():
             if isinstance(value, dict):
@@ -135,7 +149,7 @@ if __name__ == '__main__':
     poc = trepr.processing.PretriggerOffsetCompensation()
     dataset.process(poc)
     pro = trepr.processing.Averaging(
-        range=[4.e-7, 6.e-7], dimension=0, unit='axis')
+        avg_range=[4.e-7, 6.e-7], dimension=0, unit='axis')
     dataset.process(pro)
     report = LaTeXReporter(template_, filename_)
     report.dataset = dataset

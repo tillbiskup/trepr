@@ -38,7 +38,7 @@ class Dataset(aspecd.dataset.Dataset):
 
 
 class ExperimentalDataset(aspecd.dataset.ExperimentalDataset):
-    """Entity consisting of data and metadata.
+    """Entity consisting of experimental data and metadata.
 
     On the one hand this class extends the metadata contained in the metadata
     property. On the other hand this class extends the dataset by further
@@ -47,7 +47,7 @@ class ExperimentalDataset(aspecd.dataset.ExperimentalDataset):
 
     Attributes
     ----------
-    metadata : :class:`trepr.dataset.DatasetMetadata`
+    metadata : :class:`trepr.dataset.ExperimentalDatasetMetadata`
         Metadata of dataset.
 
     time_stamp : :class:`aspecd.dataset.Data`
@@ -61,18 +61,19 @@ class ExperimentalDataset(aspecd.dataset.ExperimentalDataset):
     def __init__(self):
         super().__init__()
         # public properties
-        self.metadata = DatasetMetadata()
+        self.metadata = ExperimentalDatasetMetadata()
         self.time_stamp = aspecd.dataset.Data()
         self.microwave_frequency = aspecd.dataset.Data()
 
 
 class CalculatedDataset(aspecd.dataset.CalculatedDataset):
+    """Entity consisting of calculated data and metadata."""
 
     pass
 
 
-class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
-    """Metadata for a TREPR dataset.
+class ExperimentalDatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
+    """Metadata for a experimental TREPR dataset.
 
     Attributes
     ----------
@@ -133,6 +134,11 @@ class DatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
         self.probehead = Probehead()
         self.pump = Pump()
         self.temperature_control = TemperatureControl()
+
+
+class CalculatedDatasetMetadata(aspecd.metadata.CalculatedDatasetMetadata):
+    """Metadata for a calculated dataset."""
+    pass
 
 
 class Measurement(aspecd.metadata.Measurement):

@@ -33,9 +33,9 @@ class MwFreqAnalysis(aspecd.analysis.AnalysisStep):
     An example for using the microwave frequency analysis step may look like
     this::
 
-        dataset = trepr.dataset.Dataset()
+        dataset_ = trepr.dataset.ExperimentalDataset()
         analysis_step = MwFreqAnalysis()
-        analysis_step.analyse(dataset=dataset)
+        dataset_.analyse(analysis_step)
 
     Attributes
     ----------
@@ -103,9 +103,9 @@ class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
     An example for using the time stamp analysis step may look like
     this::
 
-        dataset_ = trepr.dataset.Dataset()
+        dataset_ = trepr.dataset.ExperimentalDataset()
         analysis_step = TimeStampAnalysis()
-        analysis_step.analyse(dataset=dataset_)
+        dataset_.analyse(analysis_step)
 
     Attributes
     ----------
@@ -129,6 +129,8 @@ class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
         self._write_result()
 
     def _create_time_field_matrix(self):
+        """Create a matrix containing the time stamps and the corresponding
+        field points"""
         time_stamp_floats = np.zeros(0)
         for time_stamp in self.dataset.time_stamp.data:
             time_stamp_floats = \
@@ -143,6 +145,7 @@ class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
                 datetime.datetime.fromtimestamp(time_stamp))
 
     def _calculate_time_stamp_delta(self):
+        """Calculate the time between the time stamps"""
         zero = datetime.datetime(2018, 1, 1)
         for i in range(len(self._time_stamp_datetimes) - 1):
             self._time_stamp_datetimes[i] = self._time_stamp_datetimes[i+1] - \
@@ -160,6 +163,8 @@ class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
         plt.show()
 
     def _write_result(self):
+        """Write the result to the attribute
+        :attr:`aspecd.analysis.AnalysisStep.result`"""
         self.result['time spent per time trace'] = self._time_stamp_datetimes
 
 
@@ -178,7 +183,7 @@ class FittingAnalysis(aspecd.analysis.AnalysisStep):
     An example for using the fitting analysis step, including reading the
     parameters from a YAML file, may look like this::
 
-        dataset = trepr.dataset.Dataset()
+        dataset_ = trepr.dataset.ExperimentalDataset()
 
         yaml_file = aspecd.utils.Yaml()
         yaml_file.import_from('path/to/your/YAML/file')
@@ -186,12 +191,15 @@ class FittingAnalysis(aspecd.analysis.AnalysisStep):
 
         analysis_step = FittingAnalysis()
         analysis_step.parameters = input_parameters
-        analysis_step.analyse(dataset=dataset)
+        dataset_.analyse(analysis_step)
 
     Attributes
     ----------
     description : str
         Describes the aim of the class.
+
+    result : :class:`trepr.dataset.CalculatedDataset`
+        Calculated dataset containing the fitted data.
 
     """
 
@@ -200,21 +208,29 @@ class FittingAnalysis(aspecd.analysis.AnalysisStep):
         super().__init__()
         self.description = 'Fitting analysis.'
         self.result = trepr.dataset.CalculatedDataset()
+        # protected properties
+        self._fitting_result = None
 
     def _perform_task(self):
+        """Perform all methods to do analysis."""
+        self._fit()
+        self._write_result()
+
+    def _fit(self):
         fitting_obj = trepr.specprofi_interface.SpecProFiInterface()
         fitting_obj.datasets = self.dataset
         fitting_obj.parameters = self.parameters
         fitting_obj.fit()
-        self.fitting_result = fitting_obj.result
-        self._write_result()
+        self._fitting_result = fitting_obj.result
 
     def _write_result(self):
+        """Write the data from the fitting to the
+        :attr:`trepr.analysis.FittingAnalysis.result`."""
         for i in range(len(self.dataset.data.axes)-1):
-            self.result.data.axes[i].values = self.fitting_result[i]
+            self.result.data.axes[i].values = self._fitting_result[i]
             self.result.data.axes[i].unit = self.dataset.data.axes[i].unit
             self.result.data.axes[i].quantity = self.dataset.data.axes[i].quantity
-        self.result.data.data = self.fitting_result[-1]
+        self.result.data.data = self._fitting_result[-1]
         self.result.data.axes[-1].unit = self.dataset.data.axes[-1].unit
         self.result.data.axes[-1].quantity = self.dataset.data.axes[-1].quantity
 
@@ -232,7 +248,7 @@ if __name__ == '__main__':
 
     pretrigger = trepr.processing.PretriggerOffsetCompensation()
     dataset_.process(pretrigger)
-    averaging = trepr.processing.Averaging(dimension=0, range=[4.e-7, 6.e-7], unit='axis')
+    averaging = trepr.processing.Averaging(dimension=0, avg_range=[4.e-7, 6.e-7], unit='axis')
     dataset_.process(averaging)
     yaml = aspecd.utils.Yaml()
     yaml.read_from('specprofi-input.yaml')

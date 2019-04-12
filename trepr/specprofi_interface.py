@@ -30,20 +30,18 @@ class SpecProFiInterface:
     that make up the shape of the spectrum. To achieve this, the spectrum can
     be fitted and the best possible parameters determined using a least-square.
 
-    Parameters
-    ----------
-    fitting_parameters : dict
-        Dictionary containing all necessary fitting parameters.
-
-    datasets : list or :obj:`trepr.dataset.Dataset`
-        List of :obj:`trepr.dataset.Dataset` objects or a single
-        :obj:`trepr.dataset.Dataset` object to work with.
-
     Attributes
     ----------
     datasets : list or :obj:`trepr.dataset.Dataset`
         List of :obj:`trepr.dataset.Dataset` objects or a single
         :obj:`trepr.dataset.Dataset` object to work with.
+
+    parameters : dict
+        Dictionary containing all necessary fitting parameters.
+
+    result : list
+        List containing all numeric values of the fitted dataset. The intensity
+        is stored in the last element of the list.
 
     Raises
     ------
@@ -55,7 +53,7 @@ class SpecProFiInterface:
     def __init__(self):
         # public properties
         self.datasets = None
-        self.parameters = None
+        self.parameters = dict()
         self.result = None
         # protected properties
         self._exp = prmt.ExperimentalParameters()
@@ -127,7 +125,7 @@ class SpecProFiInterface:
             raise DimensionError('Dimension of the dataset needs to be 1.')
 
     def _set_sys_exp_opt_fitopt(self):
-        """Set the sys, exp and opt attributes."""
+        """Set the spin system, the experimental as well as the optional attributes."""
         for i in range(len(self.parameters['fitting']['Sys'])):
             self._sys.append(prmt.SpinSystem())
             for key in self.parameters['fitting']['Sys'][i]:
@@ -155,6 +153,7 @@ class SpecProFiInterface:
             self._vary.append(vary_dict)
 
     def _get_fitting_routine(self):
+        """Get the full class name of the fitting routine."""
         self._fitting_routine = self.parameters['fitting']['FittingRoutine']
 
     def _perform_fitting(self):

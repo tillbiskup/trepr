@@ -65,10 +65,12 @@ class ScaledImagePlot(aspecd.plotting.SinglePlotter):
         self._format_ticklabels()
 
     def _set_style(self):
+        """Set the style to xkcd if indicated."""
         if self.style == 'xkcd':
             plt.xkcd()
 
     def _display_data(self):
+        """Display the data with adjusted colormap."""
         colormap_adjuster = ColormapAdjuster(dataset=self.dataset)
         colormap_adjuster.adjust()
         self.axes.imshow(self.dataset.data.data,
@@ -77,6 +79,7 @@ class ScaledImagePlot(aspecd.plotting.SinglePlotter):
                          **self._style_dict)
 
     def _format_ticklabels(self):
+        """Set the format for the ticklabels"""
         plt.ticklabel_format(axis='x', **self._ticklabel_format)
 
     def _get_extent(self):
@@ -134,18 +137,22 @@ class LinePlot(aspecd.plotting.SinglePlotter):
         self._display_zero_line()
 
     def _display_zero_line(self):
+        """Create a horizontal line at zero."""
         plt.axhline(**self._zero_line_style)
 
     def _set_axes(self):
+        """Set the limits of the x-axis as well as the ticklabel format."""
         self.axes.set_xlim([self.dataset.data.axes[0].values[0],
                             self.dataset.data.axes[0].values[-1]])
         plt.ticklabel_format(**self._ticklabel_format)
 
     def _display_data(self):
+        """Plot the data."""
         self.axes.plot(self.dataset.data.axes[0].values,
                        self.dataset.data.data)
 
     def _set_style(self):
+        """Set the style to xkcd if indicated."""
         if self.style == 'xkcd':
             plt.xkcd()
 
@@ -179,6 +186,7 @@ class ColormapAdjuster:
         self._bound = None
 
     def adjust(self):
+        """Perform all methods to adjust the colormap."""
         self._get_min_and_max()
         self._set_norm()
 
@@ -211,7 +219,7 @@ if __name__ == '__main__':
 
     averaging_obj = \
         trepr.processing.Averaging(dimension=0,
-                                   range=[4.9e-07, 5.1e-07],
+                                   avg_range=[4.9e-07, 5.1e-07],
                                    unit='axis')
     process = dataset_.process(averaging_obj)
     saver_obj = aspecd.plotting.Saver(filename='plotterli.pdf')
