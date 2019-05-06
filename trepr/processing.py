@@ -254,6 +254,26 @@ class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
         return np.average(array)
 
 
+class Normalise(aspecd.processing.ProcessingStep):
+
+    def __init__(self):
+        super().__init__()
+        self.description = 'Normalise data in dataset.'
+        self.parameters['type'] = str()
+
+    def _perform_task(self):
+        if self.parameters['type'] == "area":
+            self.dataset.data.data = self.dataset.data.data / \
+                                     sum(abs(self.dataset.data.data))
+        elif self.parameters['type'] == "maximum":
+            self.dataset.data.data = self.dataset.data.data / \
+                                     max(abs(self.dataset.data.data))
+        else:
+            self.dataset.data.data = self.dataset.data.data / \
+                                     sum(abs(self.dataset.data.data))
+
+
+
 if __name__ == '__main__':
     import trepr.io
 

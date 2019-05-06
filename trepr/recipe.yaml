@@ -1,10 +1,11 @@
 ---
 
 format:
-  type: recipe
+  type: ASpecD recipe
+  version: 0.1.0
 
 datasets:
-  - /home/jara/Dokumente/python/Daten/messung17/
+  - /home/popp/nas/Python/Daten/messung17/
 
 tasks:
   - kind: processing
@@ -19,14 +20,22 @@ tasks:
   - kind: analysis
     type: FittingAnalysis
     properties:
-      parameters: /home/jara/Dokumente/python/trepr/trepr/specprofi-input.yaml
+      parameters: /home/popp/nas/Python/trepr/trepr/specprofi-input.yaml
     apply_to:
-      - /home/jara/Dokumente/python/Daten/messung17/
-    result: /home/jara/Dokumente/python/Daten/messung17/bla
-  - kind: plot
-    type: LinePlot
-  - kind: plot
-    type: Saver
+      - /home/popp/nas/Python/Daten/messung17/
+    result: fit_result
+  - kind: processing
+    type: Normalise
+    parameters:
+      - type: area
+    apply_to:
+      - /home/popp/nas/Python/Daten/messung17/
+      - fit_result
+  - kind: multiplot
+    type: MultiLinePlot
+    apply_to:
+      - /home/popp/nas/Python/Daten/messung17/
+      - fit_result
     properties:
-      filename: /home/jara/Dokumente/python/trepr/trepr/plot.pdf
+      filename: /home/popp/nas/Python/trepr/trepr/plot.pdf
 

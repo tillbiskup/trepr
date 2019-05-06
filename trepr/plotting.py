@@ -40,11 +40,10 @@ class ScaledImagePlot(aspecd.plotting.SinglePlotter):
 
     """
 
-    def __init__(self, dataset=None):
+    def __init__(self):
         super().__init__()
         # public properties
         self.style = ''
-        self.dataset = dataset
         self.description = '2D plot as scaled image.'
         self.filename = ''
         # protected properties
@@ -115,10 +114,9 @@ class LinePlot(aspecd.plotting.SinglePlotter):
 
     """
 
-    def __init__(self, dataset=None):
+    def __init__(self):
         super().__init__()
         # public properties
-        self.dataset = dataset
         self.style = ''
         self.description = '1D line plot.'
         self.filename = ''
@@ -155,6 +153,37 @@ class LinePlot(aspecd.plotting.SinglePlotter):
         """Set the style to xkcd if indicated."""
         if self.style == 'xkcd':
             plt.xkcd()
+
+
+class MultiLinePlot(aspecd.plotting.MultiPlotter):
+
+    def __init__(self):
+        super().__init__()
+        self.description = '1D line plot for multiple lines.'
+        self._zero_line_style = {'y': 0,
+                                 'color': '#999999'}
+        self._ticklabel_format = {'style': 'sci',
+                                  'scilimits': (-2, 4),
+                                  'useMathText': True}
+
+    def _create_plot(self):
+        self._display_data()
+        self._set_axes()
+        self._display_zero_line()
+
+    def _display_data(self):
+        print(self.datasets)
+        for dataset in self.datasets:
+            self.axes.plot(dataset.data.axes[0].values, dataset.data.data)
+
+    def _set_axes(self):
+        self.axes.set_xlim([self.datasets[0].data.axes[0].values[0],
+                            self.datasets[0].data.axes[0].values[-1]])
+        plt.ticklabel_format(**self._ticklabel_format)
+
+    def _display_zero_line(self):
+        """Create a horizontal line at zero."""
+        plt.axhline(**self._zero_line_style)
 
 
 class ColormapAdjuster:

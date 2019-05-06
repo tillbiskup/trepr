@@ -249,7 +249,7 @@ if __name__ == '__main__':
     import trepr.plotting
 
     imp = trepr.io.SpeksimImporter(
-        '/home/jara/Dokumente/python/Daten/messung17/')
+        '/home/popp/nas/Python/Daten/messung17/')
     dataset_ = trepr.dataset.ExperimentalDataset()
     dataset_.import_from(imp)
 
