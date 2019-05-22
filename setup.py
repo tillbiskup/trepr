@@ -58,4 +58,5 @@ setup(
         'six'
     ],
     python_requires='>=3',
+    scripts = ['trepr/chef_de_service.py'],
 )

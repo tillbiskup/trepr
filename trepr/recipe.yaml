@@ -5,7 +5,7 @@ format:
   version: 0.1.0
 
 datasets:
-  - /home/popp/nas/Python/Daten/messung17/
+  - /home/jara/Dokumente/python/Daten/messung17/
 
 tasks:
   - kind: processing
@@ -20,22 +20,23 @@ tasks:
   - kind: analysis
     type: FittingAnalysis
     properties:
-      parameters: /home/popp/nas/Python/trepr/trepr/specprofi-input.yaml
+      parameters: /home/jara/Dokumente/python/trepr/trepr/specprofi-input.yaml
     apply_to:
-      - /home/popp/nas/Python/Daten/messung17/
+      - /home/jara/Dokumente/python/Daten/messung17/
     result: fit_result
   - kind: processing
     type: Normalise
     parameters:
       - type: area
     apply_to:
-      - /home/popp/nas/Python/Daten/messung17/
+      - /home/jara/Dokumente/python/Daten/messung17/
       - fit_result
   - kind: multiplot
     type: MultiLinePlot
     apply_to:
-      - /home/popp/nas/Python/Daten/messung17/
+      - /home/jara/Dokumente/python/Daten/messung17/
       - fit_result
     properties:
-      filename: /home/popp/nas/Python/trepr/trepr/plot.pdf
-
+      parameters:
+        colors: ['#6600CC', '#FF3333']
+      filename: /home/jara/Dokumente/python/trepr/trepr/plot.pdf

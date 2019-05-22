@@ -160,6 +160,7 @@ class MultiLinePlot(aspecd.plotting.MultiPlotter):
     def __init__(self):
         super().__init__()
         self.description = '1D line plot for multiple lines.'
+        self.parameters['colors'] = None
         self._zero_line_style = {'y': 0,
                                  'color': '#999999'}
         self._ticklabel_format = {'style': 'sci',
@@ -167,14 +168,17 @@ class MultiLinePlot(aspecd.plotting.MultiPlotter):
                                   'useMathText': True}
 
     def _create_plot(self):
+        self._display_zero_line()
         self._display_data()
         self._set_axes()
-        self._display_zero_line()
 
     def _display_data(self):
         print(self.datasets)
-        for dataset in self.datasets:
-            self.axes.plot(dataset.data.axes[0].values, dataset.data.data)
+        for i, dataset in enumerate(self.datasets):
+            if self.parameters['colors']:
+                self.axes.plot(dataset.data.axes[0].values, dataset.data.data, color=self.parameters['colors'][i])
+            else:
+                self.axes.plot(dataset.data.axes[0].values, dataset.data.data)
 
     def _set_axes(self):
         self.axes.set_xlim([self.datasets[0].data.axes[0].values[0],

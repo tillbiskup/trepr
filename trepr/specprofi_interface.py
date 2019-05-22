@@ -8,7 +8,7 @@ interface.
 import collections
 import numpy as np
 
-import SpecProFi.specprofi_oop as spf
+import fitpy.fitpy as fp
 import spinpy.parameter_classes.parameters as prmt
 
 
@@ -58,7 +58,7 @@ class SpecProFiInterface:
         # protected properties
         self._exp = prmt.ExperimentalParameters()
         self._opt = prmt.OptionalParameters()
-        self._fit_opt = spf.FitOpt()
+        self._fit_opt = fp.FitOpt()
         self._sys = list()
         self._vary = list()
         self._exp_list = list()
@@ -159,7 +159,7 @@ class SpecProFiInterface:
     def _perform_fitting(self):
         """Call specprofi_oop.SpecProFi to fit the dataset."""
         if self._number_of_datasets is 1:
-            fitting_object = spf.SpecProFi(self._y_data,
+            fitting_object = fp.fitpy(self._y_data,
                                            self._sys,
                                            self._vary,
                                            self._exp,
@@ -170,7 +170,7 @@ class SpecProFiInterface:
             fitting_object.fit()
             self.result = fitting_object.result
         else:
-            fitting_object = spf.SpecProFi(tuple(self._y_data),
+            fitting_object = fp.fitpy(tuple(self._y_data),
                                            self._sys,
                                            self._vary,
                                            tuple(self._exp_list),
