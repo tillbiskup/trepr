@@ -1,7 +1,7 @@
 """
-Interface between SpecProFi and the trep package.
+Interface between the trepr and fitpy packages.
 
-One main aspect of connecting the trepr package to SpecProFi is a functional
+One main aspect of connecting the trepr package to FitPy is a functional
 interface.
 """
 
@@ -24,7 +24,7 @@ class DimensionError(Error):
 
 
 class FitPyInterface:
-    """Call SpecProFi with given fitting parameters and a given dataset.
+    """Call FitPy with given fitting parameters and a given dataset.
 
     In order to interpret a spectrum, it is essential to know the parameters
     that make up the shape of the spectrum. To achieve this, the spectrum can
@@ -157,27 +157,27 @@ class FitPyInterface:
         self._fitting_routine = self.parameters['fitting']['FittingRoutine']
 
     def _perform_fitting(self):
-        """Call specprofi_oop.SpecProFi to fit the dataset."""
+        """Call fitpy.FitPy to fit the dataset."""
         if self._number_of_datasets is 1:
-            fitting_object = fp.fitpy(self._y_data,
-                                           self._sys,
-                                           self._vary,
-                                           self._exp,
-                                           self._opt,
-                                           self._fit_opt,
-                                           self._fitting_routine,
-                                           self.parameters)
+            fitting_object = fp.FitPy(self._y_data,
+                                      self._sys,
+                                      self._vary,
+                                      self._exp,
+                                      self._opt,
+                                      self._fit_opt,
+                                      self._fitting_routine,
+                                      self.parameters)
             fitting_object.fit()
             self.result = fitting_object.result
         else:
-            fitting_object = fp.fitpy(tuple(self._y_data),
-                                           self._sys,
-                                           self._vary,
-                                           tuple(self._exp_list),
-                                           self._opt,
-                                           self._fit_opt,
-                                           self._fitting_routine,
-                                           self.parameters)
+            fitting_object = fp.FitPy(tuple(self._y_data),
+                                      self._sys,
+                                      self._vary,
+                                      tuple(self._exp_list),
+                                      self._opt,
+                                      self._fit_opt,
+                                      self._fitting_routine,
+                                      self.parameters)
             fitting_object.fit()
             self.result = fitting_object.result
 
