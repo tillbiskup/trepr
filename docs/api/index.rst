@@ -19,7 +19,7 @@ An alphabetic list of the submodules available within the trepr package. The act
    trepr.plotting
    trepr.processing
    trepr.report
-   trepr.specprofi_interface
+   trepr.fitpy_interface
 
 Module contents
 ---------------
