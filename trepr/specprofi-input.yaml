@@ -12,8 +12,6 @@ fitting:
       harmonic: 0
       spin: 1
 
-
-
   Exp:
     microwave_frequency: 9.69
     field_range: [280.0, 410.0]

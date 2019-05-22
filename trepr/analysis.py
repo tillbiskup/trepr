@@ -21,10 +21,10 @@ import scipy.constants
 import aspecd.analysis
 import aspecd.metadata
 import aspecd.utils
-import trepr.specprofi_interface
+import trepr.fitpy_interface
 
 
-class MwFreqAnalysis(aspecd.analysis.AnalysisStep):
+class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
     """
     Calculate the frequency drift and compare it with the step size.
 
@@ -95,7 +95,7 @@ class MwFreqAnalysis(aspecd.analysis.AnalysisStep):
             self._ratio_frequency_drift_to_step_size
 
 
-class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
+class TimeStampAnalysis(aspecd.analysis.SingleAnalysisStep):
     """
     Calculate the time spent for recording each time trace.
 
@@ -169,7 +169,7 @@ class TimeStampAnalysis(aspecd.analysis.AnalysisStep):
         self.result['time spent per time trace'] = self._time_stamp_datetimes
 
 
-class FittingAnalysis(aspecd.analysis.AnalysisStep):
+class FittingAnalysis(aspecd.analysis.SingleAnalysisStep):
     """
     Fit a given spectrum with a set of parameters.
 
@@ -224,7 +224,7 @@ class FittingAnalysis(aspecd.analysis.AnalysisStep):
         self._fitting_parameters = yaml.dict
 
     def _fit(self):
-        fitting_obj = trepr.specprofi_interface.SpecProFiInterface()
+        fitting_obj = trepr.fitpy_interface.FitPyInterface()
         fitting_obj.datasets = self.dataset
         fitting_obj.parameters = self._fitting_parameters
         fitting_obj.fit()
@@ -240,6 +240,82 @@ class FittingAnalysis(aspecd.analysis.AnalysisStep):
         self.result.data.data = self._fitting_result[-1]
         self.result.data.axes[-1].unit = self.dataset.data.axes[-1].unit
         self.result.data.axes[-1].quantity = self.dataset.data.axes[-1].quantity
+
+
+class MultiFittingAnalysis(aspecd.analysis.MultiAnalysisStep):
+    """
+    Fit a given spectrum with a set of parameters.
+
+    In order to interpret a spectrum, it is essential to know the parameters
+    that make up the shape of the spectrum. To achieve this, a parametrised
+    simulation can be fitted to the experimental data and the best possible
+    parameters determined by using a least-square algorithm.
+
+    Currently the fitting relies on the SpecProFi package. For further
+    information see: https://www.specprofi.de/
+
+    An example for using the fitting analysis step, including reading the
+    parameters from a YAML file, may look like this::
+
+        dataset_ = trepr.dataset.ExperimentalDataset()
+
+        yaml_file = aspecd.utils.Yaml()
+        yaml_file.import_from('path/to/your/YAML/file')
+        input_parameters = yaml_file.dict
+
+        analysis_step = FittingAnalysis()
+        analysis_step.parameters = input_parameters
+        dataset_.analyse(analysis_step)
+
+    Attributes
+    ----------
+    description : str
+        Describes the aim of the class.
+
+    result : :class:`trepr.dataset.CalculatedDataset`
+        Calculated dataset containing the fitted data.
+
+    """
+
+    def __init__(self):
+        # public properties
+        super().__init__()
+        self.description = 'Fitting analysis.'
+        self.result = list()
+        # protected properties
+        self._fitting_result = None
+
+    def _perform_task(self):
+        """Perform all methods to do analysis."""
+        self._convert_parameters_to_dict()
+        self._fit()
+        self._write_result()
+
+    def _convert_parameters_to_dict(self):
+        yaml = aspecd.utils.Yaml()
+        yaml.read_from(self.parameters)
+        self._fitting_parameters = yaml.dict
+
+    def _fit(self):
+        fitting_obj = trepr.fitpy_interface.FitPyInterface()
+        fitting_obj.datasets = self.datasets
+        fitting_obj.parameters = self._fitting_parameters
+        fitting_obj.fit()
+        self._fitting_result = fitting_obj.result
+
+    def _write_result(self):
+        """Write the data from the fitting to the
+        :attr:`trepr.analysis.FittingAnalysis.result`."""
+        for k, dataset in enumerate(self.datasets):
+            result = trepr.dataset.CalculatedDataset()
+            for i in range(len(dataset.data.axes)-1):
+                result.data.axes[i].values = np.asarray(self._fitting_result[i])
+                result.data.axes[i].unit = dataset.data.axes[i].unit
+                result.data.axes[i].quantity = dataset.data.axes[i].quantity
+            result.data.data = np.asarray(self._fitting_result[-1][k])
+            result.data.axes[-1].unit = dataset.data.axes[-1].unit
+            result.data.axes[-1].quantity = dataset.data.axes[-1].quantity
+            self.result.append(result)
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ import trepr.io
 import trepr.dataset
 import trepr.processing
 import aspecd.utils
-import trepr.specprofi_interface
+import trepr.fitpy_interface
 
 imp1 = trepr.io.SpeksimImporter(
     '/home/popp/nas/DatenBA/PCDTBT-ODCB/X-Band/080K/messung17/')
@@ -29,7 +29,7 @@ yaml = aspecd.utils.Yaml()
 yaml.read_from('specprofi-input.yaml')
 parameter_dict = yaml.dict
 
-obj = trepr.specprofi_interface.SpecProFiInterface()
+obj = trepr.fitpy_interface.FitPyInterface()
 obj.datasets = data_sets
 obj.parameters = parameter_dict
 obj.fit()

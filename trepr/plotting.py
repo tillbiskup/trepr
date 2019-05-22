@@ -173,7 +173,6 @@ class MultiLinePlot(aspecd.plotting.MultiPlotter):
         self._set_axes()
 
     def _display_data(self):
-        print(self.datasets)
         for i, dataset in enumerate(self.datasets):
             if self.parameters['colors']:
                 self.axes.plot(dataset.data.axes[0].values, dataset.data.data, color=self.parameters['colors'][i])

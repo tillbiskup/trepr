@@ -23,7 +23,7 @@ class DimensionError(Error):
         self.message = message
 
 
-class SpecProFiInterface:
+class FitPyInterface:
     """Call SpecProFi with given fitting parameters and a given dataset.
 
     In order to interpret a spectrum, it is essential to know the parameters
@@ -211,5 +211,5 @@ if __name__ == '__main__':
     yaml = aspecd.utils.Yaml()
     yaml.read_from('specprofi-input.yaml')
     parameter_dict = yaml.dict
-    obj = SpecProFiInterface(parameter_dict, data_sets)
+    obj = FitPyInterface(parameter_dict, data_sets)
     obj.fit()
