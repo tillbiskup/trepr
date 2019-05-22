@@ -26,7 +26,7 @@ data_set2.process(averaging)
 data_set3.process(averaging)
 data_sets = data_set2
 yaml = aspecd.utils.Yaml()
-yaml.read_from('specprofi-input.yaml')
+yaml.read_from('fitpy-input.yaml')
 parameter_dict = yaml.dict
 
 obj = trepr.fitpy_interface.FitPyInterface()

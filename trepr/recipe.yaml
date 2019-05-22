@@ -20,7 +20,7 @@ tasks:
   - kind: analysis
     type: FittingAnalysis
     properties:
-      parameters: /home/jara/Dokumente/python/trepr/trepr/specprofi-input.yaml
+      parameters: /home/jara/Dokumente/python/trepr/trepr/fitpy-input.yaml
     apply_to:
       - /home/jara/Dokumente/python/Daten/messung17/
     result: fit_result

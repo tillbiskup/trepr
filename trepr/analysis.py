@@ -178,8 +178,8 @@ class FittingAnalysis(aspecd.analysis.SingleAnalysisStep):
     simulation can be fitted to the experimental data and the best possible
     parameters determined by using a least-square algorithm.
 
-    Currently the fitting relies on the SpecProFi package. For further
-    information see: https://www.specprofi.de/
+    Currently the fitting relies on the FitPy package. For further
+    information see: https://www.fitpy.de/
 
     An example for using the fitting analysis step, including reading the
     parameters from a YAML file, may look like this::
@@ -251,8 +251,8 @@ class MultiFittingAnalysis(aspecd.analysis.MultiAnalysisStep):
     simulation can be fitted to the experimental data and the best possible
     parameters determined by using a least-square algorithm.
 
-    Currently the fitting relies on the SpecProFi package. For further
-    information see: https://www.specprofi.de/
+    Currently the fitting relies on the FitPy package. For further
+    information see: https://www.fitpy.de/
 
     An example for using the fitting analysis step, including reading the
     parameters from a YAML file, may look like this::
@@ -334,7 +334,7 @@ if __name__ == '__main__':
     averaging = trepr.processing.Averaging(dimension=0, avg_range=[4.e-7, 6.e-7], unit='axis')
     dataset_.process(averaging)
     fitting = FittingAnalysis()
-    fitting.parameters = 'specprofi-input.yaml'
+    fitting.parameters = 'fitpy-input.yaml'
     fit = dataset_.analyse(fitting)
 
     plotter_obj = trepr.plotting.LinePlot()

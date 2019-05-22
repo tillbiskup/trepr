@@ -1,6 +1,6 @@
 ---
 format:
-  type: SpecProFi input
+  type: FitPy input
   version: 0.0.1
 
 fitting:

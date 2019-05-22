@@ -209,7 +209,7 @@ if __name__ == '__main__':
     data_set3.process(averaging)
     data_sets = data_set1
     yaml = aspecd.utils.Yaml()
-    yaml.read_from('specprofi-input.yaml')
+    yaml.read_from('fitpy-input.yaml')
     parameter_dict = yaml.dict
     obj = FitPyInterface(parameter_dict, data_sets)
     obj.fit()
