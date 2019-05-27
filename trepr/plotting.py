@@ -119,6 +119,7 @@ class LinePlot(aspecd.plotting.SinglePlotter):
         # public properties
         self.style = ''
         self.description = '1D line plot.'
+        self.parameters['color'] = None
         self.filename = ''
         # protected properties
         self._zero_line_style = {'y': 0,
@@ -130,13 +131,24 @@ class LinePlot(aspecd.plotting.SinglePlotter):
     def _create_plot(self):
         """Plot the given dataset with axes labels and a zero line."""
         self._set_style()
+        self._display_zero_line()
         self._display_data()
         self._set_axes()
-        self._display_zero_line()
+
+    def _set_style(self):
+        """Set the style to xkcd if indicated."""
+        if self.style == 'xkcd':
+            plt.xkcd()
 
     def _display_zero_line(self):
         """Create a horizontal line at zero."""
         plt.axhline(**self._zero_line_style)
+
+
+    def _display_data(self):
+        """Plot the data."""
+        self.axes.plot(self.dataset.data.axes[0].values,
+                       self.dataset.data.data, color=self.parameters['color'])
 
     def _set_axes(self):
         """Set the limits of the x-axis as well as the ticklabel format."""
@@ -144,23 +156,13 @@ class LinePlot(aspecd.plotting.SinglePlotter):
                             self.dataset.data.axes[0].values[-1]])
         plt.ticklabel_format(**self._ticklabel_format)
 
-    def _display_data(self):
-        """Plot the data."""
-        self.axes.plot(self.dataset.data.axes[0].values,
-                       self.dataset.data.data)
-
-    def _set_style(self):
-        """Set the style to xkcd if indicated."""
-        if self.style == 'xkcd':
-            plt.xkcd()
-
 
 class MultiLinePlot(aspecd.plotting.MultiPlotter):
 
     def __init__(self):
         super().__init__()
         self.description = '1D line plot for multiple lines.'
-        self.parameters['colors'] = None
+        self.parameters['color'] = None
         self._zero_line_style = {'y': 0,
                                  'color': '#999999'}
         self._ticklabel_format = {'style': 'sci',
@@ -172,10 +174,15 @@ class MultiLinePlot(aspecd.plotting.MultiPlotter):
         self._display_data()
         self._set_axes()
 
+    def _display_zero_line(self):
+        """Create a horizontal line at zero."""
+        plt.axhline(**self._zero_line_style)
+
     def _display_data(self):
         for i, dataset in enumerate(self.datasets):
-            if self.parameters['colors']:
-                self.axes.plot(dataset.data.axes[0].values, dataset.data.data, color=self.parameters['colors'][i])
+            if self.parameters['color']:
+                self.axes.plot(dataset.data.axes[0].values, dataset.data.data,
+                               color=self.parameters['color'][i])
             else:
                 self.axes.plot(dataset.data.axes[0].values, dataset.data.data)
 
@@ -183,10 +190,6 @@ class MultiLinePlot(aspecd.plotting.MultiPlotter):
         self.axes.set_xlim([self.datasets[0].data.axes[0].values[0],
                             self.datasets[0].data.axes[0].values[-1]])
         plt.ticklabel_format(**self._ticklabel_format)
-
-    def _display_zero_line(self):
-        """Create a horizontal line at zero."""
-        plt.axhline(**self._zero_line_style)
 
 
 class ColormapAdjuster:

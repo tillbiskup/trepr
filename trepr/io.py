@@ -54,14 +54,14 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         # protected properties
         self._headerlines = 5
         self._data = np.array([])
-        self._file_format = ''
+        self._file_format = str()
         self._time_stamps = np.array([])
         self._mwfreq = np.array([])
-        self._comment_line = ''
-        self._time_unit = ''
-        self._field_unit = ''
-        self._intensity_unit = ''
-        self._mwfreq_unit = ''
+        self._comment_line = str()
+        self._time_unit = str()
+        self._field_unit = str()
+        self._intensity_unit = str()
+        self._mwfreq_unit = str()
         self._time_axis = np.array([])
         self._field_axis = np.array([])
         self._infofile = aspecd.infofile.Infofile()
@@ -94,6 +94,11 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         self._data = \
             np.reshape(self._data, [len(filenames), self._time_points])
 
+    def _get_filenames(self):
+        filenames = sorted(glob.glob(os.path.join(self.source,
+                                                  '*.[0-9][0-9][0-9]')))
+        return filenames
+
     def _process_timetrace(self, filename):
         with open(filename) as file:
             raw_data = file.read()
@@ -108,11 +113,6 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
                                   skiprows=self._headerlines)
         numeric_data = np.reshape(numeric_data, self._time_points)
         return numeric_data
-
-    def _get_filenames(self):
-        filenames = sorted(glob.glob(os.path.join(self.source,
-                                                  '*.[0-9][0-9][0-9]')))
-        return filenames
 
     def _parse_header(self):
         """Execute the methods which parse the header lines."""

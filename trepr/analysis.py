@@ -21,7 +21,7 @@ import scipy.constants
 import aspecd.analysis
 import aspecd.metadata
 import aspecd.utils
-import trepr.fitpy_interface
+import trepr.interfaces
 
 
 class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
@@ -169,6 +169,68 @@ class TimeStampAnalysis(aspecd.analysis.SingleAnalysisStep):
         self.result['time spent per time trace'] = self._time_stamp_datetimes
 
 
+class SimulationAnalysis(aspecd.analysis.SingleAnalysisStep):
+    """
+    Simulate a spectrum with a given set of parameters.
+
+    Sometimes it may be helpful to simulate a spectrum with a given set of
+    Parameters. The simulation done in this analysis step relies on the SpinPy
+    package. For further information see: https://www.spinpy.de/
+
+    Attributes
+    ----------
+    description : str
+        Describes the aim of the class.
+
+    result : :class:`trepr.dataset.CalculatedDataset`
+        Calculated dataset containing the simulated data.
+    """
+
+    def __init__(self):
+        # public properties
+        super().__init__()
+        self.description = 'Simulation analysis.'
+        self.result = trepr.dataset.CalculatedDataset()
+        self.parameters['axes'] = None
+        # protected properties
+        self._simulation_result = None
+
+    def _perform_task(self):
+        self._convert_parameters_to_dict()
+        self._simulate()
+        self._write_result()
+
+    def _convert_parameters_to_dict(self):
+        yaml = aspecd.utils.Yaml()
+        yaml.read_from(self.parameters['input'])
+        self._simulation_parameters = yaml.dict
+
+    def _simulate(self):
+        simulation_obj = trepr.interfaces.SpinPyInterface()
+        simulation_obj.parameters = self._simulation_parameters
+        simulation_obj.simulate()
+        self._simulation_result = simulation_obj.result
+
+    def _write_result(self):
+        """Write the data from the simulation to the
+        :attr:`trepr.analysis.SimulationAnalysis.result`."""
+        for i in range(len(self.dataset.data.axes)-1):
+            self.result.data.axes[i].values = self._simulation_result[i]
+            if 'unit' in self.parameters['axes'][i]:
+                self.result.data.axes[i].unit = \
+                    self.parameters['axes'][i]['unit']
+            if 'quantity' in self.parameters['axes'][i]:
+                self.result.data.axes[i].quantity = \
+                    self.parameters['axes'][i]['quantity']
+        self.result.data.data = self._simulation_result[-1]
+        if 'unit' in self.parameters['axes'][-1]:
+            self.result.data.axes[-1].unit = \
+                self.parameters['axes'][-1]['unit']
+        if 'quantity' in self.parameters['axes'][-1]:
+            self.result.data.axes[-1].quantity = \
+                self.parameters['axes'][-1]['quantity']
+
+
 class FittingAnalysis(aspecd.analysis.SingleAnalysisStep):
     """
     Fit a given spectrum with a set of parameters.
@@ -220,11 +282,11 @@ class FittingAnalysis(aspecd.analysis.SingleAnalysisStep):
 
     def _convert_parameters_to_dict(self):
         yaml = aspecd.utils.Yaml()
-        yaml.read_from(self.parameters)
+        yaml.read_from(self.parameters['input'])
         self._fitting_parameters = yaml.dict
 
     def _fit(self):
-        fitting_obj = trepr.fitpy_interface.FitPyInterface()
+        fitting_obj = trepr.interfaces.FitPyInterface()
         fitting_obj.datasets = self.dataset
         fitting_obj.parameters = self._fitting_parameters
         fitting_obj.fit()
@@ -236,10 +298,12 @@ class FittingAnalysis(aspecd.analysis.SingleAnalysisStep):
         for i in range(len(self.dataset.data.axes)-1):
             self.result.data.axes[i].values = self._fitting_result[i]
             self.result.data.axes[i].unit = self.dataset.data.axes[i].unit
-            self.result.data.axes[i].quantity = self.dataset.data.axes[i].quantity
+            self.result.data.axes[i].quantity = \
+                self.dataset.data.axes[i].quantity
         self.result.data.data = self._fitting_result[-1]
         self.result.data.axes[-1].unit = self.dataset.data.axes[-1].unit
-        self.result.data.axes[-1].quantity = self.dataset.data.axes[-1].quantity
+        self.result.data.axes[-1].quantity = \
+            self.dataset.data.axes[-1].quantity
 
 
 class MultiFittingAnalysis(aspecd.analysis.MultiAnalysisStep):
@@ -257,15 +321,15 @@ class MultiFittingAnalysis(aspecd.analysis.MultiAnalysisStep):
     An example for using the fitting analysis step, including reading the
     parameters from a YAML file, may look like this::
 
-        dataset_ = trepr.dataset.ExperimentalDataset()
+        datasets = [dataset1, dataset2]
 
         yaml_file = aspecd.utils.Yaml()
         yaml_file.import_from('path/to/your/YAML/file')
         input_parameters = yaml_file.dict
 
-        analysis_step = FittingAnalysis()
+        analysis_step = MultiFittingAnalysis()
         analysis_step.parameters = input_parameters
-        dataset_.analyse(analysis_step)
+        datasets.analyse(analysis_step)
 
     Attributes
     ----------
@@ -280,7 +344,7 @@ class MultiFittingAnalysis(aspecd.analysis.MultiAnalysisStep):
     def __init__(self):
         # public properties
         super().__init__()
-        self.description = 'Fitting analysis.'
+        self.description = 'Fitting analysis for multiple datasets.'
         self.result = list()
         # protected properties
         self._fitting_result = None
@@ -293,11 +357,11 @@ class MultiFittingAnalysis(aspecd.analysis.MultiAnalysisStep):
 
     def _convert_parameters_to_dict(self):
         yaml = aspecd.utils.Yaml()
-        yaml.read_from(self.parameters)
+        yaml.read_from(self.parameters['input'])
         self._fitting_parameters = yaml.dict
 
     def _fit(self):
-        fitting_obj = trepr.fitpy_interface.FitPyInterface()
+        fitting_obj = trepr.interfaces.FitPyInterface()
         fitting_obj.datasets = self.datasets
         fitting_obj.parameters = self._fitting_parameters
         fitting_obj.fit()
@@ -309,7 +373,8 @@ class MultiFittingAnalysis(aspecd.analysis.MultiAnalysisStep):
         for k, dataset in enumerate(self.datasets):
             result = trepr.dataset.CalculatedDataset()
             for i in range(len(dataset.data.axes)-1):
-                result.data.axes[i].values = np.asarray(self._fitting_result[i])
+                result.data.axes[i].values = \
+                    np.asarray(self._fitting_result[i])
                 result.data.axes[i].unit = dataset.data.axes[i].unit
                 result.data.axes[i].quantity = dataset.data.axes[i].quantity
             result.data.data = np.asarray(self._fitting_result[-1][k])

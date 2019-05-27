@@ -67,7 +67,7 @@ class FitPyInterface:
         self._yaml_obj = None
         self._path = None
         self._number_of_datasets = None
-        self._fitting_routine = None
+        self._simulation_routine = None
 
     def fit(self):
         """Execute all necessary methods."""
@@ -77,7 +77,7 @@ class FitPyInterface:
         self._set_x_and_y_data()
         self._set_sys_exp_opt_fitopt()
         self._set_vary()
-        self._get_fitting_routine()
+        self._get_simulation_routine()
         self._perform_fitting()
 
     def _get_number_of_datasets(self):
@@ -125,7 +125,7 @@ class FitPyInterface:
             raise DimensionError('Dimension of the dataset needs to be 1.')
 
     def _set_sys_exp_opt_fitopt(self):
-        """Set the spin system, the experimental as well as the optional attributes."""
+        """Set the sys, exp, opt and fitopt attributes."""
         for i in range(len(self.parameters['fitting']['Sys'])):
             self._sys.append(prmt.SpinSystem())
             for key in self.parameters['fitting']['Sys'][i]:
@@ -152,9 +152,10 @@ class FitPyInterface:
                     self.parameters['fitting']['Vary'][i][key]
             self._vary.append(vary_dict)
 
-    def _get_fitting_routine(self):
+    def _get_simulation_routine(self):
         """Get the full class name of the fitting routine."""
-        self._fitting_routine = self.parameters['fitting']['FittingRoutine']
+        self._simulation_routine = \
+            self.parameters['fitting']['SimulationRoutine']
 
     def _perform_fitting(self):
         """Call fitpy.FitPy to fit the dataset."""
@@ -165,10 +166,8 @@ class FitPyInterface:
                                       self._exp,
                                       self._opt,
                                       self._fit_opt,
-                                      self._fitting_routine,
+                                      self._simulation_routine,
                                       self.parameters)
-            fitting_object.fit()
-            self.result = fitting_object.result
         else:
             fitting_object = fp.FitPy(tuple(self._y_data),
                                       self._sys,
@@ -176,10 +175,10 @@ class FitPyInterface:
                                       tuple(self._exp_list),
                                       self._opt,
                                       self._fit_opt,
-                                      self._fitting_routine,
+                                      self._simulation_routine,
                                       self.parameters)
-            fitting_object.fit()
-            self.result = fitting_object.result
+        fitting_object.fit()
+        self.result = fitting_object.result
 
 
 if __name__ == '__main__':
