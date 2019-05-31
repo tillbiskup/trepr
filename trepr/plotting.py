@@ -35,9 +35,6 @@ class ScaledImagePlot(aspecd.plotting.SinglePlotter):
     description : str
         Describes the aim of the class.
 
-    filename : str
-        Name of the resulting plot file.
-
     """
 
     def __init__(self):
@@ -45,7 +42,6 @@ class ScaledImagePlot(aspecd.plotting.SinglePlotter):
         # public properties
         self.style = ''
         self.description = '2D plot as scaled image.'
-        self.filename = ''
         # protected properties
         self._extent = list()
         self._style_dict = {'interpolation': 'bilinear',
@@ -109,9 +105,6 @@ class LinePlot(aspecd.plotting.SinglePlotter):
     description : str
         Describes the aim of the class.
 
-    filename : str
-        Name of the resulting plot file.
-
     """
 
     def __init__(self):
@@ -120,7 +113,6 @@ class LinePlot(aspecd.plotting.SinglePlotter):
         self.style = ''
         self.description = '1D line plot.'
         self.parameters['color'] = None
-        self.filename = ''
         # protected properties
         self._zero_line_style = {'y': 0,
                                  'color': '#999999'}

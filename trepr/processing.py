@@ -259,7 +259,7 @@ class Normalise(aspecd.processing.ProcessingStep):
     def __init__(self):
         super().__init__()
         self.description = 'Normalise data in dataset.'
-        self.parameters['type'] = str()
+        self.parameters['type'] = 'area'
 
     def _perform_task(self):
         if self.parameters['type'] == "area":

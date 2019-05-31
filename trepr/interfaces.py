@@ -249,3 +249,9 @@ class FitPyInterface:
                                       self.parameters)
         fitting_object.fit()
         self.result = fitting_object.result
+
+if __name__ == '__main__':
+    obj = SpinPyInterface()
+    obj.parameters = '/home/jara/Dokumente/masterthesis/Parametre_Input/Simualtion1.yaml'
+    obj.simulate()
+    print(obj.result)

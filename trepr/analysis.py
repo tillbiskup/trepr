@@ -214,7 +214,7 @@ class SimulationAnalysis(aspecd.analysis.SingleAnalysisStep):
     def _write_result(self):
         """Write the data from the simulation to the
         :attr:`trepr.analysis.SimulationAnalysis.result`."""
-        for i in range(len(self.dataset.data.axes)-1):
+        for i in range(len(self.result.data.axes)-1):
             self.result.data.axes[i].values = self._simulation_result[i]
             if 'unit' in self.parameters['axes'][i]:
                 self.result.data.axes[i].unit = \
@@ -384,25 +384,20 @@ class MultiFittingAnalysis(aspecd.analysis.MultiAnalysisStep):
 
 
 if __name__ == '__main__':
-    import trepr.io
-    import trepr.processing
     import trepr.dataset
+    import trepr.interfaces
+    obj = SimulationAnalysis()
+    obj.parameters['axes'] = [dict(), dict()]
+    obj.parameters['axes'][0]['quantity'] = 'magnetic field'
+    obj.parameters['axes'][0]['unit'] = 'mT'
+    obj.parameters['axes'][1]['quantity'] = 'intensity'
+    obj.parameters['axes'][1]['unit'] = 'V'
+    obj.parameters['input'] = '/home/jara/Dokumente/masterthesis/Parameter_Input/Simulation5.yaml'
+    obj._perform_task()
     import trepr.plotting
+    plot = trepr.plotting.LinePlot()
+    dataset_ = obj.result
+    saver = trepr.plotting.Saver(filename='simulation5.pdf')
+    ploting = dataset_.plot(plot)
+    ploting.save(saver)
 
-    imp = trepr.io.SpeksimImporter(
-        '/home/popp/nas/Python/Daten/messung17/')
-    dataset_ = trepr.dataset.ExperimentalDataset()
-    dataset_.import_from(imp)
-
-    pretrigger = trepr.processing.PretriggerOffsetCompensation()
-    dataset_.process(pretrigger)
-    averaging = trepr.processing.Averaging(dimension=0, avg_range=[4.e-7, 6.e-7], unit='axis')
-    dataset_.process(averaging)
-    fitting = FittingAnalysis()
-    fitting.parameters = 'fitpy-input.yaml'
-    fit = dataset_.analyse(fitting)
-
-    plotter_obj = trepr.plotting.LinePlot()
-    plot = fit.result.plot(plotter_obj)
-    saver = aspecd.plotting.Saver(filename='plotterli.pdf')
-    plot.save(saver)
