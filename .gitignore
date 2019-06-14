@@ -13,6 +13,7 @@
 
 # Setuptools distribution folder.
 /dist/
+/build/
 
 /*.egg-info
 /*.egg

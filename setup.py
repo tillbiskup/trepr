@@ -8,9 +8,6 @@ with open(os.path.join(os.path.dirname(__file__), 'VERSION')) as version_file:
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
     readme = f.read()
 
-with open(os.path.join(os.path.dirname(__file__), 'LICENSE')) as f:
-    license_ = f.read()
-
 setup(
     name='trepr',
     version=version,
@@ -20,11 +17,14 @@ setup(
     author='Jara Popp, Till Biskup',
     author_email='j.popp@gmx.ch',
     url='https://www.trepr.de/',
-    license=license_,
+    project_urls={
+        "Documentation": "https://docs.trepr.de/",
+        "Source": "https://github.com/tillbiskup/trepr",
+    },
     packages=setuptools.find_packages(exclude=('doc')),
     keywords=[
-        'spectroscopy'
-        'trepr'
+        'spectroscopy', 
+        'trepr', 
         'data processing and analysis'
     ],
     classifiers=[
