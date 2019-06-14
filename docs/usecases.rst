@@ -70,7 +70,8 @@ The recipe contains all datasets to analyse as well as the tasks to perform. Tas
 
     ---
     format:
-      type: recipe
+      type: ASpecD recipe
+      version: 0.1.0
 
     datasets:
       - path/to/your/dataset/
@@ -86,16 +87,45 @@ The recipe contains all datasets to analyse as well as the tasks to perform. Tas
             dimension: 0
             range: [4.e-7, 6.e-7]
             unit: axis
-      - kind: analysis
-        type: FittingAnalysis
+        apply_to:
+          - path/to/your/dataset
+          - path/to/another/dataset
+      - kind: multianalysis
+        type: MultiFittingAnalysis
         properties:
-          parameters: path/to/your/fitting/input/file.yaml
+          parameters:
+            inpput: path/to/your/fitting/input/file.yaml
         apply_to:
           - path/to/your/dataset/
-        result: path/where/you/want/to/store/the/result
-      - kind: plot
-        type: LinePlot
-      - kind: plot
-        type: Saver
+          - path/to/another/datset
+        result:
+          - fit_result1
+          - fit_result2
+      - kind: processing
+        type: normalise
+        parameters:
+          - type: area
+        apply_to:
+          - path/to/your/dataset
+          - path/to/another/datset
+          - fit_result1
+          - fit_result2
+      - kind: multiplot
+        type: MultiLinePlot
+        apply_to:
+          - path/to/your/dataset
+          - fit_result1
         properties:
-          filename: path/where/you/want/to/store/the/plot.pdf
+          filename: figure1.pdf
+      - kind: multiplot
+        type: MultiLinePlot
+        apply_to:
+          - path/to/another/dataset
+          - fit_result2
+        properties:
+          filename: figure2.pdf
+
+
+To let the chef cook the recipe, simply call::
+
+    python3 path/to/the/trepr/module/chef_de_service.py path/to/your/recipe.yaml
