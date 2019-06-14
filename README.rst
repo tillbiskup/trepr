@@ -1,12 +1,12 @@
 trepr
 =====
 
-trepr is a package, based on the ASpecD framework, for handling trepr data. Due to the inheritance from the ASpecD superclass, all data generated with the trepr package are completely reproducible and have a complete history.
+trepr is a package for handling data obtained using time-resolved electron paramagnetic resonance (TREPR) spectroscopy. It is based on the `ASpecD framework <https://www.aspecd.de/>`_. Due to inheriting from the ASpecD superclasses, all data generated with the trepr package are completely reproducible and have a complete history.
 
 .. warning::
-  The trepr package is currently under active development and still considered in Alpha development state. Therefore, expect frequent changes in features and public APIs that may break your own code. Nevertheless, feedback as well as feature requests are highly welcome.
+    The trepr package is currently under active development and still considered in Alpha development state. Therefore, expect frequent changes in features and public APIs that may break your own code. Nevertheless, feedback as well as feature requests are highly welcome.
 
-The easiest way to use the trepr package is to hand over a yaml-file to the trepr-caller::
+The easiest way to use the trepr package is to hand over a yaml file to the trepr caller::
 
     import trepr
     trepr.Caller('your_yaml_file.yaml')
@@ -29,12 +29,12 @@ Install the package by running::
 Contribute
 ----------
 
-- Source Code: gitlab.physchem.uni-freiburg.de/popp/trepr-python
+- Source Code: https://github.com/tillbiskup/trepr
 
 Support
 -------
 
-If you are having issues, please contact us under j.popp@gmx.ch
+If you are having issues, please contact the package authors.
 
 License
 -------
