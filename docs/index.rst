@@ -30,7 +30,7 @@ Install the package by running::
 Contribute
 ----------
 
-- Source Code: gitlab.physchem.uni-freiburg.de/popp/trepr-python
+- Source Code: https://github.com/tillbiskup/trepr
 
 Support
 -------
