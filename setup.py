@@ -35,7 +35,7 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Intended Audience :: Science/Research',
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Topic :: Scientific/Engineering',
         'Topic :: Software Development :: Libraries :: Application Frameworks'
     ],
@@ -51,7 +51,7 @@ setup(
         'pyDOE',
         'pyparsing',
         'python-dateutil',
-        'pywt',
+        'PyWavelets',
         'oyaml',
         'scipy',
         'six'

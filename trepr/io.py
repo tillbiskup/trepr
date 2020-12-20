@@ -284,11 +284,14 @@ if __name__ == '__main__':
     import trepr.plotting
     import trepr.processing
     dataset = trepr.dataset.ExperimentalDataset()
-    imp = SpeksimImporter(source='/home/popp/nas/Python/Daten/speksim-pentacen/speksim-pentacen/')
+    imp = SpeksimImporter(source='/home/till/Documents/Uni/Daten/trepr'
+                                 '/Pentacen/20150728/messung01/')
     dataset.import_from(imp)
     poc = trepr.processing.PretriggerOffsetCompensation()
     process1 = dataset.process(poc)
     saver_obj1 = aspecd.plotting.Saver(filename='plotter.pdf')
     plotter_obj1 = trepr.plotting.ScaledImagePlot()
-    plot1 = dataset.plot(plotter_obj1)
+    plotter_obj2 = aspecd.plotting.SinglePlotter2D()
+    plot1 = dataset.plot(plotter_obj2)
+    plotter_obj2.figure.show()
     plot1.save(saver_obj1)

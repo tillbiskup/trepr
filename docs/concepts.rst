@@ -2,7 +2,7 @@
 Concepts
 ========
 
-The trepr package is based on the ASpecD framework, aiming at complete reproducibility---and whereever possible replicability---of data acquisition, processing, and analysis.
+The trepr package is based on the ASpecD framework, aiming at complete reproducibility---and wherever possible replicability---of data acquisition, processing, and analysis.
 
 
 Dataset
