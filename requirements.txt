@@ -30,3 +30,6 @@ Sphinx
 sphinx-theme
 sphinxcontrib-websupport
 urllib3
+
+colour
+setuptools

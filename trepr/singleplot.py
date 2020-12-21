@@ -6,6 +6,7 @@ import numpy as np
 import aspecd.plotting
 import trepr.dataset
 
+
 class LinePlot(aspecd.plotting.SinglePlotter):
     """Create a 1D line plot of a given dataset.
 

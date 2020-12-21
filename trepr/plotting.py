@@ -7,17 +7,13 @@ Additionally, savers (and stylers) are implemented.
 
 """
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-
-import numpy as np
-
 import aspecd.plotting
 import trepr.dataset
 
 
 from colour import Color
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.colors import ListedColormap
@@ -63,8 +59,6 @@ for i in range(0, 128):
 for i in range(128,255):
     jara_colors[i][0:3] = [1, 51/255, 51/255]
     jara_colors[i][3] = A_right[i-128]
-
-
 
 jara_cmap = ListedColormap(jara_colors)
 

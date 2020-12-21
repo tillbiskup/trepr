@@ -8,6 +8,7 @@ import glob
 import io
 import os
 import re
+from zipfile import ZipFile
 
 import datetime
 import numpy as np
@@ -16,6 +17,8 @@ import aspecd.annotation
 import aspecd.dataset
 import aspecd.io
 import aspecd.infofile
+import xmltodict as xmltodict
+
 import trepr.dataset
 
 
@@ -278,6 +281,33 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
 
     def _get_importer(self, source):
         return SpeksimImporter(source=source)
+
+
+class TezImporter(aspecd.io.DatasetImporter):
+
+    def __init__(self, source=''):
+        super().__init__(source=source)
+        # public properties
+        self.dataset = trepr.dataset.ExperimentalDataset()
+
+    def _import(self):
+        self._get_dir_and_filenames()
+        self._unpack_zip()
+        self.get_xml_data()
+
+    def _unpack_zip(self):
+        with ZipFile(self.source + '.tez', 'r') as zip_obj:
+            zip_obj.extractall(os.path.join(self.root_dir, 'tmp'))
+
+    def get_xml_data(self):
+        with open(os.path.join(self.root_dir, 'tmp', self.filename,
+                               'struct.xml'), 'r') as file:
+            xml_data = file.read()
+        xml_dict = xmltodict.parse(xml_data)
+        #print(xml_dict['struct'].keys())
+
+    def _get_dir_and_filenames(self):
+        self.root_dir, self.filename = os.path.split(self.source)
 
 
 if __name__ == '__main__':
