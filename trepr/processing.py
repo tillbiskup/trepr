@@ -273,7 +273,6 @@ class Normalise(aspecd.processing.ProcessingStep):
                                      sum(abs(self.dataset.data.data))
 
 
-
 if __name__ == '__main__':
     import trepr.io
 

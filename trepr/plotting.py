@@ -189,7 +189,6 @@ class LinePlot(aspecd.plotting.SinglePlotter):
         """Create a horizontal line at zero."""
         plt.axhline(**self._zero_line_style)
 
-
     def _display_data(self):
         """Plot the data."""
         self.axes.plot(self.dataset.data.axes[0].values,
