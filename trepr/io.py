@@ -331,9 +331,10 @@ class TezImporter(aspecd.io.DatasetImporter):
 
     def get_data_from_binary(self):
         with open(self.raw_data_shape_filename, 'r') as f:
-            tmp = re.findall(r'\d+', f.read())
-        shape = tuple(map(int, tmp))
-        raw_data = np.fromfile(self.raw_data_name, dtype='<f8').reshape(shape)
+            shape = list([int(x) for x in f.read().split()])
+        shape.reverse()  # Shape is given in reverse order?
+        raw_data = np.fromfile(self.raw_data_name, dtype='<f8')
+        raw_data = np.reshape(raw_data, shape).transpose()
         self.dataset.data.data = raw_data
 
 

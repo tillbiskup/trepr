@@ -15,7 +15,6 @@ class TestTezImporter(unittest.TestCase):
         self.dataset = trepr.dataset.ExperimentalDataset()
         self.tempdir = os.path.join(os.path.split(self.source)[0], 'tmp')
 
-
     def tearDown(self):
         if os.path.exists(self.tempdir):
             shutil.rmtree(self.tempdir)
@@ -30,6 +29,12 @@ class TestTezImporter(unittest.TestCase):
     def test_axes_are_created(self):
         self.dataset.import_from(self.importer)
         self.assertEqual(3, len(self.importer.dataset.data.axes))
+
+    def test_data_shape_matches_axes_lengths(self):
+        self.dataset.import_from(self.importer)
+        self.assertEqual((len(self.importer.dataset.data.axes[1].values),
+                          len(self.importer.dataset.data.axes[0].values)),
+                         self.importer.dataset.data.data.shape)
 
 
 
