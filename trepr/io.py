@@ -148,9 +148,11 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
             B0 = 4080.000000 Gauss, mw = 9.684967 GHz
 
         """
+
         def parse_line(line):
             matches = re.search('([A-Za-z0-9]*) = ([0-9.]*) ([A-Za-z]*)', line)
             return float(matches.group(2)), matches.group(3)
+
         entries = self._header[1].split(',')
         field, self._field_unit = parse_line(entries[0])
         mwfreq, self._mwfreq_unit = parse_line(entries[1])
@@ -288,31 +290,57 @@ class TezImporter(aspecd.io.DatasetImporter):
     def __init__(self, source=''):
         super().__init__(source=source)
         # public properties
+        self.xml_dict = None
         self.dataset = trepr.dataset.ExperimentalDataset()
 
     def _import(self):
         self._get_dir_and_filenames()
         self._unpack_zip()
-        self.get_xml_data()
+        self.get_xml_data_as_struct()
+        self.get_data_from_binary()
+        self.parse_axes()
 
     def _unpack_zip(self):
         with ZipFile(self.source + '.tez', 'r') as zip_obj:
             zip_obj.extractall(os.path.join(self.root_dir, 'tmp'))
 
-    def get_xml_data(self):
+    def get_xml_data_as_struct(self):
         with open(os.path.join(self.root_dir, 'tmp', self.filename,
                                'struct.xml'), 'r') as file:
             xml_data = file.read()
-        xml_dict = xmltodict.parse(xml_data)
-        #print(xml_dict['struct'].keys())
+        self.xml_dict = xmltodict.parse(xml_data)
 
     def _get_dir_and_filenames(self):
         self.root_dir, self.filename = os.path.split(self.source)
+        self.raw_data_name = os.path.join(self.root_dir, 'tmp',
+                                          self.filename, 'binaryData', 'data')
+        self.raw_data_shape_filename = os.path.join(self.raw_data_name + '.dim')
+
+    def parse_axes(self):
+        for axis in self.xml_dict['struct']['axes']['data']['values']:
+            id_ = int(axis['@id']) - 1
+            if '#text' in axis.keys():
+                values = [float(i) for i in axis['#text'].split(' ') if i]
+                self.dataset.data.axes[id_].values = np.asarray(values)
+            if '#text' in self.xml_dict['struct']['axes']['data']['measure'][
+                id_].keys():
+                self.dataset.data.axes[id_].quantity = self.xml_dict[
+                    'struct']['axes']['data']['measure'][id_]['#text']
+                self.dataset.data.axes[id_].unit = self.xml_dict[
+                    'struct']['axes']['data']['unit'][id_]['#text']
+
+    def get_data_from_binary(self):
+        with open(self.raw_data_shape_filename, 'r') as f:
+            tmp = re.findall(r'\d+', f.read())
+        shape = tuple(map(int, tmp))
+        raw_data = np.fromfile(self.raw_data_name, dtype='<f8').reshape(shape)
+        self.dataset.data.data = raw_data
 
 
 if __name__ == '__main__':
     import trepr.plotting
     import trepr.processing
+
     dataset = trepr.dataset.ExperimentalDataset()
     imp = SpeksimImporter(source='/home/till/Documents/Uni/Daten/trepr'
                                  '/Pentacen/20150728/messung01/')
