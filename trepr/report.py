@@ -114,11 +114,11 @@ class LaTeXReporter(aspecd.report.LaTeXReporter):
             if self.dataset.representations[i].plot.description \
                     == '2D plot as scaled image.':
                 self._figure_name['Figure2D'] = \
-                    self.dataset.representations[i].plot.filename
+                    self.dataset.representations[i].plot._filename
             elif self.dataset.representations[i].plot.description \
                     == '1D line plot.':
                 self._figure_name['Figure1D'] = \
-                    self.dataset.representations[i].plot.filename
+                    self.dataset.representations[i].plot._filename
             else:
                 pass
 

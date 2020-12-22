@@ -8,6 +8,7 @@ import glob
 import io
 import os
 import re
+import shutil
 from zipfile import ZipFile
 
 import datetime
@@ -292,31 +293,39 @@ class TezImporter(aspecd.io.DatasetImporter):
         # public properties
         self.xml_dict = None
         self.dataset = trepr.dataset.ExperimentalDataset()
+        # private properties
+        self._root_dir = ''
+        self._filename = ''
+        self._tmpdir = ''
+        self._raw_data_name = ''
+        self._raw_data_shape_filename = ''
 
     def _import(self):
         self._get_dir_and_filenames()
         self._unpack_zip()
-        self.get_xml_data_as_struct()
-        self.get_data_from_binary()
-        self.parse_axes()
+        self._get_xml_data_as_struct()
+        self._get_data_from_binary()
+        self._parse_axes()
+        self._remove_tmp_directory()
 
     def _unpack_zip(self):
         with ZipFile(self.source + '.tez', 'r') as zip_obj:
-            zip_obj.extractall(os.path.join(self.root_dir, 'tmp'))
+            zip_obj.extractall(self._tmpdir)
 
-    def get_xml_data_as_struct(self):
-        with open(os.path.join(self.root_dir, 'tmp', self.filename,
+    def _get_xml_data_as_struct(self):
+        with open(os.path.join(self._root_dir, 'tmp', self._filename,
                                'struct.xml'), 'r') as file:
             xml_data = file.read()
         self.xml_dict = xmltodict.parse(xml_data)
 
     def _get_dir_and_filenames(self):
-        self.root_dir, self.filename = os.path.split(self.source)
-        self.raw_data_name = os.path.join(self.root_dir, 'tmp',
-                                          self.filename, 'binaryData', 'data')
-        self.raw_data_shape_filename = os.path.join(self.raw_data_name + '.dim')
+        self._root_dir, self._filename = os.path.split(self.source)
+        self._tmpdir = os.path.join(self._root_dir, 'tmp')
+        self._raw_data_name = os.path.join(self._root_dir, 'tmp',
+                                           self._filename, 'binaryData', 'data')
+        self._raw_data_shape_filename = os.path.join(self._raw_data_name + '.dim')
 
-    def parse_axes(self):
+    def _parse_axes(self):
         for axis in self.xml_dict['struct']['axes']['data']['values']:
             id_ = int(axis['@id']) - 1
             if '#text' in axis.keys():
@@ -329,13 +338,17 @@ class TezImporter(aspecd.io.DatasetImporter):
                 self.dataset.data.axes[id_].unit = self.xml_dict[
                     'struct']['axes']['data']['unit'][id_]['#text']
 
-    def get_data_from_binary(self):
-        with open(self.raw_data_shape_filename, 'r') as f:
+    def _get_data_from_binary(self):
+        with open(self._raw_data_shape_filename, 'r') as f:
             shape = list([int(x) for x in f.read().split()])
-        shape.reverse()  # Shape is given in reverse order?
-        raw_data = np.fromfile(self.raw_data_name, dtype='<f8')
+        shape.reverse()  # Shape is given in reverse order in .dim-file
+        raw_data = np.fromfile(self._raw_data_name, dtype='<f8')
         raw_data = np.reshape(raw_data, shape).transpose()
         self.dataset.data.data = raw_data
+
+    def _remove_tmp_directory(self):
+        if os.path.exists(self._tmpdir):
+            shutil.rmtree(self._tmpdir)
 
 
 if __name__ == '__main__':
