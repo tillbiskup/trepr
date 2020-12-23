@@ -304,8 +304,12 @@ class TezImporter(aspecd.io.DatasetImporter):
         self._get_dir_and_filenames()
         self._unpack_zip()
         self._get_xml_data_as_struct()
+        # .. todo:: Also get origdata and calculated data?
         self._get_data_from_binary()
         self._parse_axes()
+        # import metadata from xml
+        self._get_metadata_from_xml()
+        # import metadata from infofile
         self._remove_tmp_directory()
 
     def _unpack_zip(self):
@@ -323,7 +327,8 @@ class TezImporter(aspecd.io.DatasetImporter):
         self._tmpdir = os.path.join(self._root_dir, 'tmp')
         self._raw_data_name = os.path.join(self._root_dir, 'tmp',
                                            self._filename, 'binaryData', 'data')
-        self._raw_data_shape_filename = os.path.join(self._raw_data_name + '.dim')
+        self._raw_data_shape_filename = os.path.join(self._raw_data_name +
+                                                     '.dim')
 
     def _parse_axes(self):
         for axis in self.xml_dict['struct']['axes']['data']['values']:
@@ -341,7 +346,7 @@ class TezImporter(aspecd.io.DatasetImporter):
     def _get_data_from_binary(self):
         with open(self._raw_data_shape_filename, 'r') as f:
             shape = list([int(x) for x in f.read().split()])
-        shape.reverse()  # Shape is given in reverse order in .dim-file
+        shape.reverse()  # Shape is given in reverse order in .dim file
         raw_data = np.fromfile(self._raw_data_name, dtype='<f8')
         raw_data = np.reshape(raw_data, shape).transpose()
         self.dataset.data.data = raw_data
@@ -349,6 +354,15 @@ class TezImporter(aspecd.io.DatasetImporter):
     def _remove_tmp_directory(self):
         if os.path.exists(self._tmpdir):
             shutil.rmtree(self._tmpdir)
+
+    def _get_metadata_from_xml(self):
+        # .. todo:: Mapper mit alten und neuen Keys schreiben? (Hier ist
+        #       Zeile 290 von über 1000)
+        self.dataset.metadata.pump.repetition_rate.value = float(
+            self.xml_dict['struct']['parameters']['shotRepetitionRate'][
+                'value']['#text'])
+        self.dataset.metadata.pump.repetition_rate.unit = self.xml_dict[
+            'struct']['parameters']['shotRepetitionRate']['unit']['#text']
 
 
 if __name__ == '__main__':
