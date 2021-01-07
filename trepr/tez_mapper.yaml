@@ -1,0 +1,73 @@
+measurement:
+  label: label
+  start: parameters.date.start
+  end: parameters.date.end
+  purpose: parameters.purpose
+  operator: parameters.operator
+sample:
+  description: sample.description
+  solvent: sample.buffer
+  preparation: sample.preparation
+  tube: sample.tube
+  name: sample.name
+  id: sample.id
+temperature_control:
+  cryostat: parameters.temperature.cryostat
+  cryogen: parameters.temperature.cryogen
+  temperature: parameters.temperature
+  controller: parameters.temperature.model
+transient:
+  points: parameters.transient.points
+  length: parameters.transient.length
+  trigger_position:  parameters.transient.triggerPosition
+experiment:
+  runs: parameters.runs
+  shot_repetition_rate: parameters.shotRepetitionRate
+spectrometer:
+  model: parameters.spectrometer.name
+  software: parameters.spectrometer.software
+magnetic_field:
+  start: parameters.field.start
+  stop: parameters.field.stop
+  step: parameters.field.step
+  sequence:  parameters.field.sequence
+  controller: parameters.field.model
+  power_supply: parameters.field.powersupply
+background:
+  field: parameters.background.field
+  occurrence: parameters.background.occurrence
+  polarisation:  parameters.background.polarisation
+bridge:
+  model: parameters.bridge.model
+  controller:  parameters.bridge.controller
+  attenuation: parameters.bridge.attenuation
+  power: parameters.bridge.power
+  detection:  parameters.bridge.detection
+  mw_frequency: parameters.bridge.MWfrequency
+video_amplifier:
+  bandwidth: parameters.bridge.bandwidth
+  amplification: parameters.bridge.amplification
+recorder:
+  model: parameters.recorder.model
+  averages: parameters.recorder.averages
+  time_base: parameters.recorder.timeBase
+  bandwidth: parameters.recorder.bandwidth
+  pretrigger: parameters.recorder.pretrigger
+  coupling: parameters.recorder.coupling
+  impedance: parameters.recorder.impedance
+  sensitivity: parameters.recorder.sensitivity
+probehead:
+  type: parameters.probehead.type
+  model: parameters.probehead.model
+  coupling: parameters.probehead.coupling
+pump:
+  type: parameters.laser.type
+  model: parameters.laser.model
+  wavelength: parameters.laser.wavelength
+  power: parameters.laser.power
+  repetition_rate: parameters.laser.repetitionRate
+  tunable_type: parameters.laser.tunable.type
+  tunable_model: parameters.laser.tunable.model
+  tunable_dye: parameters.laser.tunable.dye
+  tunable_position: parameters.laser.tunable.position
+  filter: parameters.laser.filter

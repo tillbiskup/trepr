@@ -3,22 +3,24 @@ General facilities for input (and output).
 
 With this module trepr raw data in Freiburg Speksim format can be imported.
 """
-import collections
+import datetime
 import glob
 import io
 import os
 import re
 import shutil
+
+import xmltodict
 from zipfile import ZipFile
 
-import datetime
 import numpy as np
 
 import aspecd.annotation
 import aspecd.dataset
 import aspecd.io
 import aspecd.infofile
-import xmltodict as xmltodict
+import aspecd.metadata
+import aspecd.utils
 
 import trepr.dataset
 
@@ -283,7 +285,10 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
     """
 
     def _get_importer(self, source):
-        return SpeksimImporter(source=source)
+        if os.path.isdir(source):
+            return SpeksimImporter(source=source)
+        else:
+            return TezImporter(source=source)
 
 
 class TezImporter(aspecd.io.DatasetImporter):
@@ -291,6 +296,7 @@ class TezImporter(aspecd.io.DatasetImporter):
     def __init__(self, source=''):
         super().__init__(source=source)
         # public properties
+        self.mapper_filename = 'tez_mapper.yaml'
         self.xml_dict = None
         self.dataset = trepr.dataset.ExperimentalDataset()
         # private properties
@@ -307,9 +313,9 @@ class TezImporter(aspecd.io.DatasetImporter):
         # .. todo:: Also get origdata and calculated data?
         self._get_data_from_binary()
         self._parse_axes()
-        # import metadata from xml
         self._get_metadata_from_xml()
         # import metadata from infofile
+        # schreib den Mapper, till! :)
         self._remove_tmp_directory()
 
     def _unpack_zip(self):
@@ -356,13 +362,54 @@ class TezImporter(aspecd.io.DatasetImporter):
             shutil.rmtree(self._tmpdir)
 
     def _get_metadata_from_xml(self):
-        # .. todo:: Mapper mit alten und neuen Keys schreiben? (Hier ist
-        #       Zeile 290 von über 1000)
-        self.dataset.metadata.pump.repetition_rate.value = float(
-            self.xml_dict['struct']['parameters']['shotRepetitionRate'][
-                'value']['#text'])
-        self.dataset.metadata.pump.repetition_rate.unit = self.xml_dict[
-            'struct']['parameters']['shotRepetitionRate']['unit']['#text']
+        mapping = aspecd.utils.Yaml()
+        rootpath = os.path.split(os.path.abspath(__file__))[0]
+        mapping.read_from(os.path.join(rootpath, self.mapper_filename))
+        metadata_dict = {}
+        for key, subdict in mapping.dict.items():
+            metadata_dict[key] = {}
+            for key2, value in subdict.items():
+                if '.' in value:
+                    metadata_dict[key][key2] = \
+                        self._cascade(self.xml_dict['struct'], value)
+        self.dataset.metadata.from_dict(metadata_dict)
+        # Cause Copycat in UdS measurement program:
+        self.dataset.metadata.bridge.attenuation.unit = 'dB'
+
+    def _cascade(self, dict_, value):
+        keys = value.split('.')
+        return_value = dict_
+        for key in keys:
+            return_value = return_value[key]
+        if self._get_physical_quantity(return_value):
+            return_value = self._get_physical_quantity(return_value)
+        elif self._get_value(return_value):
+            return_value = self._get_value(return_value)
+        else:
+            return_value = ''
+        return return_value
+
+    @staticmethod
+    def _get_value(dict_):
+        return_value = None
+        if '#text' in dict_.keys():
+            return_value = dict_['#text']
+        return return_value
+
+    @staticmethod
+    def _get_physical_quantity(dict_):
+        return_value = None
+        if 'value' and 'unit' in dict_.keys():
+            if '#text' in dict_['value'].keys():
+                string = \
+                    ' '.join([dict_['value']['#text'], dict_['unit']['#text']])
+                return_value = {
+                    'value': float(dict_['value']['#text']),
+                    'unit': dict_['unit']['#text']
+                }
+        return return_value
+
+
 
 
 if __name__ == '__main__':

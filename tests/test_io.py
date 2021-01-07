@@ -3,6 +3,8 @@ import os
 import shutil
 import unittest
 
+import aspecd.metadata
+
 import trepr.io
 import trepr.dataset
 
@@ -36,8 +38,25 @@ class TestTezImporter(unittest.TestCase):
                           len(self.importer.dataset.data.axes[0].values)),
                          self.importer.dataset.data.data.shape)
 
-
-
+    def test_get_physical_qunatity(self):
+        test_dict = {
+            'field': {
+                '@class': 'struct',
+                '@id': '1',
+                '@size': '[1 1]',
+                'value': {
+                    '@class': 'double',
+                    '@id': '1',
+                    '@size': '[0 0]',
+                    '#text': '50'},
+                'unit': {
+                    '@class': 'char',
+                    '@id': '1',
+                    '@size': '[0 0]',
+                    '#text': 'mT'}}
+        }
+        ret = self.importer._get_physical_quantity(test_dict['field'])
+        self.assertEqual(type(ret), dict)
 
 if __name__ == '__main__':
     unittest.main()
