@@ -369,9 +369,8 @@ class TezImporter(aspecd.io.DatasetImporter):
         for key, subdict in mapping.dict.items():
             metadata_dict[key] = {}
             for key2, value in subdict.items():
-                if '.' in value:
-                    metadata_dict[key][key2] = \
-                        self._cascade(self.xml_dict['struct'], value)
+                metadata_dict[key][key2] = \
+                    self._cascade(self.xml_dict['struct'], value)
         self.dataset.metadata.from_dict(metadata_dict)
         # Cause Copycat in UdS measurement program:
         self.dataset.metadata.bridge.attenuation.unit = 'dB'
