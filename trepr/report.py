@@ -74,7 +74,7 @@ class LaTeXReporter(aspecd.report.LaTeXReporter):
         super().create()
 
     def _prepare_metadata(self):
-        """Prepare the metadata the way it can be rendered."""
+        """Prepare the metadata the way it can be rendered automatically."""
         self._metadata = self.dataset.metadata.to_dict()
         self._metadata = self._change_keys_in_dict_recursively(self._metadata)
         self._metadata['Parameter'] = collections.OrderedDict()

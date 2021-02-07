@@ -313,9 +313,10 @@ class TezImporter(aspecd.io.DatasetImporter):
         # .. todo:: Also get origdata and calculated data?
         self._get_data_from_binary()
         self._parse_axes()
-        self._get_metadata_from_xml()
         # import metadata from infofile
         # schreib den Mapper, till! :)
+        self._get_metadata_from_xml()
+
         self._remove_tmp_directory()
 
     def _unpack_zip(self):
@@ -352,7 +353,7 @@ class TezImporter(aspecd.io.DatasetImporter):
     def _get_data_from_binary(self):
         with open(self._raw_data_shape_filename, 'r') as f:
             shape = list([int(x) for x in f.read().split()])
-        shape.reverse()  # Shape is given in reverse order in .dim file
+        #shape.reverse()  # Shape is given in reverse order in .dim file
         raw_data = np.fromfile(self._raw_data_name, dtype='<f8')
         raw_data = np.reshape(raw_data, shape).transpose()
         self.dataset.data.data = raw_data
@@ -407,8 +408,6 @@ class TezImporter(aspecd.io.DatasetImporter):
                     'unit': dict_['unit']['#text']
                 }
         return return_value
-
-
 
 
 if __name__ == '__main__':

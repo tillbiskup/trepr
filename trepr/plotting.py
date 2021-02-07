@@ -92,7 +92,7 @@ class ScaledImagePlot(aspecd.plotting.SinglePlotter):
         # protected properties
         self._extent = list()
         self._style_dict = {'interpolation': 'bilinear',
-                            'cmap': jara_cmap,
+                            'cmap': viridis,
                             'origin': 'lower',
                             'aspect': 'auto'}
         self._ticklabel_format = {'style': 'sci',

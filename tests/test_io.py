@@ -34,11 +34,11 @@ class TestTezImporter(unittest.TestCase):
 
     def test_data_shape_matches_axes_lengths(self):
         self.dataset.import_from(self.importer)
-        self.assertEqual((len(self.importer.dataset.data.axes[1].values),
-                          len(self.importer.dataset.data.axes[0].values)),
+        self.assertEqual((len(self.importer.dataset.data.axes[0].values),
+                          len(self.importer.dataset.data.axes[1].values)),
                          self.importer.dataset.data.data.shape)
 
-    def test_get_physical_qunatity(self):
+    def test_get_physical_quantity(self):
         test_dict = {
             'field': {
                 '@class': 'struct',
@@ -57,6 +57,7 @@ class TestTezImporter(unittest.TestCase):
         }
         ret = self.importer._get_physical_quantity(test_dict['field'])
         self.assertEqual(type(ret), dict)
+
 
 if __name__ == '__main__':
     unittest.main()
