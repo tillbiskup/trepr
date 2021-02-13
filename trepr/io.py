@@ -1,7 +1,14 @@
 """
 General facilities for input (and output).
 
-With this module trepr raw data in Freiburg Speksim format can be imported.
+With this module trepr raw data in Freiburg Speksim format and the
+trepr-toolbox format can be imported.
+
+..note::
+    The axes are not in the order ASpecD expects, still, the processing steps
+    are working. If one wants to make it consistent, with ASpecD, also look
+    through all processing and analyis steps and reverse the axis order
+    there as well if necessary!
 """
 import datetime
 import glob
@@ -353,7 +360,7 @@ class TezImporter(aspecd.io.DatasetImporter):
     def _get_data_from_binary(self):
         with open(self._raw_data_shape_filename, 'r') as f:
             shape = list([int(x) for x in f.read().split()])
-        #shape.reverse()  # Shape is given in reverse order in .dim file
+        shape.reverse()  # Shape is given in reverse order in .dim file
         raw_data = np.fromfile(self._raw_data_name, dtype='<f8')
         raw_data = np.reshape(raw_data, shape).transpose()
         self.dataset.data.data = raw_data

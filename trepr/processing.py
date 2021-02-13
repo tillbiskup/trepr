@@ -153,10 +153,12 @@ class Averaging(aspecd.processing.ProcessingStep):
     def _execute_averaging(self, avg_range):
         """Apply the averaging on the given experimental dataset."""
         if self._dim == 0:
+            # behalte Achsen Zeit und Intensität
             axes = [self.dataset.data.axes[1], self.dataset.data.axes[2]]
             self.dataset.data.data = \
                 np.average(self.dataset.data.data[:, avg_range], axis=1)
         else:
+            # behalte B und Intensität, durch t,
             axes = [self.dataset.data.axes[0], self.dataset.data.axes[2]]
             self.dataset.data.data = \
                 np.average(self.dataset.data.data[avg_range, :], axis=0)
