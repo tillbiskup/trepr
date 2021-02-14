@@ -1,0 +1,86 @@
+trEPR Info file - v. 0.1.6 (2016-01-18)
+
+GENERAL
+Filename:               Pentacen
+Date start:             2021-02-01
+Date end:               2021-02-01
+Time start:             13:29:00
+Time end:               13:39:00
+Operator:               Someone
+Label:                  Pentacen
+Purpose:                Tripletts
+
+SAMPLE
+Name:                   Pentacen Glas
+ID:                     
+Description:            
+Solvent:                TNB
+Preparation:            Someone different
+Tube:                   3.8 x 3 x 180 mm
+
+EXPERIMENT
+Runs:                   1
+Shot Repetition Rate:   20 Hz
+
+SPECTROMETER
+Model:                  EMX
+Software:               ???
+
+MAGNETIC FIELD
+Field probe type:       Hall 
+Field probe model:      xxx 
+Start:                  200 mT
+Stop:                   500 mT
+Step:                   0.5 mT
+Sequence:               up
+Controller:             Bruker EMX
+Power supply:           Bruker 083
+
+BRIDGE
+Model:                  Bruker EMX premiumX
+Controller:             Bruker EMX
+Attenuation:            25 dB
+Power:                  0.6325 mW
+Detection:              diode
+Frequency counter:      Bruker
+MW frequency:           9.396837 GHz
+
+RECORDER
+Model:                  Teledyne LeCroy HDO9204
+Averages:               20
+Time base:              2 ns
+Bandwidth:              20 MHz
+Pretrigger:             5.000 us
+Coupling:               DC
+Impedance:              50 Ohm
+Sensitivity:            18.6 mV
+
+TRANSIENT
+Points:                 601
+Length:                 45 us
+Trigger Position:       80        % Wichtig zur Kompatibilitaet mit Berlin
+
+PROBEHEAD
+Type:                   dielectric
+Model:                  Bruker ER 4118X-MD5
+Coupling:               critical
+
+PUMP
+Type:                   Laser
+Model:                  Spectra-Physics Quanta-Ray INDI PS 51/52
+Wavelength:             355 nm
+Power:                  1.43 mJ
+Repetition rate:        20 Hz
+Tunable type:           OPO
+Tunable model:          GWU primoScan/BB/120-INDI
+Tunable dye:            
+Tunable position:       N/A
+Filter:                 Große Linse, Depolarisator, kleine Linse
+
+TEMPERATURE
+Temperature:            292 K
+Controller:             Lake Shore 350
+Cryostat:               Cryogenic CF VTC
+Cryogen:                He
+
+COMMENT

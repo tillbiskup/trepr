@@ -326,6 +326,14 @@ class TezImporter(aspecd.io.DatasetImporter):
 
         self._remove_tmp_directory()
 
+    def _get_dir_and_filenames(self):
+        self._root_dir, self._filename = os.path.split(self.source)
+        self._tmpdir = os.path.join(self._root_dir, 'tmp')
+        self._raw_data_name = os.path.join(self._root_dir, 'tmp',
+                                           self._filename, 'binaryData', 'data')
+        self._raw_data_shape_filename = os.path.join(self._raw_data_name +
+                                                     '.dim')
+
     def _unpack_zip(self):
         with ZipFile(self.source + '.tez', 'r') as zip_obj:
             zip_obj.extractall(self._tmpdir)
@@ -336,13 +344,6 @@ class TezImporter(aspecd.io.DatasetImporter):
             xml_data = file.read()
         self.xml_dict = xmltodict.parse(xml_data)
 
-    def _get_dir_and_filenames(self):
-        self._root_dir, self._filename = os.path.split(self.source)
-        self._tmpdir = os.path.join(self._root_dir, 'tmp')
-        self._raw_data_name = os.path.join(self._root_dir, 'tmp',
-                                           self._filename, 'binaryData', 'data')
-        self._raw_data_shape_filename = os.path.join(self._raw_data_name +
-                                                     '.dim')
 
     def _parse_axes(self):
         for axis in self.xml_dict['struct']['axes']['data']['values']:

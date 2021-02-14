@@ -8,11 +8,11 @@ import aspecd.metadata
 import trepr.io
 import trepr.dataset
 
+ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 
 class TestTezImporter(unittest.TestCase):
     def setUp(self):
-        self.source = '/Users/mirjamschroder/Programmierkram/Python/test-data' \
-                 '/Sa678-04'
+        self.source = os.path.join(ROOTPATH, 'testdata', '26-xx')
         self.importer = trepr.io.TezImporter(source=self.source)
         self.dataset = trepr.dataset.ExperimentalDataset()
         self.tempdir = os.path.join(os.path.split(self.source)[0], 'tmp')
