@@ -13,10 +13,10 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
 import os
 
-with open(os.path.join(os.path.dirname(__file__), '..', 'VERSION')) as version_file:
+with open(os.path.join(os.path.dirname(__file__), '..', 'VERSION')) as \
+        version_file:
     version_ = version_file.read().strip()
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -58,8 +58,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'trepr package'
-copyright = '2018-19, Jara Popp'
-author = 'Jara Popp'
+copyright = '2018-19, Jara Popp, 2018– Till Biskup, 2020- Mirjam Schröder'
+author = 'Jara Popp, Till Biskup, Mirjam Schröder'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -116,8 +116,13 @@ pygments_style = 'sphinx'
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
 
+
+# -- Options for todo extension ----------------------------------------------
+
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+todo_link_only = True
+
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -300,5 +305,9 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'python': ('https://docs.python.org/', None)}
-intersphinx_mapping = {'aspecd': ('https://docs.aspecd.de', None)}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'matplotlib': ('https://matplotlib.org/', None),
+    'aspecd': ('https://docs.aspecd.de/', None),
+}
