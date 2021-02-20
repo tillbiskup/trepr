@@ -314,8 +314,8 @@ class TezImporter(aspecd.io.DatasetImporter):
         self._raw_data_shape_filename = ''
 
     def _import(self):
-        self._get_dir_and_filenames()
         self._unpack_zip()
+        self._get_dir_and_filenames()
         self._get_xml_data_as_struct()
         # .. todo:: Also get origdata and calculated data?
         self._get_data_from_binary()
@@ -326,26 +326,27 @@ class TezImporter(aspecd.io.DatasetImporter):
 
         self._remove_tmp_directory()
 
-    def _get_dir_and_filenames(self):
+    def _unpack_zip(self):
         self._root_dir, self._filename = os.path.split(self.source)
         self._tmpdir = os.path.join(self._root_dir, 'tmp')
-        self._raw_data_name = os.path.join(self._root_dir, 'tmp',
-                                           self._filename, 'binaryData', 'data')
-        self._raw_data_shape_filename = os.path.join(self._raw_data_name +
-                                                     '.dim')
-
-    def _unpack_zip(self):
         with ZipFile(self.source + '.tez', 'r') as zip_obj:
             zip_obj.extractall(self._tmpdir)
 
+    def _get_dir_and_filenames(self):
+        hidden_filename = os.listdir(os.path.join(self._root_dir, 'tmp'))[0]
+        self.metadata_filename = os.path.join(self._root_dir, 'tmp',
+                                              hidden_filename,  'struct.xml')
+        self._raw_data_name = os.path.join(self._root_dir, 'tmp',
+                                           hidden_filename, 'binaryData', 'data')
+        self._raw_data_shape_filename = os.path.join(self._raw_data_name +
+                                                     '.dim')
+
     def _get_xml_data_as_struct(self):
-        with open(os.path.join(self._root_dir, 'tmp', self._filename,
-                               'struct.xml'), 'r') as file:
+        with open(self.metadata_filename, 'r') as file:
             xml_data = file.read()
         self.xml_dict = xmltodict.parse(xml_data)
 
-
-    def _parse_axes(self):
+    def _parse_axes_old(self):
         for axis in self.xml_dict['struct']['axes']['data']['values']:
             id_ = int(axis['@id']) - 1
             if '#text' in axis.keys():
@@ -357,6 +358,42 @@ class TezImporter(aspecd.io.DatasetImporter):
                     'struct']['axes']['data']['measure'][id_]['#text']
                 self.dataset.data.axes[id_].unit = self.xml_dict[
                     'struct']['axes']['data']['unit'][id_]['#text']
+
+    def _parse_axes(self):
+        if len(self.xml_dict['struct']['axes']['data']['measure']) > 3:
+            raise NotImplementedError('No method to import more than 3 axes. '
+                                      'This task is left to you.')
+        for axis in self.xml_dict['struct']['axes']['data']['measure']:
+            self._get_magnetic_field_axis(axis)
+            self._get_time_axis(axis)
+
+    def _get_magnetic_field_axis(self, axis):
+        if '#text' in axis.keys() and axis['#text'] == 'magnetic field':
+            id_ = int(axis['@id']) - 1
+            self.dataset.data.axes[0].quantity = 'magnetic field'
+            self.dataset.data.axes[0].values = \
+                self._get_values_from_xml_dict(id_=id_)
+            assert int(self.xml_dict['struct']['axes']['data']['values'][
+                           id_]['@id']) == (id_ + 1), 'Axis-IDs do not match!'
+            self.dataset.data.axes[0].unit = self.xml_dict['struct']['axes'][
+                'data']['unit'][id_]['#text']
+
+    def _get_time_axis(self, axis):
+        if '#text' in axis.keys() and axis['#text'] == 'time':
+            id_ = int(axis['@id']) - 1
+            self.dataset.data.axes[1].quantity = 'time'
+            self.dataset.data.axes[1].values = \
+                self._get_values_from_xml_dict(id_=id_)
+            assert int(self.xml_dict['struct']['axes']['data']['values'][
+                           id_]['@id']) == (id_ + 1)
+            self.dataset.data.axes[1].unit = self.xml_dict['struct']['axes'][
+                'data']['unit'][id_]['#text']
+
+    def _get_values_from_xml_dict(self, id_=None):
+        values = np.asarray([float(i) for i in self.xml_dict['struct'][
+            'axes']['data']['values'][id_]['#text'].split(' ') if i])
+
+        return values
 
     def _get_data_from_binary(self):
         with open(self._raw_data_shape_filename, 'r') as f:
@@ -409,8 +446,6 @@ class TezImporter(aspecd.io.DatasetImporter):
         return_value = None
         if 'value' and 'unit' in dict_.keys():
             if '#text' in dict_['value'].keys():
-                string = \
-                    ' '.join([dict_['value']['#text'], dict_['unit']['#text']])
                 return_value = {
                     'value': float(dict_['value']['#text']),
                     'unit': dict_['unit']['#text']
