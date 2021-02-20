@@ -21,7 +21,9 @@ import scipy.constants
 import aspecd.analysis
 import aspecd.metadata
 import aspecd.utils
-import trepr.interfaces
+
+
+# import trepr.interfaces
 
 
 class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
@@ -55,6 +57,10 @@ class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
         self._step_size_in_mT = float()
         self._ratio_frequency_drift_to_step_size = float()
 
+    @staticmethod
+    def applicable(dataset):
+        return dataset.microwave_frequency.data.any()
+
     def _perform_task(self):
         """Perform all methods to do analysis."""
         self._calculate_mw_freq_amplitude()
@@ -65,8 +71,8 @@ class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
 
     def _calculate_mw_freq_amplitude(self):
         """Calculate the amplitude of the microwave frequency."""
-        self._delta_mw_freq = max(self.dataset.microwave_frequency.data) \
-                              - min(self.dataset.microwave_frequency.data)
+        self._delta_mw_freq = max(self.dataset.microwave_frequency.data) - \
+                              min(self.dataset.microwave_frequency.data)
 
     def _convert_delta_mw_freq_to_delta_B0(self):
         """Calculate delta B0 by using the resonance condition."""
@@ -89,10 +95,11 @@ class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
 
     def _write_result(self):
         """Write the results in the results dictionary."""
-        self.result['frequency drift'] = aspecd.metadata.PhysicalQuantity(
-            value=self._delta_B0, unit='T')
-        self.result['ratio frequency drift/step size'] = \
-            self._ratio_frequency_drift_to_step_size
+        self.result = {
+            'frequency drift': aspecd.metadata.PhysicalQuantity(
+                value=self._delta_B0, unit='T'),
+            'ratio frequency drift/step size': \
+                self._ratio_frequency_drift_to_step_size}
 
 
 class TimeStampAnalysis(aspecd.analysis.SingleAnalysisStep):
@@ -149,7 +156,7 @@ class TimeStampAnalysis(aspecd.analysis.SingleAnalysisStep):
         """Calculate the time between the time stamps"""
         zero = datetime.datetime(2018, 1, 1)
         for i in range(len(self._time_stamp_datetimes) - 1):
-            self._time_stamp_datetimes[i] = self._time_stamp_datetimes[i+1] - \
+            self._time_stamp_datetimes[i] = self._time_stamp_datetimes[i + 1] - \
                                             self._time_stamp_datetimes[i] + \
                                             zero
         del self._time_stamp_datetimes[-1]
@@ -159,14 +166,14 @@ class TimeStampAnalysis(aspecd.analysis.SingleAnalysisStep):
                 mdates.date2num(self._time_stamp_datetimes[i]) - zero
         self._time_field_matrix = \
             np.delete(self._time_field_matrix, -1, axis=0)
-        plt.plot(self._time_field_matrix[:, 1], self._time_stamp_datetimes,
-                 linestyle='', marker='.')
-        plt.show()
+        #plt.plot(self._time_field_matrix[:, 1], self._time_stamp_datetimes,
+        #         linestyle='', marker='.')
+        #plt.show()
 
     def _write_result(self):
         """Write the result to the attribute
         :attr:`aspecd.analysis.AnalysisStep.result`"""
-        self.result['time spent per time trace'] = self._time_stamp_datetimes
+        self.result = {'time spent per time trace': self._time_stamp_datetimes}
 
 
 class SimulationAnalysis(aspecd.analysis.SingleAnalysisStep):
@@ -214,7 +221,7 @@ class SimulationAnalysis(aspecd.analysis.SingleAnalysisStep):
     def _write_result(self):
         """Write the data from the simulation to the
         :attr:`trepr.analysis.SimulationAnalysis.result`."""
-        for i in range(len(self.result.data.axes)-1):
+        for i in range(len(self.result.data.axes) - 1):
             self.result.data.axes[i].values = self._simulation_result[i]
             if 'unit' in self.parameters['axes'][i]:
                 self.result.data.axes[i].unit = \
@@ -295,7 +302,7 @@ class FittingAnalysis(aspecd.analysis.SingleAnalysisStep):
     def _write_result(self):
         """Write the data from the fitting to the
         :attr:`trepr.analysis.FittingAnalysis.result`."""
-        for i in range(len(self.dataset.data.axes)-1):
+        for i in range(len(self.dataset.data.axes) - 1):
             self.result.data.axes[i].values = self._fitting_result[i]
             self.result.data.axes[i].unit = self.dataset.data.axes[i].unit
             self.result.data.axes[i].quantity = \
@@ -372,7 +379,7 @@ class MultiFittingAnalysis(aspecd.analysis.MultiAnalysisStep):
         :attr:`trepr.analysis.FittingAnalysis.result`."""
         for k, dataset in enumerate(self.datasets):
             result = trepr.dataset.CalculatedDataset()
-            for i in range(len(dataset.data.axes)-1):
+            for i in range(len(dataset.data.axes) - 1):
                 result.data.axes[i].values = \
                     np.asarray(self._fitting_result[i])
                 result.data.axes[i].unit = dataset.data.axes[i].unit
@@ -386,18 +393,20 @@ class MultiFittingAnalysis(aspecd.analysis.MultiAnalysisStep):
 if __name__ == '__main__':
     import trepr.dataset
     import trepr.interfaces
+
     obj = SimulationAnalysis()
     obj.parameters['axes'] = [dict(), dict()]
     obj.parameters['axes'][0]['quantity'] = 'magnetic field'
     obj.parameters['axes'][0]['unit'] = 'mT'
     obj.parameters['axes'][1]['quantity'] = 'intensity'
     obj.parameters['axes'][1]['unit'] = 'V'
-    obj.parameters['input'] = '/home/jara/Dokumente/masterthesis/Parameter_Input/Simulation5.yaml'
+    obj.parameters[
+        'input'] = '/home/jara/Dokumente/masterthesis/Parameter_Input/Simulation5.yaml'
     obj._perform_task()
     import trepr.plotting
+
     plot = trepr.plotting.LinePlot()
     dataset_ = obj.result
     saver = trepr.plotting.Saver(filename='simulation5.pdf')
     ploting = dataset_.plot(plot)
     ploting.save(saver)
-

@@ -90,6 +90,7 @@ class ScaledImagePlot(aspecd.plotting.SinglePlotter):
         self._ticklabel_format = {'style': 'sci',
                                   'scilimits': (0, 0),
                                   'useMathText': True}
+        self.parameters['show_zero_lines'] = False
 
     def _create_plot(self):
         """Plot the given dataset with axes labels and a normed colormap."""
@@ -107,7 +108,7 @@ class ScaledImagePlot(aspecd.plotting.SinglePlotter):
         """Display the data with adjusted colormap."""
         colormap_adjuster = ColormapAdjuster(dataset=self.dataset)
         colormap_adjuster.adjust()
-        self.axes.imshow(self.dataset.data.data.transpose(),
+        self.axes.imshow(self.dataset.data.data.T,
                          norm=colormap_adjuster.normalised_colormap,
                          extent=self._extent,
                          **self._style_dict)
@@ -260,5 +261,5 @@ class ColormapAdjuster:
 
 
 class Saver(aspecd.plotting.Saver):
+    """Saver for plots and drawings."""
 
-    pass

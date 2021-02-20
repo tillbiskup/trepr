@@ -326,6 +326,7 @@ class TezImporter(aspecd.io.DatasetImporter):
         # import metadata from infofile
         # schreib den Mapper, till! :)
         self._get_metadata_from_xml()
+        self._get_mw_frequencies()
 
         self._remove_tmp_directory()
 
@@ -439,9 +440,27 @@ class TezImporter(aspecd.io.DatasetImporter):
                 }
         return return_value
 
+    def _get_mw_frequencies(self):
+        if self._xml_has_mw_frequency_for_each_magnetic_field_point():
+            self.dataset.microwave_frequency.data = \
+                np.asarray([float(i) for i in self.xml_dict['struct'][
+                    'parameters']['bridge']['MWfrequency']['values'][
+                    '#text'].split(' ') if i])
+            self.dataset.microwave_frequency.axes[0] = \
+                self.dataset.data.axes[0]
+            self.dataset.microwave_frequency.axes[1].unit = \
+                self.dataset.metadata.bridge.mw_frequency.unit
+            self.dataset.microwave_frequency.axes[1].quantity = \
+                'microwave frequency'
+
+    def _xml_has_mw_frequency_for_each_magnetic_field_point(self):
+        return self.xml_dict['struct']['parameters']['bridge']['MWfrequency'][
+            'values']
+
     def _remove_tmp_directory(self):
         if os.path.exists(self._tmpdir):
             shutil.rmtree(self._tmpdir)
+
 
 
 if __name__ == '__main__':
