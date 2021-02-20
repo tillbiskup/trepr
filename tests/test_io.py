@@ -41,7 +41,7 @@ class TestTezImporter(unittest.TestCase):
     def test_converted_xml_is_dict(self):
         self.importer._unpack_zip()
         self.importer._get_dir_and_filenames()
-        self.importer._get_xml_data_as_struct()
+        self.importer._import_xml_data_to_dict()
         self.assertEqual(collections.OrderedDict, type(self.importer.xml_dict))
 
     def test_axes_are_created(self):
@@ -54,8 +54,6 @@ class TestTezImporter(unittest.TestCase):
         1: time axis
         """
         self.dataset.import_from(self.importer)
-        print(len(self.importer.dataset.data.axes[0].values),
-              len(self.importer.dataset.data.axes[1].values))
         self.assertEqual((len(self.importer.dataset.data.axes[0].values),
                           len(self.importer.dataset.data.axes[1].values)),
                          self.importer.dataset.data.data.shape)
@@ -63,10 +61,10 @@ class TestTezImporter(unittest.TestCase):
     def test_too_many_axes_in_xml_dict_raises(self):
         self.importer._unpack_zip()
         self.importer._get_dir_and_filenames()
-        self.importer._get_xml_data_as_struct()
+        self.importer._import_xml_data_to_dict()
         self.importer.xml_dict['struct']['axes']['data']['measure'].append({
             '@class': 'char',
-            '@id': '3',
+            '@id': '4',
             '@size': '[0 0]'})
         with self.assertRaises(NotImplementedError):
             self.importer._parse_axes()

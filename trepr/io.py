@@ -316,8 +316,7 @@ class TezImporter(aspecd.io.DatasetImporter):
     def _import(self):
         self._unpack_zip()
         self._get_dir_and_filenames()
-        self._get_xml_data_as_struct()
-        # .. todo:: Also get origdata and calculated data?
+        self._import_xml_data_to_dict()
         self._get_data_from_binary()
         self._parse_axes()
         # import metadata from infofile
@@ -341,23 +340,18 @@ class TezImporter(aspecd.io.DatasetImporter):
         self._raw_data_shape_filename = os.path.join(self._raw_data_name +
                                                      '.dim')
 
-    def _get_xml_data_as_struct(self):
+    def _import_xml_data_to_dict(self):
         with open(self.metadata_filename, 'r') as file:
             xml_data = file.read()
         self.xml_dict = xmltodict.parse(xml_data)
 
-    def _parse_axes_old(self):
-        for axis in self.xml_dict['struct']['axes']['data']['values']:
-            id_ = int(axis['@id']) - 1
-            if '#text' in axis.keys():
-                values = [float(i) for i in axis['#text'].split(' ') if i]
-                self.dataset.data.axes[id_].values = np.asarray(values)
-            if '#text' in self.xml_dict['struct']['axes']['data']['measure'][
-                id_].keys():
-                self.dataset.data.axes[id_].quantity = self.xml_dict[
-                    'struct']['axes']['data']['measure'][id_]['#text']
-                self.dataset.data.axes[id_].unit = self.xml_dict[
-                    'struct']['axes']['data']['unit'][id_]['#text']
+    def _get_data_from_binary(self):
+        with open(self._raw_data_shape_filename, 'r') as f:
+            shape = list([int(x) for x in f.read().split()])
+        shape.reverse()  # Shape is given in reverse order in .dim file
+        raw_data = np.fromfile(self._raw_data_name, dtype='<f8')
+        raw_data = np.reshape(raw_data, shape).transpose()
+        self.dataset.data.data = raw_data
 
     def _parse_axes(self):
         if len(self.xml_dict['struct']['axes']['data']['measure']) > 3:
@@ -390,22 +384,10 @@ class TezImporter(aspecd.io.DatasetImporter):
                 'data']['unit'][id_]['#text']
 
     def _get_values_from_xml_dict(self, id_=None):
-        values = np.asarray([float(i) for i in self.xml_dict['struct'][
-            'axes']['data']['values'][id_]['#text'].split(' ') if i])
-
+        values = np.asarray([float(i) for i in
+                                  self.xml_dict['struct']['axes']['data'][
+                                       'values'][id_]['#text'].split(' ') if i])
         return values
-
-    def _get_data_from_binary(self):
-        with open(self._raw_data_shape_filename, 'r') as f:
-            shape = list([int(x) for x in f.read().split()])
-        shape.reverse()  # Shape is given in reverse order in .dim file
-        raw_data = np.fromfile(self._raw_data_name, dtype='<f8')
-        raw_data = np.reshape(raw_data, shape).transpose()
-        self.dataset.data.data = raw_data
-
-    def _remove_tmp_directory(self):
-        if os.path.exists(self._tmpdir):
-            shutil.rmtree(self._tmpdir)
 
     def _get_metadata_from_xml(self):
         mapping = aspecd.utils.Yaml()
@@ -451,6 +433,10 @@ class TezImporter(aspecd.io.DatasetImporter):
                     'unit': dict_['unit']['#text']
                 }
         return return_value
+
+    def _remove_tmp_directory(self):
+        if os.path.exists(self._tmpdir):
+            shutil.rmtree(self._tmpdir)
 
 
 if __name__ == '__main__':
