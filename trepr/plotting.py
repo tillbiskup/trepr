@@ -51,12 +51,12 @@ for i in range(len(colors_right)):
     colors_right[i][2] = B_right[i]
 
 viridis = cm.get_cmap('viridis', 256)
-jara_colors = viridis(np.linspace(0,1,256))
+jara_colors = viridis(np.linspace(0, 1, 256))
 
 for i in range(0, 128):
     jara_colors[i][0:3] = [102/255, 0, 204/255]
     jara_colors[i][3] = A_left[i]
-for i in range(128,255):
+for i in range(128, 255):
     jara_colors[i][0:3] = [1, 51/255, 51/255]
     jara_colors[i][3] = A_right[i-128]
 
@@ -66,18 +66,10 @@ jara_cmap = ListedColormap(jara_colors)
 class ScaledImagePlot(aspecd.plotting.SinglePlotter):
     """Create a scaled image of a given dataset.
 
-    Parameters
-    ----------
-    dataset : :obj:`trepr.dataset.Dataset`
-        Dataset structure containing raw data as well as metadata.
-
     Attributes
     ----------
     style : str
         Defines whether the plot is done in xkcd style or not.
-
-    dataset : :obj:`trepr.dataset.Dataset`
-        Dataset to work with.
 
     description : str
         Describes the aim of the class.
@@ -115,7 +107,7 @@ class ScaledImagePlot(aspecd.plotting.SinglePlotter):
         """Display the data with adjusted colormap."""
         colormap_adjuster = ColormapAdjuster(dataset=self.dataset)
         colormap_adjuster.adjust()
-        self.axes.imshow(self.dataset.data.data,
+        self.axes.imshow(self.dataset.data.data.transpose(),
                          norm=colormap_adjuster.normalised_colormap,
                          extent=self._extent,
                          **self._style_dict)
@@ -136,18 +128,10 @@ class ScaledImagePlot(aspecd.plotting.SinglePlotter):
 class LinePlot(aspecd.plotting.SinglePlotter):
     """Create a 1D line plot of a given dataset.
 
-    Parameters
-    ----------
-    dataset : :obj:`trepr.dataset.Dataset`
-        Dataset structure containing raw data as well as metadata.
-
     Attributes
     ----------
     style : str
         Defines whether the plot is done in xkcd style or not.
-
-    dataset : :obj:`trepr.dataset.Dataset`
-        Dataset to work with.
 
     description : str
         Describes the aim of the class.
@@ -217,10 +201,10 @@ class MultiLinePlot(aspecd.plotting.MultiPlotter):
         plt.axhline(**self._zero_line_style)
 
     def _display_data(self):
-        for i, dataset in enumerate(self.datasets):
+        for idx, dataset in enumerate(self.datasets):
             if self.parameters['color']:
                 self.axes.plot(dataset.data.axes[0].values, dataset.data.data,
-                               color=self.parameters['color'][i])
+                               color=self.parameters['color'][idx])
             else:
                 self.axes.plot(dataset.data.axes[0].values, dataset.data.data)
 
