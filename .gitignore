@@ -5,6 +5,9 @@
 **config.py
 **.cache
 
+# macOS-specific files
+.DS_Store
+
 #PyCharm project configuration files
 .idea
 
@@ -30,3 +33,7 @@ docs/_build
 docs/_static
 docs/_templates
 docs/.doctrees
+
+# tox venvs
+.tox
+.python-version
