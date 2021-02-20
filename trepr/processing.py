@@ -256,7 +256,7 @@ class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
         return np.average(array)
 
 
-class Normalise(aspecd.processing.ProcessingStep):
+class Normalisation(aspecd.processing.ProcessingStep):
     """Normalise data.
 
     Possible normalisations are area and maximum.
@@ -273,7 +273,7 @@ class Normalise(aspecd.processing.ProcessingStep):
                 self.dataset.data.data / sum(abs(self.dataset.data.data))
         elif self.parameters['type'] == "maximum":
             self.dataset.data.data = \
-                self.dataset.data.data / max(abs(self.dataset.data.data))
+                self.dataset.data.data / np.amax(abs(self.dataset.data.data))
         else:
             self.dataset.data.data = \
                 self.dataset.data.data / sum(abs(self.dataset.data.data))
