@@ -1,10 +1,28 @@
-"""
-To produce replicable results it's important not to change the raw data.
+"""Datasets: units containing data and metadata.
 
-This module creates a dataset structure, inheriting from
-:class:`aspecd.dataset.Dataset`. The dataset structure contains data and
-metadata, the latter consisting of different classes, which contain the
-individual information about the experiment.
+The dataset is one key concept of the ASpecD framework and hence the trepr
+package derived from it, consisting of the data as well as the corresponding
+metadata. Storing metadata in a structured way is a prerequisite for a
+semantic understanding within the routines. Furthermore, a history of every
+processing, analysis and annotation step is recorded as well, aiming at a
+maximum of reproducibility. This is part of how the ASpecD framework and
+therefore the trepr package tries to support good scientific practice.
+
+Therefore, each processing and analysis step of data should always be
+performed using the respective methods of a dataset, at least as long as it
+can be performed on a single dataset.
+
+Generally, there are two types of datasets: Those containing experimental
+data and those containing calculated data. Therefore, two corresponding
+subclasses exist, and packages building upon the ASpecD framework should
+inherit from either of them:
+
+  * :class:`trepr.dataset.ExperimentalDataset`
+  * :class:`trepr.dataset.CalculatedDataset`
+
+Furthermore, in this module, the individual metadata classes are defined
+which contain the individual information about the experiment.
+
 """
 
 import aspecd.dataset
@@ -54,8 +72,12 @@ class ExperimentalDataset(aspecd.dataset.ExperimentalDataset):
     time_stamp : :class:`aspecd.dataset.Data`
         Time stamp of each individual time trace.
 
+        Note: actual time stamp data will not be available for each file format.
+
     microwave_frequency : :class:`aspecd.dataset.Data`
         Microwave frequency of each individual time trace.
+
+        Note: actual frequency data will not be available for each file format.
 
     """
 
@@ -74,7 +96,19 @@ class CalculatedDataset(aspecd.dataset.CalculatedDataset):
 
 
 class DatasetFactory(aspecd.dataset.DatasetFactory):
+    """
+    Factory for creating dataset objects based on the source provided.
 
+    Particularly in case of recipe-driven data analysis (c.f. :mod:`tasks`),
+    there is a need to automatically retrieve datasets using nothing more
+    than a source string that can be, e.g., a path or LOI.
+
+    Attributes
+    ----------
+    importer_factory : :class:`trepr.io.DatasetImporterFactory`
+        ImporterFactory instance used for importing datasets
+
+    """
     def __init__(self):
         super().__init__()
         self.importer_factory = trepr.io.DatasetImporterFactory()
@@ -85,7 +119,14 @@ class DatasetFactory(aspecd.dataset.DatasetFactory):
 
 
 class ExperimentalDatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
-    """Metadata for a experimental TREPR dataset.
+    """Metadata for an experimental TREPR dataset.
+
+    Each attribute is an instance of the respective subclass. For details of
+    the attributes of these classes, see their respective documentation.
+
+    Metadata can be converted to dict via
+    :meth:`aspecd.utils.ToDictMixin.to_dict()`, e.g., for generating
+    reports using templates and template engines.
 
     Attributes
     ----------
