@@ -1,0 +1,93 @@
+trEPR Info file - v. 0.1.4 (2012-10-23)
+
+GENERAL
+Filename:               messung03/daten03
+Date:                   2013-02-11
+Time start:             16:18:00
+Time end:               00:00:00
+Operator:               Till Biskup
+Label:                  Pentacen in p-Terphenyl als Pulver
+Purpose:                Zeitaufloesung des MS3-Resonators vermessen (inhom. Linienbreite), Maximum finden
+Spectrometer:           ESP380E
+Software:               Transient, Vers. 0.6
+Runs:                   1
+Shot Repetition Rate:   10 Hz
+
+SAMPLE
+Name:                   Pentacen in p-Terphenyl
+Description:            Pulverform
+Buffer:                 N/A
+Preparation:            N/A
+Tube:                   2 x 1 x 120 mm
+
+TRANSIENT
+Points:                 5000
+Length:                 10 us
+Trigger Position:       500
+
+MAGNETIC FIELD
+Start:                  370.40 mT
+Stop:                   371.40 mT
+Step:                   0.1 mT
+Sequence:               outward
+Controller:             Bruker ER 032M
+Power supply:           Bruker ER 083 CS
+
+BACKGROUND
+Field:                  260.0 mT
+Occurrence:             11
+Polarisation:           absorptive
+
+BRIDGE
+Model:                  Bruker ER 046 MRT
+Attenuation:            20 dB
+Power:                  2.01 mW
+Detection:              mixer
+Frequency counter:      HP 5352B
+MW frequency:           9.68054 GHz
+
+VIDEO AMPLIFIER
+Bandwidth:              200 MHz
+Amplification:          42 dB
+
+RECORDER
+Model:                  LeCroy 9354A
+Averages:               500
+Time base:              2 ns
+Bandwidth:              200 MHz
+Pretrigger:             1.001 us
+Coupling:               DC
+Impedance:              50 Ohm
+Sensitivity:            50 mV
+
+PROBEHEAD
+Type:                   split ring 3 mm
+Model:                  Bruker ER 4118X-MS3
+Coupling:               critical
+
+PUMP
+Type:                   Laser
+Model:                  GCR 190-10
+Wavelength:             460 nm
+Power:                  2 mJ
+Repetition rate:        10 Hz
+Tunable type:           OPO
+Tunable model:          OPTA BBO VIS/IR
+Tunable dye:            
+Tunable position:       11450
+
+TEMPERATURE
+Temperature:            RT
+Controller:             Oxford ITC 503
+Cryostat:               Oxford 935
+Cryogen:                N/A
+
+FIELD CALIBRATION
+Gaussmeter:             
+Method:                 Standard
+Standard:               LiLiF
+Signal field:           3446.66 G
+MW Frequency:           9.66142 GHz
+Deviation:              1.48 G
+
+COMMENT
