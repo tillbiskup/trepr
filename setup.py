@@ -49,5 +49,4 @@ setup(
         'scipy',
     ],
     python_requires='>=3.5',
-    scripts = ['trepr/chef_de_service.py'],
 )
