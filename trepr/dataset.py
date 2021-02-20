@@ -24,6 +24,7 @@ Furthermore, in this module, the individual metadata classes are defined
 which contain the individual information about the experiment.
 
 """
+import os
 
 import aspecd.dataset
 import aspecd.metadata
@@ -727,8 +728,9 @@ class MetadataMapper(aspecd.metadata.MetadataMapper):
 
     def _load_mapping_recipes(self):
         """Load the file containing the mapping recipes."""
+        rootpath = os.path.split(os.path.abspath(__file__))[0]
         yaml_file = aspecd.utils.Yaml()
-        yaml_file.read_from(self._filename)
+        yaml_file.read_from(os.path.join(rootpath, self._filename))
         self._mapping_recipes = yaml_file.dict
 
     def _choose_mapping_recipe(self):

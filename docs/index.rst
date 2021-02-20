@@ -1,8 +1,3 @@
-.. trepr documentation master file, created by
-   sphinx-quickstart on Thu Sep 20 08:59:47 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 trepr documentation
 ===================
 
@@ -31,11 +26,6 @@ Contribute
 ----------
 
 - Source Code: https://github.com/tillbiskup/trepr
-
-Support
--------
-
-If you are having issues, please contact us under j.popp@gmx.ch
 
 License
 -------

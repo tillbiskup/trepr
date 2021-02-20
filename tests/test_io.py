@@ -3,12 +3,20 @@ import os
 import shutil
 import unittest
 
-import aspecd.metadata
-
 import trepr.io
 import trepr.dataset
 
 ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
+
+
+class TestSpeksimImporter(unittest.TestCase):
+    def setUp(self):
+        self.source = os.path.join(ROOTPATH, 'testdata', 'speksim')
+        self.importer = trepr.io.SpeksimImporter(source=self.source)
+        self.dataset = trepr.dataset.ExperimentalDataset()
+
+    def test_importer(self):
+        self.dataset.import_from(self.importer)
 
 
 class TestTezImporter(unittest.TestCase):
@@ -62,7 +70,6 @@ class TestTezImporter(unittest.TestCase):
             '@size': '[0 0]'})
         with self.assertRaises(NotImplementedError):
             self.importer._parse_axes()
-
 
     def test_axes_are_filled(self):
         self.dataset.import_from(self.importer)

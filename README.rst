@@ -29,7 +29,7 @@ Contribute
 Support
 -------
 
-If you are having issues, please contact the package authors.
+If you are having issues, please contact the package maintainer.
 
 License
 -------
