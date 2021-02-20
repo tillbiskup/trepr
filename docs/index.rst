@@ -1,10 +1,7 @@
 trepr documentation
 ===================
 
-Welcome! This is the documentation for trepr, a Python package for processing and analysis of time-resolved electron paramagnetic resonance (tr-EPR) spectra based on the `ASpecD framework <https://www.aspecd.de/>`_. For general information see its `Homepage <https://www.trepr.de/>`_. Due to the inheritance from the ASpecD superclass, all data generated with the trepr package are completely reproducible and have a complete history.
-
-.. warning::
-  The trepr package is currently under active development and still considered in Alpha development state. Therefore, expect frequent changes in features and public APIs that may break your own code. Nevertheless, feedback as well as feature requests are highly welcome.
+Welcome! This is the documentation for trepr, a Python package for processing and analysis of time-resolved electron paramagnetic resonance (tr-EPR) spectra based on the `ASpecD framework <https://www.aspecd.de/>`_. For general information see its `Homepage <https://www.trepr.de/>`_. Due to the inheritance from the ASpecD framework, all data generated with the trepr package are completely reproducible and have a complete history.
 
 
 Features
@@ -14,6 +11,24 @@ Features
 - customisable plots
 - automatically generated reports
 - recipe-driven usage
+
+And to make it even more convenient for users and future-proof:
+
+- Open source project written in Python (>= 3.5)
+- Extensive user and API documentation
+
+
+.. warning::
+  The trepr package is currently under active development and still considered in Beta development state. Therefore, expect frequent changes in features and public APIs that may break your own code. Nevertheless, feedback as well as feature requests are highly welcome.
+
+
+Where to start
+--------------
+
+Users new to the trepr package should probably start :doc:`at the beginning <audience>`, those familiar with its :doc:`underlying concepts <concepts>` may jump straight to the section explaining frequent :doc:`use cases <usecases>`.
+
+The :doc:`API documentation <api/index>` is the definite source of information for developers, besides having a look at the source code.
+
 
 Installation
 ------------
@@ -61,9 +76,8 @@ The snake (a python) resembles the lines of a tr-EPR spectrum, most probably a l
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
 
