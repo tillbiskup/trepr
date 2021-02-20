@@ -58,7 +58,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'trepr package'
-copyright = '2018-19, Jara Popp, 2018– Till Biskup, 2020- Mirjam Schröder'
+copyright = '2018-19 Jara Popp, 2018– Till Biskup, 2020- Mirjam Schröder'
 author = 'Jara Popp, Till Biskup, Mirjam Schröder'
 
 # The version info for the project you're documenting, acts as replacement for

@@ -41,12 +41,22 @@ The snake (a python) resembles the lines of a tr-EPR spectrum, most probably a l
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: User Manual:
+   :hidden:
 
    audience
    concepts
    usecases
 
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Developers:
+   :hidden:
+
+   people
+   developers
+   roadmap
    api/index
 
 
