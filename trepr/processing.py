@@ -127,7 +127,7 @@ class Averaging(aspecd.processing.ProcessingStep):
         self.parameters['range'] = avg_range
         self.parameters['unit'] = unit
         # protected properties:
-        self._dim = self.parameters['dimension']
+        self._dim = 1 if self.parameters['dimension'] == 0 else 0
 
     def _perform_task(self):
         """Perform the processing step."""
@@ -151,15 +151,17 @@ class Averaging(aspecd.processing.ProcessingStep):
     def _execute_averaging(self, avg_range):
         """Apply the averaging on the given experimental dataset."""
         if self._dim == 0:
-            # behalte Achsen Zeit und Intensität
+            # keep time and intensity axes
             axes = [self.dataset.data.axes[1], self.dataset.data.axes[2]]
-            self.dataset.data.data = \
-                np.average(self.dataset.data.data[:, avg_range], axis=1)
+            self.dataset.data.data = np.average(self.dataset.data.data[:,
+                                                avg_range[0]:avg_range[1]],
+                                                axis=0)
         else:
-            # behalte B und Intensität, durch t,
+            # keep B and intensity axes
             axes = [self.dataset.data.axes[0], self.dataset.data.axes[2]]
-            self.dataset.data.data = \
-                np.average(self.dataset.data.data[avg_range, :], axis=0)
+            self.dataset.data.data = np.average(self.dataset.data.data[:,
+                                                avg_range[0]:avg_range[1]],
+                                                axis=1)
         self.dataset.data.axes = axes
 
     @staticmethod
