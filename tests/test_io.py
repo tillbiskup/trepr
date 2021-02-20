@@ -18,6 +18,16 @@ class TestSpeksimImporter(unittest.TestCase):
     def test_importer(self):
         self.dataset.import_from(self.importer)
 
+    def test_data_shape_matches_axes_lengths(self):
+        """Crucial test for dimensions!
+        0: magnetic field axis
+        1: time axis
+        """
+        self.dataset.import_from(self.importer)
+        self.assertEqual((len(self.importer.dataset.data.axes[0].values),
+                          len(self.importer.dataset.data.axes[1].values)),
+                         self.importer.dataset.data.data.shape)
+
 
 class TestTezImporter(unittest.TestCase):
     def setUp(self):

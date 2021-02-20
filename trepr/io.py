@@ -2,13 +2,14 @@
 General facilities for input (and output).
 
 With this module trepr raw data in Freiburg Speksim format and the
-trepr-toolbox format can be imported.
+MATLAB trepr toolbox format (tez) can be imported.
 
 ..note::
     The axes are not in the order ASpecD expects, still, the processing steps
     are working. If one wants to make it consistent, with ASpecD, also look
-    through all processing and analyis steps and reverse the axis order
+    through all processing and analysis steps and reverse the axis order
     there as well if necessary!
+
 """
 import datetime
 import glob
@@ -27,6 +28,7 @@ import aspecd.dataset
 import aspecd.io
 import aspecd.infofile
 import aspecd.metadata
+import aspecd.plotting
 import aspecd.utils
 
 import trepr.dataset
@@ -122,6 +124,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         self._data = np.append(self._data, numeric_data)
 
     def _process_numeric_data(self, raw_data):
+        # noinspection PyTypeChecker
         numeric_data = np.loadtxt(io.StringIO(raw_data),
                                   skiprows=self._headerlines)
         numeric_data = np.reshape(numeric_data, self._time_points)
@@ -244,6 +247,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         """Hand the data to the dataset structure."""
         self.dataset.data.data = self._data
 
+    # noinspection PyPep8Naming
     def _ensure_field_axis_in_SI_unit(self):
         """Ensure that the field axis unit is in SI unit."""
         if self._field_unit == 'Gauss':
@@ -252,12 +256,12 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
 
     def _hand_axes_to_dataset(self):
         """Hand the axes and intensity to the dataset structure."""
-        self.dataset.data.axes[0].values = self._time_axis
-        self.dataset.data.axes[0].unit = self._time_unit
-        self.dataset.data.axes[0].quantity = 'time'
-        self.dataset.data.axes[1].values = self._field_axis
-        self.dataset.data.axes[1].unit = self._field_unit
-        self.dataset.data.axes[1].quantity = 'magnetic field'
+        self.dataset.data.axes[0].values = self._field_axis
+        self.dataset.data.axes[0].unit = self._field_unit
+        self.dataset.data.axes[0].quantity = 'magnetic field'
+        self.dataset.data.axes[1].values = self._time_axis
+        self.dataset.data.axes[1].unit = self._time_unit
+        self.dataset.data.axes[1].quantity = 'time'
         self.dataset.data.axes[2].unit = self._intensity_unit
         self.dataset.data.axes[2].quantity = 'intensity'
 
@@ -334,9 +338,10 @@ class TezImporter(aspecd.io.DatasetImporter):
     def _get_dir_and_filenames(self):
         hidden_filename = os.listdir(os.path.join(self._root_dir, 'tmp'))[0]
         self.metadata_filename = os.path.join(self._root_dir, 'tmp',
-                                              hidden_filename,  'struct.xml')
-        self._raw_data_name = os.path.join(self._root_dir, 'tmp',
-                                           hidden_filename, 'binaryData', 'data')
+                                              hidden_filename, 'struct.xml')
+        self._raw_data_name = \
+            os.path.join(self._root_dir, 'tmp', hidden_filename,
+                         'binaryData', 'data')
         self._raw_data_shape_filename = os.path.join(self._raw_data_name +
                                                      '.dim')
 
@@ -385,8 +390,8 @@ class TezImporter(aspecd.io.DatasetImporter):
 
     def _get_values_from_xml_dict(self, id_=None):
         values = np.asarray([float(i) for i in
-                                  self.xml_dict['struct']['axes']['data'][
-                                       'values'][id_]['#text'].split(' ') if i])
+                             self.xml_dict['struct']['axes']['data'][
+                                 'values'][id_]['#text'].split(' ') if i])
         return values
 
     def _get_metadata_from_xml(self):
