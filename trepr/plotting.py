@@ -34,17 +34,17 @@ B_right = np.linspace(1, 51 / 255, 128)
 
 colors_left = list(left.range_to(middle, 128))
 colors_right = list(middle.range_to(right, 128))
-for i in enumerate(colors_left):
+for i, _ in enumerate(colors_left):
     colors_left[i] = list(colors_left[i].rgb)
-for i in enumerate(colors_right):
+for i, _ in enumerate(colors_right):
     colors_right[i] = list(colors_right[i].rgb)
 
-for i in enumerate(colors_left):
+for i, _ in enumerate(colors_left):
     colors_left[i][0] = R_left[i]
     colors_left[i][1] = G_left[i]
     colors_left[i][2] = B_left[i]
 
-for i in enumerate(colors_right):
+for i, _ in enumerate(colors_right):
     colors_right[i][0] = R_right[i]
     colors_right[i][1] = G_right[i]
     colors_right[i][2] = B_right[i]

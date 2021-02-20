@@ -4,7 +4,8 @@ General facilities for input (and output).
 With this module trepr raw data in Freiburg Speksim format and the
 MATLAB trepr toolbox format (tez) can be imported.
 
-..note::
+.. note::
+
     The axes are not in the order ASpecD expects, still, the processing steps
     are working. If one wants to make it consistent, with ASpecD, also look
     through all processing and analysis steps and reverse the axis order
