@@ -1,5 +1,5 @@
 """
-trepr package
+trepr package.
 
 Package for reproducible and traceable analysis of trepr data.
 
@@ -15,8 +15,6 @@ Available modules
     Analyse data in datasets.
 :mod:`trepr.plotting`
     Plot data in datasets.
-:mod:`trepr.fitpy_interface`
-    Call FitPy to fit datasets.
 :mod:`trepr.report`
     Create reports with given datasets.
 

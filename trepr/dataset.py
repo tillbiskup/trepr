@@ -35,8 +35,6 @@ import trepr.io
 class Error(Exception):
     """Base class for exceptions in this module."""
 
-    pass
-
 
 class RecipeNotFoundError(Error):
     """Exception raised when a recipe could not be found.
@@ -54,7 +52,7 @@ class RecipeNotFoundError(Error):
 
 
 class Dataset(aspecd.dataset.Dataset):
-    pass
+    """General dataset class."""
 
 
 class ExperimentalDataset(aspecd.dataset.ExperimentalDataset):
@@ -93,8 +91,6 @@ class ExperimentalDataset(aspecd.dataset.ExperimentalDataset):
 class CalculatedDataset(aspecd.dataset.CalculatedDataset):
     """Entity consisting of calculated data and metadata."""
 
-    pass
-
 
 class DatasetFactory(aspecd.dataset.DatasetFactory):
     """
@@ -110,6 +106,7 @@ class DatasetFactory(aspecd.dataset.DatasetFactory):
         ImporterFactory instance used for importing datasets
 
     """
+
     def __init__(self):
         super().__init__()
         self.importer_factory = trepr.io.DatasetImporterFactory()
@@ -192,7 +189,6 @@ class ExperimentalDatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
 
 class CalculatedDatasetMetadata(aspecd.metadata.CalculatedDatasetMetadata):
     """Metadata for a calculated dataset."""
-    pass
 
 
 class Measurement(aspecd.metadata.Measurement):
@@ -641,7 +637,7 @@ class TemperatureControl(aspecd.metadata.TemperatureControl):
 
 
 class MetadataMapper(aspecd.metadata.MetadataMapper):
-    """
+    """Map metadata from external source.
 
     Bring the metadata from an external source into a layout understood by
     the :class:`trepr.dataset.DatasetMetadata` class using mappings.
@@ -721,6 +717,7 @@ class MetadataMapper(aspecd.metadata.MetadataMapper):
         self._mapping_recipes = dict()
 
     def map(self):
+        """Map metadata."""
         self._load_mapping_recipes()
         self._choose_mapping_recipe()
         self._create_mappings()

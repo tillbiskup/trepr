@@ -13,7 +13,6 @@ attribute of the dataset.
 
 import datetime
 import matplotlib.dates as mdates
-import matplotlib.pyplot as plt
 
 import numpy as np
 import scipy.constants
@@ -21,9 +20,6 @@ import scipy.constants
 import aspecd.analysis
 import aspecd.metadata
 import aspecd.utils
-
-
-# import trepr.interfaces
 
 
 class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
@@ -59,6 +55,7 @@ class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
 
     @staticmethod
     def applicable(dataset):
+        """Check whether processing step is applicable to the given dataset."""
         return dataset.microwave_frequency.data.any()
 
     def _perform_task(self):
@@ -72,7 +69,7 @@ class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
     def _calculate_mw_freq_amplitude(self):
         """Calculate the amplitude of the microwave frequency."""
         self._delta_mw_freq = max(self.dataset.microwave_frequency.data) - \
-                              min(self.dataset.microwave_frequency.data)
+            min(self.dataset.microwave_frequency.data)
 
     def _convert_delta_mw_freq_to_delta_B0(self):
         """Calculate delta B0 by using the resonance condition."""
@@ -80,7 +77,7 @@ class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
         bohr_magneton = scipy.constants.value('Bohr magneton')
         planck_constant = scipy.constants.value('Planck constant')
         self._delta_B0 = self._delta_mw_freq * 1e9 * planck_constant \
-                         / (-1 * electron_g_factor * bohr_magneton)
+            / (-1 * electron_g_factor * bohr_magneton)
 
     def _calculate_step_size(self):
         """Calculate the step size of the given dataset."""
@@ -98,7 +95,7 @@ class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
         self.result = {
             'frequency drift': aspecd.metadata.PhysicalQuantity(
                 value=self._delta_B0, unit='T'),
-            'ratio frequency drift/step size': \
+            'ratio frequency drift/step size':
                 self._ratio_frequency_drift_to_step_size}
 
 
@@ -138,7 +135,7 @@ class TimeStampAnalysis(aspecd.analysis.SingleAnalysisStep):
 
     def _create_time_field_matrix(self):
         """Create a matrix containing the time stamps and the corresponding
-        field points"""
+        field points."""
         time_stamp_floats = np.zeros(0)
         for time_stamp in self.dataset.time_stamp.data:
             time_stamp_floats = \
@@ -153,12 +150,12 @@ class TimeStampAnalysis(aspecd.analysis.SingleAnalysisStep):
                 datetime.datetime.fromtimestamp(time_stamp))
 
     def _calculate_time_stamp_delta(self):
-        """Calculate the time between the time stamps"""
+        """Calculate the time between the time stamps."""
         zero = datetime.datetime(2018, 1, 1)
         for i in range(len(self._time_stamp_datetimes) - 1):
-            self._time_stamp_datetimes[i] = self._time_stamp_datetimes[i + 1] - \
-                                            self._time_stamp_datetimes[i] + \
-                                            zero
+            self._time_stamp_datetimes[i] = \
+                self._time_stamp_datetimes[i + 1] - \
+                self._time_stamp_datetimes[i] + zero
         del self._time_stamp_datetimes[-1]
         zero = mdates.date2num(zero)
         for i in range(len(self._time_stamp_datetimes)):
@@ -166,11 +163,10 @@ class TimeStampAnalysis(aspecd.analysis.SingleAnalysisStep):
                 mdates.date2num(self._time_stamp_datetimes[i]) - zero
         self._time_field_matrix = \
             np.delete(self._time_field_matrix, -1, axis=0)
-        #plt.plot(self._time_field_matrix[:, 1], self._time_stamp_datetimes,
-        #         linestyle='', marker='.')
-        #plt.show()
 
     def _write_result(self):
-        """Write the result to the attribute
-        :attr:`aspecd.analysis.AnalysisStep.result`"""
+        """Assign result.
+
+        The result is assigned to :attr:`aspecd.analysis.AnalysisStep.result`.
+        """
         self.result = {'time spent per time trace': self._time_stamp_datetimes}

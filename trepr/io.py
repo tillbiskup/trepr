@@ -17,11 +17,10 @@ import io
 import os
 import re
 import shutil
-
-import xmltodict
 from zipfile import ZipFile
 
 import numpy as np
+import xmltodict
 
 import aspecd.annotation
 import aspecd.dataset
@@ -298,11 +297,11 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
     def _get_importer(self, source):
         if os.path.isdir(source):
             return SpeksimImporter(source=source)
-        else:
-            return TezImporter(source=source)
+        return TezImporter(source=source)
 
 
 class TezImporter(aspecd.io.DatasetImporter):
+    """Importer for MATLAB(r) trepr toolbox format."""
 
     def __init__(self, source=''):
         super().__init__(source=source)
@@ -310,6 +309,7 @@ class TezImporter(aspecd.io.DatasetImporter):
         self.mapper_filename = 'tez_mapper.yaml'
         self.xml_dict = None
         self.dataset = trepr.dataset.ExperimentalDataset()
+        self.metadata_filename = ''
         # private properties
         self._root_dir = ''
         self._filename = ''
@@ -374,7 +374,7 @@ class TezImporter(aspecd.io.DatasetImporter):
             self.dataset.data.axes[0].values = \
                 self._get_values_from_xml_dict(id_=id_)
             assert int(self.xml_dict['struct']['axes']['data']['values'][
-                           id_]['@id']) == (id_ + 1), 'Axis-IDs do not match!'
+                id_]['@id']) == (id_ + 1), 'Axis-IDs do not match!'
             self.dataset.data.axes[0].unit = self.xml_dict['struct']['axes'][
                 'data']['unit'][id_]['#text']
 
@@ -385,7 +385,7 @@ class TezImporter(aspecd.io.DatasetImporter):
             self.dataset.data.axes[1].values = \
                 self._get_values_from_xml_dict(id_=id_)
             assert int(self.xml_dict['struct']['axes']['data']['values'][
-                           id_]['@id']) == (id_ + 1)
+                id_]['@id']) == (id_ + 1)
             self.dataset.data.axes[1].unit = self.xml_dict['struct']['axes'][
                 'data']['unit'][id_]['#text']
 
@@ -460,7 +460,6 @@ class TezImporter(aspecd.io.DatasetImporter):
     def _remove_tmp_directory(self):
         if os.path.exists(self._tmpdir):
             shutil.rmtree(self._tmpdir)
-
 
 
 if __name__ == '__main__':

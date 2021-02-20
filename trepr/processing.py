@@ -17,8 +17,6 @@ import aspecd.processing
 class Error(Exception):
     """Base class for exceptions in this module."""
 
-    pass
-
 
 class DimensionError(Error):
     """Exception raised when the dimension isn't zero or one.
@@ -257,6 +255,10 @@ class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
 
 
 class Normalise(aspecd.processing.ProcessingStep):
+    """Normalise data.
+
+    Possible normalisations are area and maximum.
+    """
 
     def __init__(self):
         super().__init__()
@@ -265,14 +267,14 @@ class Normalise(aspecd.processing.ProcessingStep):
 
     def _perform_task(self):
         if self.parameters['type'] == "area":
-            self.dataset.data.data = self.dataset.data.data / \
-                                     sum(abs(self.dataset.data.data))
+            self.dataset.data.data = \
+                self.dataset.data.data / sum(abs(self.dataset.data.data))
         elif self.parameters['type'] == "maximum":
-            self.dataset.data.data = self.dataset.data.data / \
-                                     max(abs(self.dataset.data.data))
+            self.dataset.data.data = \
+                self.dataset.data.data / max(abs(self.dataset.data.data))
         else:
-            self.dataset.data.data = self.dataset.data.data / \
-                                     sum(abs(self.dataset.data.data))
+            self.dataset.data.data = \
+                self.dataset.data.data / sum(abs(self.dataset.data.data))
 
 
 if __name__ == '__main__':

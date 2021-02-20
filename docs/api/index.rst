@@ -14,7 +14,7 @@ This is the definite source of information for developers, besides having a look
    trepr.plotting
    trepr.processing
    trepr.report
-   trepr.fitpy_interface
+
 
 Package contents
 ----------------

@@ -98,8 +98,10 @@ class LaTeXReporter(aspecd.report.LaTeXReporter):
     @staticmethod
     def _change_keys_in_dict_recursively(dict_=None):
         """Replace all underscores in the keys with a space.
+
         Note: This is done because LaTeX interprets the underscore not as
-        underscore but as command for subscription."""
+        underscore but as command for subscription.
+        """
         tmp_dict = collections.OrderedDict()
         for key, value in dict_.items():
             if isinstance(value, dict):

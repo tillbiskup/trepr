@@ -1,8 +1,13 @@
-aspecd
+aspecd~=0.1.0.dev406
 numexpr
-scipy
+scipy~=1.5.4
 six
 urllib3
 
-colour
-xmltodict
+colour~=0.1.5
+xmltodict~=0.12.0
+trepr~=0.1.0.dev57
+numpy~=1.19.2
+Jinja2~=2.11.2
+matplotlib~=3.3.2
+setuptools~=40.8.0
