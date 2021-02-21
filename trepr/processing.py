@@ -240,7 +240,7 @@ class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
     def _get_zeropoint_index(self):
         """Get the index of the last time value before the trigger."""
         zeropoint_index = \
-            np.argmin(np.cumsum(self.dataset.data.axes[0].values))
+            np.argmin(abs(self.dataset.data.axes[1].values))
         self.parameters['zeropoint_index'] = int(zeropoint_index)
 
     def _execute_compensation(self, range_end):
@@ -256,10 +256,22 @@ class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
         return np.average(array)
 
 
-class Normalisation(aspecd.processing.ProcessingStep):
+class Normalisation(aspecd.processing.Normalisation):
+    """Class inherited from ASpecD for easy usage."""
+
+
+class NormalisationOld(aspecd.processing.ProcessingStep):
     """Normalise data.
 
     Possible normalisations are area and maximum.
+
+    applicable in 2D datasets as well?
+
+    See Also
+    --------
+    aspecd.processing.Normalisation :
+        Equivalent method with even more functionalities
+
     """
 
     def __init__(self):
@@ -270,7 +282,8 @@ class Normalisation(aspecd.processing.ProcessingStep):
     def _perform_task(self):
         if self.parameters['type'] == "area":
             self.dataset.data.data = \
-                self.dataset.data.data / sum(abs(self.dataset.data.data))
+                self.dataset.data.data / np.sum(abs(self.dataset.data.data),
+                                             axis=1)
         elif self.parameters['type'] == "maximum":
             self.dataset.data.data = \
                 self.dataset.data.data / np.amax(abs(self.dataset.data.data))
