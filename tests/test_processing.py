@@ -1,6 +1,7 @@
 import os
 import unittest
 
+import aspecd.exceptions
 import numpy as np
 
 import trepr.processing
@@ -91,6 +92,70 @@ class TestNormalisation(unittest.TestCase):
         self.processing.parameters['type'] = ""
         self.dataset.process(self.processing)
         self.assertEqual(1, sum(abs(self.dataset.data.data)).all())
+
+
+class TestBackgroundCorection(unittest.TestCase):
+    def setUp(self):
+        self.processing = trepr.processing.BackgroundCorrection()
+        self.dataset = trepr.dataset.ExperimentalDataset()
+
+    def create_dataset(self):
+        data = np.ones([500, 200])
+        data[10:-10] += 4
+        self.dataset.data.data = data
+
+    def test_description(self):
+        self.create_dataset()
+        self.assertNotIn('abstract', self.processing.description.lower())
+        self.assertIn('background', self.processing.description.lower())
+
+    def test_1D_dataset_raises(self):
+        self.dataset.data.data = np.ones(200)
+        with self.assertRaises(aspecd.exceptions.NotApplicableToDatasetError):
+            self.dataset.process(self.processing)
+
+    def test_too_small_dataset_raises(self):
+        self.dataset.data.data = np.ones((5, 20))
+        with self.assertRaises(aspecd.exceptions.NotApplicableToDatasetError):
+            self.dataset.process(self.processing)
+
+    def test_perform_task_with_defaults(self):
+        self.create_dataset()
+        self.dataset.process(self.processing)
+        self.assertGreater(5.0, self.dataset.data.data[16, 0])
+
+    def test_perform_task_with_list_one_element(self):
+        self.create_dataset()
+        self.processing.parameters['num_profiles'] = [-10]
+        self.dataset.process(self.processing)
+        self.assertGreater(5.0, self.dataset.data.data[16, 0])
+
+    def test_perform_task_with_list_two_elements(self):
+        self.create_dataset()
+        self.dataset.data.data[-10:] += 2
+        self.processing.parameters['num_profiles'] = [10, -10]
+        self.dataset.process(self.processing)
+        self.assertGreater(5.0, self.dataset.data.data[16, 0])
+        self.assertAlmostEqual(0, self.dataset.data.data[0, 0])
+        self.assertAlmostEqual(0, self.dataset.data.data[-1, 0], 2)
+
+    def test_perform_task_with_list_two_other_elements(self):
+        self.create_dataset()
+        self.dataset.data.data[-10:] += 2
+        self.processing.parameters['num_profiles'] = [5, 10]
+        self.dataset.process(self.processing)
+        self.assertGreater(5.0, self.dataset.data.data[16, 0])
+        self.assertAlmostEqual(0, self.dataset.data.data[0, 0])
+        self.assertAlmostEqual(0, self.dataset.data.data[-1, 0], 2)
+
+    def test_perform_task_with_tuple(self):
+        self.create_dataset()
+        self.dataset.data.data[-10:] += 2
+        self.processing.parameters['num_profiles'] = 5, 10
+        self.dataset.process(self.processing)
+        self.assertGreater(5.0, self.dataset.data.data[16, 0])
+        self.assertAlmostEqual(0, self.dataset.data.data[0, 0])
+        self.assertAlmostEqual(0, self.dataset.data.data[-1, 0], 2)
 
 
 if __name__ == '__main__':

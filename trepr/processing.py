@@ -12,6 +12,7 @@ information to reproduce each processing step to the
 import numpy as np
 
 import aspecd.processing
+import aspecd.exceptions
 
 
 class Error(Exception):
@@ -257,7 +258,74 @@ class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
 
 
 class Normalisation(aspecd.processing.Normalisation):
-    """Class inherited from ASpecD for easy usage."""
+    """Class fully inherited from ASpecD for simple usage."""
+
+
+class BackgroundCorrection(aspecd.processing.ProcessingStep):
+    def __init__(self):
+        super().__init__()
+        # public properties:
+        self.description = 'Background correction of 2D spectrum'
+        self.undoable = True
+        self.parameters['num_profiles'] = 5, 5
+
+    @staticmethod
+    def applicable(dataset):
+        return len(dataset.data.axes) == 3
+
+    def _sanitise_parameters(self):
+        if isinstance(self.parameters['num_profiles'], tuple):
+            self.parameters['num_profiles'] = \
+                list(self.parameters['num_profiles'])
+        if isinstance(self.parameters['num_profiles'], list) and \
+                len(self.parameters['num_profiles']) == 1:
+            self.parameters['num_profiles'] = self.parameters['num_profiles'][0]
+
+    def _perform_task(self):
+        self._check_data_size()
+        self._subtract_background()
+
+    def _check_data_size(self):
+        if isinstance(self.parameters['num_profiles'], list):
+            num_profiles = sum(self.parameters['num_profiles'])
+        else:
+            num_profiles = self.parameters['num_profiles']
+        if len(self.dataset.data.axes[0].values) <= 2 * num_profiles:
+            raise aspecd.exceptions.NotApplicableToDatasetError(
+                message='The given dataset ist too small to perform '
+                        'appropriate background correction.')
+
+    def _subtract_background(self):
+        if isinstance(self.parameters['num_profiles'], list) and \
+                len(self.parameters['num_profiles']) == 2:
+            self._bg_corr_with_slope()
+        else: 
+            self._bg_corr_one_side()
+
+    def _bg_corr_with_slope(self):
+        low = self.parameters['num_profiles'][0]
+        high = abs(self.parameters['num_profiles'][1])
+        lower_mean = np.mean(self.dataset.data.data[:low])
+        higher_mean = np.mean(self.dataset.data.data[-high:])
+        slope = (higher_mean - lower_mean) / self.dataset.data.data.shape[0]
+        for idx, transient in enumerate(self.dataset.data.data):
+            transient -= lower_mean + slope * idx
+
+    def _bg_corr_one_side(self):
+        assert type(self.parameters['num_profiles']) == int
+
+        if self.parameters['num_profiles'] < 0:
+            self._subtract_from_end()
+        else:
+            self._subtract_from_begin()
+
+    def _subtract_from_end(self):
+        bg = np.mean(self.dataset.data.data[self.parameters['num_profiles']:])
+        self.dataset.data.data -= bg
+
+    def _subtract_from_begin(self):
+        bg = np.mean(self.dataset.data.data[:self.parameters['num_profiles']])
+        self.dataset.data.data -= bg
 
 
 class NormalisationOld(aspecd.processing.ProcessingStep):
@@ -297,13 +365,13 @@ if __name__ == '__main__':
 
     PATH = '../../Daten/messung17/'
     importer = trepr.io.SpeksimImporter(source=PATH)
-    dataset = aspecd.dataset.Dataset()
-    dataset.import_from(importer)
+    dataset_ = aspecd.dataset.Dataset()
+    dataset_.import_from(importer)
 
     pretrigger = PretriggerOffsetCompensation()
     process1 = importer.dataset.process(pretrigger)
     print(importer.dataset.history[0].processing.parameters)
 
     avg = Averaging(dimension=1, avg_range=[2900, 2904], unit='axis')
-    process2 = dataset.process(avg)
+    process2 = dataset_.process(avg)
     print(importer.dataset.history[1].processing.parameters)
