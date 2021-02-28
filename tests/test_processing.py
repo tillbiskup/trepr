@@ -94,7 +94,7 @@ class TestNormalisation(unittest.TestCase):
         self.assertEqual(1, sum(abs(self.dataset.data.data)).all())
 
 
-class TestBackgroundCorection(unittest.TestCase):
+class TestBackgroundCorrection(unittest.TestCase):
     def setUp(self):
         self.processing = trepr.processing.BackgroundCorrection()
         self.dataset = trepr.dataset.ExperimentalDataset()
@@ -157,6 +157,26 @@ class TestBackgroundCorection(unittest.TestCase):
         self.assertAlmostEqual(0, self.dataset.data.data[0, 0])
         self.assertAlmostEqual(0, self.dataset.data.data[-1, 0], 2)
 
+
+class TestFrequencyCorrection(unittest.TestCase):
+    def setUp(self):
+        self.processing = trepr.processing.FrequencyCorrection()
+        self.dataset = trepr.dataset.ExperimentalDataset()
+        data = np.ones([301, 200])
+        data[10:-10] += 4
+        self.dataset.data.data = data
+        self.dataset.metadata.bridge.mw_frequency.value = 10.
+        self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.data.axes[0].values = np.linspace(200, 500, num=301)
+
+    def test_correction(self):
+        old_field_axis = np.copy(self.dataset.data.axes[0].values)
+        self.processing.parameters['frequency'] = 8.
+        self.dataset.process(self.processing)
+        new_field_axis = self.dataset.data.axes[0].values
+        diffs = old_field_axis - new_field_axis
+        conditions = (diff == 0 for diff in diffs)
+        self.assertFalse(all(conditions))
 
 if __name__ == '__main__':
     unittest.main()

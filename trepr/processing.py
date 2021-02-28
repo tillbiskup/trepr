@@ -7,8 +7,7 @@ information to reproduce each processing step to the
 :attr:`trepr.dataset.Dataset.history` attribute of the dataset.
 
 """
-
-
+import cwepr.processing
 import numpy as np
 
 import aspecd.processing
@@ -360,18 +359,5 @@ class NormalisationOld(aspecd.processing.ProcessingStep):
                 self.dataset.data.data / sum(abs(self.dataset.data.data))
 
 
-if __name__ == '__main__':
-    import trepr.io
-
-    PATH = '../../Daten/messung17/'
-    importer = trepr.io.SpeksimImporter(source=PATH)
-    dataset_ = aspecd.dataset.Dataset()
-    dataset_.import_from(importer)
-
-    pretrigger = PretriggerOffsetCompensation()
-    process1 = importer.dataset.process(pretrigger)
-    print(importer.dataset.history[0].processing.parameters)
-
-    avg = Averaging(dimension=1, avg_range=[2900, 2904], unit='axis')
-    process2 = dataset_.process(avg)
-    print(importer.dataset.history[1].processing.parameters)
+class FrequencyCorrection(cwepr.processing.FrequencyCorrection):
+    """Frequency correction of the cwepr package should work."""

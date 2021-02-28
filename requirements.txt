@@ -1,4 +1,5 @@
 aspecd
+cwepr
 numexpr
 scipy
 six
