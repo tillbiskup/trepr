@@ -178,5 +178,41 @@ class TestFrequencyCorrection(unittest.TestCase):
         conditions = (diff == 0 for diff in diffs)
         self.assertFalse(all(conditions))
 
+
+class TestFilter(unittest.TestCase):
+    def setUp(self):
+        self.filter = trepr.processing.Filter()
+        self.dataset = trepr.dataset.ExperimentalDataset()
+        self.dataset.data.data = np.linspace(1, 100)
+
+    def test_type_savgol(self):
+        savgols = ['savitzky_golay', 'savitzky-golay', 'savitzky golay',
+                       'savgol', 'savitzky']
+        for filter_ in savgols:
+            self.filter.parameters['type'] = filter_
+            self.filter._get_type()
+            self.assertEqual('savitzky_golay', self.filter.parameters['type'])
+
+    def test_type_binom(self):
+        filters = ['binom', 'binomial']
+        for filter_ in filters:
+            self.filter.parameters['type'] = filter_
+            filter = self.dataset.process(self.filter)  # works on a copy...
+            self.assertEqual('binomial', filter.parameters['type'])
+
+    def test_type_boxcar(self):
+        filters = ['box', 'boxcar', ]
+        for filter_ in filters:
+            self.filter.parameters['type'] = filter_
+            filter = self.dataset.process(self.filter)  # works on a copy...
+            self.assertEqual('boxcar', filter.parameters['type'])
+
+    def test_window_length_is_odd(self):
+        self.filter.parameters['type'] = 'savgol'
+        self.filter.parameters['window_length'] = 30
+        with self.assertRaises(ValueError):
+            self.dataset.process(self.filter)
+
+
 if __name__ == '__main__':
     unittest.main()

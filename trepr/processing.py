@@ -298,7 +298,7 @@ class BackgroundCorrection(aspecd.processing.ProcessingStep):
         if isinstance(self.parameters['num_profiles'], list) and \
                 len(self.parameters['num_profiles']) == 2:
             self._bg_corr_with_slope()
-        else: 
+        else:
             self._bg_corr_one_side()
 
     def _bg_corr_with_slope(self):
@@ -350,7 +350,7 @@ class NormalisationOld(aspecd.processing.ProcessingStep):
         if self.parameters['type'] == "area":
             self.dataset.data.data = \
                 self.dataset.data.data / np.sum(abs(self.dataset.data.data),
-                                             axis=1)
+                                                axis=1)
         elif self.parameters['type'] == "maximum":
             self.dataset.data.data = \
                 self.dataset.data.data / np.amax(abs(self.dataset.data.data))
@@ -361,3 +361,45 @@ class NormalisationOld(aspecd.processing.ProcessingStep):
 
 class FrequencyCorrection(cwepr.processing.FrequencyCorrection):
     """Frequency correction of the cwepr package should work."""
+
+
+class Filter(aspecd.processing.ProcessingStep):
+    """Apply a filter to smooth 1D data.
+
+    Be careful to show filtered spectra.
+
+    It can be chosen between boxcar, Savitzky-Golay and binomial filters.  """
+
+    def __init__(self):
+        super().__init__()
+        self.description = 'Filter 1D dataset.'
+        self.parameters['type'] = None
+        self.parameters['window_length'] = int()
+
+    @staticmethod
+    def applicable(dataset):
+        return len(dataset.data.axes) == 2
+
+    def _sanitise_parameters(self):
+        self._get_type()
+        if self.parameters['type'] == 'savitzky_golay':
+            if int(self.parameters['window_length']) % 2 == 0:
+                raise ValueError('For applying the Savitzky Golay filter, '
+                                 'the window length must be odd.')
+
+    def _get_type(self):
+        """Allow for different inputs, unify them."""
+        types = {
+            'savitzky_golay': ['savitzky_golay', 'savitzky-golay', 'savitzky golay',
+                       'savgol', 'savitzky'],
+            'binomial': ['binom', 'binomial'],
+            'boxcar': ['box', 'boxcar', 'car']
+        }
+        for key, value in types.items():
+            if self.parameters['type'] in value:
+                self.parameters['type'] = key
+            if self.parameters['type'] == 'car':
+                print('Haha, good joke! You\'ve got a boxcar')
+
+    def _perform_task(self):
+        pass

@@ -455,8 +455,9 @@ class TezImporter(aspecd.io.DatasetImporter):
                 'microwave frequency'
 
     def _xml_has_mw_frequency_for_each_magnetic_field_point(self):
-        return self.xml_dict['struct']['parameters']['bridge']['MWfrequency'][
-            'values']
+        if '#text' in self.xml_dict['struct']['parameters']['bridge'][
+            'MWfrequency']['values']:
+            return True
 
     def _remove_tmp_directory(self):
         if os.path.exists(self._tmpdir):
