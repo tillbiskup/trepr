@@ -305,6 +305,9 @@ class TezImporter(aspecd.io.DatasetImporter):
     """Importer for MATLAB(r) trepr toolbox format."""
 
     def __init__(self, source=''):
+        # Dirty fix: Cut file extension
+        if source.endswith((".tez")):
+            source = source[:-4]
         super().__init__(source=source)
         # public properties
         self.mapper_filename = 'tez_mapper.yaml'
@@ -442,7 +445,13 @@ class TezImporter(aspecd.io.DatasetImporter):
         return return_value
 
     def _get_mw_frequencies(self):
-        if self._xml_has_mw_frequency_for_each_magnetic_field_point():
+        """Get the dataset with real frequencies of each magnetic field point.
+
+        This is special for the trepr dataset but useful to track frequency
+        drifts. In th UdS-measurement program, the frequency is automaticly
+        written in the tez structure.
+        """
+        if self._xml_contains_mw_frequencies():
             self.dataset.microwave_frequency.data = \
                 np.asarray([float(i) for i in self.xml_dict['struct'][
                     'parameters']['bridge']['MWfrequency']['values'][
@@ -454,7 +463,7 @@ class TezImporter(aspecd.io.DatasetImporter):
             self.dataset.microwave_frequency.axes[1].quantity = \
                 'microwave frequency'
 
-    def _xml_has_mw_frequency_for_each_magnetic_field_point(self):
+    def _xml_contains_mw_frequencies(self):
         return self.xml_dict['struct']['parameters']['bridge']['MWfrequency'][
             'values']
 
