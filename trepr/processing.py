@@ -12,6 +12,7 @@ import numpy as np
 
 import aspecd.processing
 import aspecd.exceptions
+import scipy.signal
 
 
 class Error(Exception):
@@ -368,20 +369,33 @@ class Filter(aspecd.processing.ProcessingStep):
 
     Be careful to show filtered spectra.
 
-    It can be chosen between boxcar, Savitzky-Golay and binomial filters.  """
+    It can be chosen between boxcar, Savitzky-Golay and binomial filters.
+
+    Savitzky-Golay:
+    Takes a certain number of points and fits a polynom through them.
+
+    Reference for the Savitzky-Golay Filter:
+
+     * A. Savitzky, M. J. E. Golay, Smoothing and Differentiation of Data by
+       Simplified Least Squares Procedures. Analytical Chemistry, 1964,
+       36 (8), pp 1627-1639.
+
+
+    """
 
     def __init__(self):
         super().__init__()
         self.description = 'Filter 1D dataset.'
         self.parameters['type'] = None
-        self.parameters['window_length'] = int()
+        self.parameters['window_length'] = None
+        self.parameters['order'] = 2
 
     @staticmethod
     def applicable(dataset):
         return len(dataset.data.axes) == 2
 
     def _sanitise_parameters(self):
-        self._get_type()
+        self._set_defaults()  # must be here for referring to right type from now.
         if self.parameters['type'] == 'savitzky_golay':
             if int(self.parameters['window_length']) % 2 == 0:
                 raise ValueError('For applying the Savitzky Golay filter, '
@@ -402,4 +416,22 @@ class Filter(aspecd.processing.ProcessingStep):
                 print('Haha, good joke! You\'ve got a boxcar')
 
     def _perform_task(self):
-        pass
+        if self.parameters['type'] == 'savitzky_golay':
+            self._apply_savitzky_golay()
+
+    def _set_defaults(self):
+        self._get_type()
+        if not self.parameters['window_length'] and \
+                self.parameters['type'] == 'savitzky_golay':
+            self.parameters['window_length'] = 1/6 * np.ceil(len(
+                self.dataset.data.axes[0].values)) * 2+1
+
+    def _apply_savitzky_golay(self):
+        filtered_data = scipy.signal.savgol_filter(self.dataset.data.data,
+                                   int(self.parameters['window_length']),
+                                   self.parameters['order'])
+        self.dataset.data.data = filtered_data
+
+
+
+

@@ -183,7 +183,7 @@ class TestFilter(unittest.TestCase):
     def setUp(self):
         self.filter = trepr.processing.Filter()
         self.dataset = trepr.dataset.ExperimentalDataset()
-        self.dataset.data.data = np.linspace(1, 100)
+        self.dataset.data.data = np.sin(np.linspace(1, 100))
 
     def test_type_savgol(self):
         savgols = ['savitzky_golay', 'savitzky-golay', 'savitzky golay',
@@ -212,6 +212,15 @@ class TestFilter(unittest.TestCase):
         self.filter.parameters['window_length'] = 30
         with self.assertRaises(ValueError):
             self.dataset.process(self.filter)
+
+    def test_data_before_and_after_differ(self):
+        self.filter.parameters['type'] = 'savgol'
+        before = np.copy(self.dataset.data.data)
+        self.dataset.process(self.filter)
+        after = self.dataset.data.data
+        diffs = before - after
+        condition = [diff == 0 for diff in diffs]
+        self.assertFalse(all(condition))
 
 
 if __name__ == '__main__':
