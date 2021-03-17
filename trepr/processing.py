@@ -392,9 +392,9 @@ class Filter(aspecd.processing.ProcessingStep):
             Default: savitzky-golay
 
         window_width : :class:`int`
-            Filter window width
+            Full filter window width. Must be an odd number
 
-            Default: 1/6 of the data length.
+            Default: 1/5 of the data length.
 
     """
 
@@ -411,11 +411,10 @@ class Filter(aspecd.processing.ProcessingStep):
 
     def _sanitise_parameters(self):
         self._set_defaults()  # must be here for referring to right type.
-        if self.parameters['type'] in ('savitzky_golay', 'binomial'):
-            if int(self.parameters['window_width']) % 2 == 0:
-                self.parameters['window_width'] += 1
-                print('For applying the filter, the window length must be '\
-                      'odd. I added one.')
+        if int(self.parameters['window_width']) % 2 == 0:
+            self.parameters['window_width'] += 1
+            print('For applying the filter, the window length must be odd. '
+                  'I added one.')
 
     def _get_type(self):
         """Allow for different inputs, unify them."""
@@ -423,7 +422,7 @@ class Filter(aspecd.processing.ProcessingStep):
             'savitzky_golay': ['savitzky_golay', 'savitzky-golay',
                                'savitzky golay', 'savgol', 'savitzky'],
             'binomial': ['binom', 'binomial'],
-            'boxcar': ['box', 'boxcar', 'car']
+            'boxcar': ['box', 'boxcar', 'moving-average', 'car']
         }
         for key, value in types.items():
             if self.parameters['type'] in value:
@@ -432,34 +431,33 @@ class Filter(aspecd.processing.ProcessingStep):
                 print('Haha, good joke! You\'ve got a boxcar')
 
     def _perform_task(self):
-        if self.parameters['type'] == 'savitzky_golay':
-            self._apply_savitzky_golay()
+        if self.parameters['type'] == 'boxcar':
+            self._apply_boxcar()
         elif self.parameters['type'] == 'binomial':
             self._apply_binomial()
+        else:
+            self._apply_savitzky_golay()
 
     def _set_defaults(self):
         self._get_type()
-        if not self.parameters['window_width'] and \
-                self.parameters['type'] in ('savitzky_golay', 'binomial'):
-            self.parameters['window_width'] = int(np.ceil((1/12 * len(
+        if not self.parameters['window_width']:
+            self.parameters['window_width'] = int(np.ceil((1/10 * len(
                 self.dataset.data.axes[0].values))) * 2+1)
 
     def _apply_savitzky_golay(self):
-        filtered_data = scipy.signal.savgol_filter(self.dataset.data.data,
-                                   int(self.parameters['window_width']),
-                                   self.parameters['order'])
+        filtered_data = \
+            scipy.signal.savgol_filter(self.dataset.data.data,
+                                       int(self.parameters['window_width']),
+                                       self.parameters['order'])
         self.dataset.data.data = filtered_data
 
     def _apply_binomial(self):
         self._add_padding()
-        self._perform_filtering()
+        self._perform_binomial_filtering()
 
-    def _perform_filtering(self):
-        filter_coefficients = (np.poly1d([0.5, 0.5]) ** self.parameters[
-            'window_width']).coeffs
-        filtered_data = np.array(np.convolve(self.dataset.data.data,
-                                             filter_coefficients, mode='valid'))
-        self.dataset.data.data = filtered_data
+    def _apply_boxcar(self):
+        self._add_padding()
+        self._perform_boxcar_filtering()
 
     def _add_padding(self):
         """Add padding to get same lenth of data at the end."""
@@ -469,5 +467,20 @@ class Filter(aspecd.processing.ProcessingStep):
             self.dataset.data.data,
             np.ones(int(np.floor(width/2))+1)*self.dataset.data.data[-1]
         ))
+
+    def _perform_binomial_filtering(self):
+        filter_coefficients = (np.poly1d([0.5, 0.5]) ** self.parameters[
+            'window_width']).coeffs
+        filtered_data = np.array(np.convolve(self.dataset.data.data,
+                                             filter_coefficients, mode='valid'))
+        self.dataset.data.data = filtered_data
+
+    def _perform_boxcar_filtering(self):
+        filter_ = np.ones(self.parameters['window_width'])/self.parameters[
+            'window_width']
+        filtered_data = np.array(np.convolve(self.dataset.data.data,
+                                             filter_, mode='valid'))
+        self.dataset.data.data = filtered_data[:-1]
+
 
 

@@ -183,7 +183,10 @@ class TestFilter(unittest.TestCase):
     def setUp(self):
         self.filter = trepr.processing.Filter()
         self.dataset = trepr.dataset.ExperimentalDataset()
-        self.dataset.data.data = np.sin(np.linspace(1, 100))
+        rng = np.random.default_rng()
+        noise = 0.2 * rng.standard_normal(100)
+        data = np.sin(np.linspace(1, 5*np.pi, num=100))
+        self.dataset.data.data = data + noise
 
     def test_type_savgol(self):
         savgols = ['savitzky_golay', 'savitzky-golay', 'savitzky golay',
@@ -207,6 +210,12 @@ class TestFilter(unittest.TestCase):
             filter = self.dataset.process(self.filter)  # works on a copy...
             self.assertEqual('boxcar', filter.parameters['type'])
 
+    def test_window_length_is_odd(self):
+        self.filter.parameters['type'] = 'savgol'
+        self.filter.parameters['window_width'] = 30
+        filter = self.dataset.process(self.filter)
+        self.assertGreater(filter.parameters['window_width'], 30)
+
     def test_savgol_data_before_and_after_differ(self):
         self.filter.parameters['type'] = 'savgol'
         before = np.copy(self.dataset.data.data)
@@ -224,6 +233,31 @@ class TestFilter(unittest.TestCase):
         diffs = before - after
         condition = [diff == 0 for diff in diffs]
         self.assertFalse(all(condition))
+
+    def test_boxcar_data_before_and_after_differ(self):
+        self.filter.parameters['type'] = 'boxcar'
+        before = np.copy(self.dataset.data.data)
+        self.dataset.process(self.filter)
+        after = self.dataset.data.data
+        diffs = before - after
+        condition = [diff == 0 for diff in diffs]
+        self.assertFalse(all(condition))
+
+    @unittest.skip
+    def test_show_results(self):
+        filters = ['savitzky_golay', 'binomial', 'boxcar']
+        import matplotlib.pyplot as plt
+        import copy
+        x_axis = self.dataset.data.axes[0].values
+        plt.plot(x_axis, self.dataset.data.data, label='Raw')
+        for filter_ in filters:
+            data_copy = copy.deepcopy(self.dataset)
+            self.filter.parameters['type'] = filter_
+            data_copy.process(self.filter)
+            plt.plot(x_axis, data_copy.data.data, label=filter_)
+        plt.legend()
+        plt.show()
+
 
 
 if __name__ == '__main__':
