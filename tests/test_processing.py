@@ -207,14 +207,17 @@ class TestFilter(unittest.TestCase):
             filter = self.dataset.process(self.filter)  # works on a copy...
             self.assertEqual('boxcar', filter.parameters['type'])
 
-    def test_window_length_is_odd(self):
+    def test_savgol_data_before_and_after_differ(self):
         self.filter.parameters['type'] = 'savgol'
-        self.filter.parameters['window_length'] = 30
-        with self.assertRaises(ValueError):
-            self.dataset.process(self.filter)
+        before = np.copy(self.dataset.data.data)
+        self.dataset.process(self.filter)
+        after = self.dataset.data.data
+        diffs = before - after
+        condition = [diff == 0 for diff in diffs]
+        self.assertFalse(all(condition))
 
-    def test_data_before_and_after_differ(self):
-        self.filter.parameters['type'] = 'savgol'
+    def test_binomial_data_before_and_after_differ(self):
+        self.filter.parameters['type'] = 'binomial'
         before = np.copy(self.dataset.data.data)
         self.dataset.process(self.filter)
         after = self.dataset.data.data
