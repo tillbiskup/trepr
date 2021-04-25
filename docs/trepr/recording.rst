@@ -2,11 +2,15 @@
 Recording tr-EPR spectra
 ========================
 
-* time resolution
+* How to properly record data
 
-* potential noise sources
+  * laser power
 
-* sensitivity
+  * sensitivity
 
-* digitisation resolution
+  * magnetic field range and field step
+
+  * direction of recording data
+
+  * proper phasing
 

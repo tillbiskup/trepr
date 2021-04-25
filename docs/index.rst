@@ -75,15 +75,34 @@ To install the trepr package on your computer (sensibly within a Python virtual 
 Have a look at the more detailed :doc:`installation instructions <installing>` as well.
 
 
-Contribute
-----------
+Related projects
+----------------
 
-- Source Code: https://github.com/tillbiskup/trepr
+There is a number of related packages users of the trepr package may well be interested in, as they have a similar scope, focussing on spectroscopy and reproducible research.
+
+* `ASpecD <https://docs.aspecd.de/>`_
+
+  A Python framework for the analysis of spectroscopic data focussing on reproducibility and good scientific practice. The framework the trepr package is based on, developed by T. Biskup.
+
+* `cwepr <https://docs.cwepr.de/>`_
+
+  Package for processing and analysing continuous-wave electron paramagnetic resonance (cw-EPR) data, originally developed by P. Kirchner, currently developed and maintained by M. Schröder and T. Biskup.
+
+You may as well be interested in the `LabInform project <https://www.labinform.de/>`_ focussing on the necessary more global infrastructure in a laboratory/scientific workgroup interested in more `reproducible research <https://www.reproducible-research.de/>`_. In short, LabInform is "The Open-Source Laboratory Information System".
+
+Finally, don't forget to check out the website on `reproducible research <https://www.reproducible-research.de/>`_ covering in more general terms aspects of reproducible research and good scientific practice.
+
+
+..
+  Contribute
+  ----------
+
+  - Source Code: https://github.com/tillbiskup/trepr
 
 License
 -------
 
-The project licensed under the BSD license.
+This program is free software: you can redistribute it and/or modify it under the terms of the **BSD License**.
 
 
 A note on the logo
@@ -110,6 +129,7 @@ The snake (a python) resembles the lines of a tr-EPR spectrum, most probably a l
    :hidden:
 
    trepr/index
+   trepr/setup
    trepr/recording
    trepr/processing
    trepr/analysis

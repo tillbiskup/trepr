@@ -102,7 +102,7 @@ exclude_patterns = ['_build']
 # output. They are ignored by default.
 #show_authors = False
 
-import sphinx_theme
+# import sphinx_theme
 html_theme = 'sphinx_rtd_theme'
 # html_theme = 'neo_rtd_theme'
 # html_theme_path = [sphinx_theme.get_html_theme_path('neo_rtd_theme')]
