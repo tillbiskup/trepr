@@ -759,14 +759,14 @@ class MetadataMapper(aspecd.metadata.MetadataMapper):
                       self._mapping_recipe['combine items'][i]['new key'],
                       self._mapping_recipe['combine items'][i]['pattern']]]
                 self.mappings.append(mapping)
-        if 'rename key' in self._mapping_recipe.keys():
-            for i in range(len(self._mapping_recipe['rename key'])):
-                mapping = \
-                    [self._mapping_recipe['rename key'][i]['in dict'],
-                     'rename_key',
-                     [self._mapping_recipe['rename key'][i]['old key'],
-                      self._mapping_recipe['rename key'][i]['new key']]]
-                self.mappings.append(mapping)
+            if 'rename key' in self._mapping_recipe.keys():
+                for i in range(len(self._mapping_recipe['rename key'])):
+                    mapping = \
+                        [self._mapping_recipe['rename key'][i]['in dict'],
+                         'rename_key',
+                         [self._mapping_recipe['rename key'][i]['old key'],
+                          self._mapping_recipe['rename key'][i]['new key']]]
+                    self.mappings.append(mapping)
         if 'move item' in self._mapping_recipe.keys():
             for i in range(len(self._mapping_recipe['move item'])):
                 mapping = \
