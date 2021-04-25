@@ -47,6 +47,7 @@ setup(
         'matplotlib',
         'numpy',
         'scipy',
+        'xmltodict',
     ],
     python_requires='>=3.5',
 )

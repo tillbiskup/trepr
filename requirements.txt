@@ -1,13 +1,7 @@
 aspecd
-cwepr
-numexpr
 scipy
-six
-urllib3
-
 colour
 xmltodict
-trepr
 numpy
 Jinja2
 matplotlib
