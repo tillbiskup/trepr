@@ -56,8 +56,8 @@ Assuming in this case that your virtual environment is called ``trepr`` and that
 Deactivating is simple as well, once you are done. Either close the terminal, or issue the command ``deactivate``.
 
 
-Install ASpecD
---------------
+Install trEPR
+-------------
 
 Once you activated your virtual environment where you want to install the trEPR package in, proceed as given above:
 

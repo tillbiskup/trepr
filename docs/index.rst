@@ -23,7 +23,7 @@ What is even better: Actual data processing and analysis **no longer requires pr
         properties:
           parameters:
             num_profiles: [10, 10]
-      - kind: singleplot
+      - kind: aspecd.singleplot
         type: SinglePlotter2D
         properties:
           filename:
@@ -31,7 +31,7 @@ What is even better: Actual data processing and analysis **no longer requires pr
             - second-dataset.pdf
 
 
-Interested in more real-live examples? Check out the :ref:`use cases section <use_cases>`.
+Interested in more real-live examples? Check out the :doc:`use cases section <usecases>`.
 
 
 Features
@@ -142,6 +142,7 @@ The snake (a python) resembles the lines of a tr-EPR spectrum, most probably a l
 
    people
    developers
+   changelog
    roadmap
    api/index
 
