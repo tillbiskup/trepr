@@ -6,10 +6,12 @@ Experimental setup
 
   * time resolution
 
-  * potential noise sources
-
   * sensitivity
 
   * digitisation resolution
 
+  * synchronising laser and data acquisition
+
   * stability of laser
+
+  * potential noise sources

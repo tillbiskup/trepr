@@ -4,11 +4,11 @@ Recording tr-EPR spectra
 
 * How to properly record data
 
-  * laser power and polarisation
+  * laser settings: power, wavelength, repetition rate, and polarisation
 
-  * recorder sensitivity
+  * amplifier gain and digitiser sensitivity
 
-  * magnetic field range and field step size
+  * magnetic field range and resolution
 
   * length and resolution of time traces
 
