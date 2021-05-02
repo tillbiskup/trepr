@@ -5,7 +5,7 @@ format:
   version: 0.0.1
 
 map 1:
-  infofile versions: 
+  metadata file versions:
     - 0.1.6
     - 0.1.5
   combine items:
@@ -26,7 +26,7 @@ map 1:
       in dict:
 
 map 2:
-  infofile versions:
+  metadata file versions:
     - 0.1.4
   copy key:
     - old key: Date
@@ -58,13 +58,16 @@ map 2:
     - key: model
       source dict: measurement
       target dict: spectrometer
+      create target: True
     - key: Software
       source dict: measurement
       target dict: spectrometer
+      create target: True
     - key: Runs
       source dict: measurement
       target dict: experiment
+      create target: True
     - key: Shot Repetition Rate
       source dict: measurement
       target dict: experiment
-
+      create target: True

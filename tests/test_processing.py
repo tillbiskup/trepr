@@ -244,7 +244,7 @@ class TestFilter(unittest.TestCase):
         self.assertFalse(all(condition))
 
     @unittest.skip
-    def test_show_results(self):
+    def test_show_results(self):  # for debugging
         filters = ['savitzky_golay', 'binomial', 'boxcar']
         import matplotlib.pyplot as plt
         import copy

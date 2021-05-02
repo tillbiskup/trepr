@@ -34,6 +34,23 @@ import aspecd.utils
 import trepr.dataset
 
 
+class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
+    """Create a :obj:`trepr.io.SpeksimImporter` object.
+
+    With regard to the recipe-driven data analysis, it might be helpful not to
+    have to think about data formats and the appropriate importer.
+    With only one data format, as is currently the case, the
+    :class:`trepr.DatasetImporterFactory` class does nothing other than
+    initiate a :obj:`trepr.io.SpeksimImporter` object.
+
+    """
+
+    def _get_importer(self, source):
+        if os.path.isdir(source):
+            return SpeksimImporter(source=source)
+        return TezImporter(source=source)
+
+
 class SpeksimImporter(aspecd.io.DatasetImporter):
     """Import trepr raw data in Freiburg Speksim format including its metadata.
 
@@ -238,8 +255,13 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
     def _map_metadata(self, infofile_version):
         """Bring the metadata into a unified format."""
         mapper = \
-            trepr.dataset.MetadataMapper(version=infofile_version,
-                                         metadata=self._infofile.parameters)
+            aspecd.metadata.MetadataMapper()
+        mapper.version=infofile_version
+        mapper.metadata=self._infofile.parameters
+        root_path = os.path.split(os.path.abspath(__file__))[
+                                      0]
+        mapper.recipe_filename = os.path.join(
+            root_path, 'metadata_mapper.yaml')
         mapper.map()
         self.dataset.metadata.from_dict(mapper.metadata)
 
@@ -282,23 +304,6 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         self.dataset.microwave_frequency.axes[1].unit = self._mwfreq_unit
         self.dataset.microwave_frequency.axes[1].quantity = \
             'microwave frequency'
-
-
-class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
-    """Create a :obj:`trepr.io.SpeksimImporter` object.
-
-    With regard to the recipe-driven data analysis, it might be helpful not to
-    have to think about data formats and the appropriate importer.
-    With only one data format, as is currently the case, the
-    :class:`trepr.DatasetImporterFactory` class does nothing other than
-    initiate a :obj:`trepr.io.SpeksimImporter` object.
-
-    """
-
-    def _get_importer(self, source):
-        if os.path.isdir(source):
-            return SpeksimImporter(source=source)
-        return TezImporter(source=source)
 
 
 class TezImporter(aspecd.io.DatasetImporter):

@@ -28,6 +28,11 @@ class TestSpeksimImporter(unittest.TestCase):
                           len(self.importer.dataset.data.axes[1].values)),
                          self.importer.dataset.data.data.shape)
 
+    def test_metadata_is_imported_correctly(self):
+        self.dataset.import_from(self.importer)
+        self.assertTrue(self.dataset.metadata.measurement.operator)
+        self.assertTrue(self.dataset.metadata.spectrometer.software)
+
 
 class TestTezImporter(unittest.TestCase):
     def setUp(self):
