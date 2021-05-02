@@ -47,6 +47,12 @@ setup(
         'matplotlib',
         'numpy',
         'scipy',
+        'xmltodict',
+        'colour',
     ],
+    extras_require={
+        'dev': ['prospector'],
+        'docs': ['sphinx', 'sphinx_rtd_theme'],
+    },
     python_requires='>=3.5',
 )

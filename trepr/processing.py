@@ -7,7 +7,6 @@ information to reproduce each processing step to the
 :attr:`trepr.dataset.Dataset.history` attribute of the dataset.
 
 """
-import cwepr.processing
 import numpy as np
 
 import aspecd.processing
@@ -50,7 +49,7 @@ class RangeError(Error):
 
 
 class UnitError(Error):
-    """Exception raised when the unit isn't either 'axsi' or 'index'.
+    """Exception raised when the unit isn't either 'axis' or 'index'.
 
     Attributes
     ----------
@@ -360,8 +359,71 @@ class NormalisationOld(aspecd.processing.ProcessingStep):
                 self.dataset.data.data / sum(abs(self.dataset.data.data))
 
 
-class FrequencyCorrection(cwepr.processing.FrequencyCorrection):
-    """Frequency correction of the cwepr package should work."""
+class FrequencyCorrection(aspecd.processing.ProcessingStep):
+    """Convert data of a given frequency to another given frequency.
+
+    This is used to make spectra comparable.
+
+    Attributes
+    ----------
+    self.parameters['frequency']
+        Frequency to correct for.
+
+        Default: 9.5
+
+
+    .. codeauthor:: Mirjam Schröder
+
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.parameters["frequency"] = 9.5
+        self.description = "Correct magnetic field axis for given frequency"
+
+    def _perform_task(self):
+        """Perform the actual transformation / correction.
+
+        For the conversion the x axis data is first converted to an axis in
+        units of using the given frequency, then converted back using target
+        frequency.
+        """
+        nu_target = self.parameters['frequency']
+        for axis in self.dataset.data.axes:
+            # TODO: Question: Better check for quantity rather than unit? (
+            #   Difficult if not filled)
+            # if axis.quantity == 'magnetic field'
+            if axis.unit in ('mT', 'G'):
+                axis.values = self._correct_field_for_frequency(nu_target,
+                                                                axis.values)
+                self._write_new_frequency()
+
+    def _correct_field_for_frequency(self, nu_target=None,
+                                     b_initial=None):
+        """
+        Calculate new field axis for given frequency.
+
+        Parameters
+        ----------
+        nu_target : :class:`float`
+            Frequency the magnetic field should be computed for
+
+        b_initial : :class:`numpy.ndarray`
+            Original field axis
+
+        Returns
+        -------
+        b_target : :class:`numpy.ndarray`
+            Computed field axis
+
+        """
+        nu_initial = self.dataset.metadata.bridge.mw_frequency.value
+        b_target = (nu_target / nu_initial) * b_initial
+        return b_target
+
+    def _write_new_frequency(self):
+        self.dataset.metadata.bridge.mw_frequency.value = \
+            self.parameters['frequency']
 
 
 class Filter(aspecd.processing.ProcessingStep):
@@ -460,7 +522,7 @@ class Filter(aspecd.processing.ProcessingStep):
         self._perform_boxcar_filtering()
 
     def _add_padding(self):
-        """Add padding to get same lenth of data at the end."""
+        """Add padding to get same length of data at the end."""
         width = self.parameters['window_width']
         self.dataset.data.data = np.concatenate((
             np.ones(int(np.floor(width/2)))*self.dataset.data.data[0],
@@ -481,6 +543,3 @@ class Filter(aspecd.processing.ProcessingStep):
         filtered_data = np.array(np.convolve(self.dataset.data.data,
                                              filter_, mode='valid'))
         self.dataset.data.data = filtered_data[:-1]
-
-
-
