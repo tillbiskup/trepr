@@ -63,7 +63,7 @@ class UnitError(Error):
         self.message = message
 
 
-class Averaging(aspecd.processing.ProcessingStep):
+class Averaging(aspecd.processing.SingleProcessingStep):
     """Averaging of two-dimensional data along a given axis.
 
     When measuring TREPR data, the resulting spectrum is always
@@ -197,7 +197,7 @@ class Averaging(aspecd.processing.ProcessingStep):
         return np.amin(vector) <= value <= np.amax(vector)
 
 
-class PretriggerOffsetCompensation(aspecd.processing.ProcessingStep):
+class PretriggerOffsetCompensation(aspecd.processing.SingleProcessingStep):
     """
     Pretrigger offset compensation.
 
@@ -260,7 +260,7 @@ class Normalisation(aspecd.processing.Normalisation):
     """Class fully inherited from ASpecD for simple usage."""
 
 
-class BackgroundCorrection(aspecd.processing.ProcessingStep):
+class BackgroundCorrection(aspecd.processing.SingleProcessingStep):
     def __init__(self):
         super().__init__()
         # public properties:
@@ -327,7 +327,7 @@ class BackgroundCorrection(aspecd.processing.ProcessingStep):
         self.dataset.data.data -= bg
 
 
-class NormalisationOld(aspecd.processing.ProcessingStep):
+class NormalisationOld(aspecd.processing.SingleProcessingStep):
     """Normalise data.
 
     Possible normalisations are area and maximum.
@@ -359,7 +359,7 @@ class NormalisationOld(aspecd.processing.ProcessingStep):
                 self.dataset.data.data / sum(abs(self.dataset.data.data))
 
 
-class FrequencyCorrection(aspecd.processing.ProcessingStep):
+class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
     """Convert data of a given frequency to another given frequency.
 
     This is used to make spectra comparable.
@@ -426,7 +426,7 @@ class FrequencyCorrection(aspecd.processing.ProcessingStep):
             self.parameters['frequency']
 
 
-class Filter(aspecd.processing.ProcessingStep):
+class Filter(aspecd.processing.SingleProcessingStep):
     """Apply a filter to smooth 1D data.
 
     Be careful to show filtered spectra.
