@@ -45,10 +45,10 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
 
     """
 
-    def _get_importer(self, source):
-        if os.path.isdir(source):
-            return SpeksimImporter(source=source)
-        return TezImporter(source=source)
+    def _get_importer(self):
+        if os.path.isdir(self.source):
+            return SpeksimImporter(source=self.source)
+        return TezImporter(source=self.source)
 
 
 class SpeksimImporter(aspecd.io.DatasetImporter):
