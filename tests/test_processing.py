@@ -4,6 +4,7 @@ import unittest
 import aspecd.exceptions
 import numpy as np
 
+import trepr.exceptions
 import trepr.processing
 import trepr.dataset
 
@@ -30,28 +31,28 @@ class TestAveraging(unittest.TestCase):
         self.processing.parameters['dimension'] = 0
         self.processing.parameters['range'] = [5e-6, 3.6e-6]
         self.processing.parameters['unit'] = 'axis'
-        with self.assertRaises(trepr.processing.RangeError):
+        with self.assertRaises(trepr.exceptions.RangeError):
             self.dataset.process(self.processing)
 
     def test_processing_raises_if_dimension_is_wrong(self):
         self.processing.parameters['dimension'] = 2
         self.processing.parameters['range'] = [2e-6, 3.6e-6]
         self.processing.parameters['unit'] = 'axis'
-        with self.assertRaises(trepr.processing.DimensionError):
+        with self.assertRaises(trepr.exceptions.DimensionError):
             self.dataset.process(self.processing)
 
     def test_processing_raises_if_range_is_off(self):
         self.processing.parameters['dimension'] = 1
         self.processing.parameters['range'] = [2e-6, 3e-2]
         self.processing.parameters['unit'] = 'axis'
-        with self.assertRaises(trepr.processing.RangeError):
+        with self.assertRaises(trepr.exceptions.RangeError):
             self.dataset.process(self.processing)
 
     def test_processing_raises_if_unit_is_wrong(self):
         self.processing.parameters['dimension'] = 1
         self.processing.parameters['range'] = [2e-6, 3.6e-6]
         self.processing.parameters['unit'] = 'foo'
-        with self.assertRaises(trepr.processing.UnitError):
+        with self.assertRaises(trepr.exceptions.UnitError):
             self.dataset.process(self.processing)
 
 

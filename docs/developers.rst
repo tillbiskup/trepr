@@ -51,7 +51,6 @@ A general overview of the overall package structure::
   docs/
       api/
   trepr/
-      io/
   tests/
 
 

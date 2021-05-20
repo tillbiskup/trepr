@@ -8,7 +8,7 @@ Available modules
 :mod:`trepr.dataset`
     Organise dataset, consisting of data and metadata, and the metadata.
 :mod:`trepr.io`
-    Import trepr raw data in Freiburg Speksim format including its metadata.
+    Import trepr raw data in different formats including its metadata.
 :mod:`trepr.processing`
     Process data in datasets.
 :mod:`trepr.analysis`
@@ -18,6 +18,10 @@ Available modules
 :mod:`trepr.report`
     Create reports with given datasets.
 
+Utilities
+---------
+:mod:`trepr.exceptions`
+    Exceptions for the trepr package
 
 
 """

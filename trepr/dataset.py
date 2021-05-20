@@ -12,6 +12,10 @@ Therefore, each processing and analysis step of data should always be
 performed using the respective methods of a dataset, at least as long as it
 can be performed on a single dataset.
 
+
+Datasets
+========
+
 Generally, there are two types of datasets: Those containing experimental
 data and those containing calculated data. Therefore, two corresponding
 subclasses exist, and packages building upon the ASpecD framework should
@@ -20,8 +24,46 @@ inherit from either of them:
   * :class:`trepr.dataset.ExperimentalDataset`
   * :class:`trepr.dataset.CalculatedDataset`
 
+
+Metadata
+========
+
 Furthermore, in this module, the individual metadata classes are defined
-which contain the individual information about the experiment.
+which contain the individual information about the experiment:
+
+  * :class:`trepr.dataset.ExperimentalDatasetMetadata`
+  * :class:`trepr.dataset.CalculatedDatasetMetadata`
+
+What may sound like a minor detail is one key aspect of the trepr package:
+The metadata and their structure provide a unified interface for all
+functionality operating on datasets. Furthermore, the metadata contained
+particularly in the :class:`trepr.dataset.ExperimentalDatasetMetadata` class
+are the result of more than fifteen yearsof practical experience. Reproducible
+research is only possible if all information necessary is always recorded,
+and this starts with all the metadata accompanying a measurement. Defining
+what kind of metadata is important and needs to be recorded, together with
+metadata formats easily writable by the experimenters *during* recording the
+data requires a thorough understanding of both, the method and the setup(s)
+used. For an overview of the structures of the dataset classes and their
+corresponding metadata, see the :doc:`dataset structure </dataset-structure>`
+section.
+
+
+Dataset factory
+===============
+
+Particularly in case of recipe-driven data analysis (c.f. :mod:`tasks`),
+there is a need to automatically retrieve datasets using nothing more than a
+source string that can be, e.g., a path or LOI. This is where the
+DatasetFactory comes in. This is a factory in the sense of the factory
+pattern described by the "Gang of Four" in their seminal work, "Design
+Patterns" (Gamma et al., 1995):
+
+  * :class:`trepr.dataset.DatasetFactory`
+
+
+Module documentation
+====================
 
 """
 import os
@@ -32,27 +74,21 @@ import aspecd.utils
 import trepr.io
 
 
-class Error(Exception):
-    """Base class for exceptions in this module."""
+class Dataset(aspecd.dataset.Dataset):
+    """Base class for all kinds of datasets.
 
+    Generally, there are two types of datasets: Those containing
+    experimental data and those containing calculated data. Therefore,
+    two corresponding subclasses exist:
 
-class RecipeNotFoundError(Error):
-    """Exception raised when a recipe could not be found.
+      * :class:`trepr.dataset.ExperimentalDataset`
+      * :class:`trepr.dataset.CalculatedDataset`
 
-    Attributes
-    ----------
-    message : `str`
-        explanation of the error
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.dataset.Dataset` class for
+    details.
 
     """
-
-    def __init__(self, message=''):
-        super().__init__()
-        self.message = message
-
-
-class Dataset(aspecd.dataset.Dataset):
-    """General dataset class."""
 
 
 class ExperimentalDataset(aspecd.dataset.ExperimentalDataset):
@@ -89,7 +125,13 @@ class ExperimentalDataset(aspecd.dataset.ExperimentalDataset):
 
 
 class CalculatedDataset(aspecd.dataset.CalculatedDataset):
-    """Entity consisting of calculated data and metadata."""
+    """Entity consisting of calculated data and metadata.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.dataset.CalculatedDataset`
+    class for details.
+
+    """
 
 
 class DatasetFactory(aspecd.dataset.DatasetFactory):

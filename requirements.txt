@@ -1,4 +1,4 @@
-aspecd
+aspecd>=0.2.0
 scipy
 colour
 xmltodict

@@ -260,5 +260,273 @@ class ColormapAdjuster:
             mpl.colors.Normalize(vmin=self._bound * -1, vmax=self._bound)
 
 
+class SinglePlotter1D(aspecd.plotting.SinglePlotter1D):
+    """1D plots of single datasets.
+
+    Convenience class taking care of 1D plots of single datasets.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.plotting.SinglePlotter1D`
+    class for details.
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. Of course, all parameters settable
+    for the superclasses can be set as well. The examples focus each on a
+    single aspect.
+
+    In the simplest case, just invoke the plotter with default values:
+
+    .. code-block:: yaml
+
+       - kind: singleplot
+         type: SinglePlotter1D
+         properties:
+           filename: output.pdf
+
+    """
+
+
+class SinglePlotter2D(aspecd.plotting.SinglePlotter2D):
+    """2D plots of single datasets.
+
+    Convenience class taking care of 2D plots of single datasets.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.plotting.SinglePlotter2D`
+    class for details.
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. Of course, all parameters settable
+    for the superclasses can be set as well. The examples focus each on a
+    single aspect.
+
+    In the simplest case, just invoke the plotter with default values:
+
+    .. code-block:: yaml
+
+       - kind: singleplot
+         type: SinglePlotter2D
+         properties:
+           filename: output.pdf
+
+    To change the axes (flip *x* and *y* axis):
+
+    .. code-block:: yaml
+
+       - kind: singleplot
+         type: SinglePlotter2D
+         properties:
+           filename: output.pdf
+           parameters:
+             switch_axes: True
+
+    To use another type (here: contour):
+
+    .. code-block:: yaml
+
+       - kind: singleplot
+         type: SinglePlotter2D
+         properties:
+           filename: output.pdf
+           type: contour
+
+    To set the number of levels of a contour plot to 10:
+
+    .. code-block:: yaml
+
+       - kind: singleplot
+         type: SinglePlotter2D
+         properties:
+           filename: output.pdf
+           type: contour
+           parameters:
+             levels: 10
+
+    To change the colormap (cmap) used:
+
+    .. code-block:: yaml
+
+       - kind: singleplot
+         type: SinglePlotter2D
+         properties:
+           filename: output.pdf
+           properties:
+             drawing:
+               cmap: RdGy
+
+    Make sure to check the documentation of the ASpecD
+    :mod:`aspecd.plotting` module for further parameters that can be set.
+
+    """
+
+
+class MultiPlotter1D(aspecd.plotting.MultiPlotter1D):
+    """1D plots of multiple datasets.
+
+    Convenience class taking care of 1D plots of multiple datasets.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.plotting.MultiPlotter1D`
+    class for details.
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. Of course, all parameters settable
+    for the superclasses can be set as well. The examples focus each on a
+    single aspect.
+
+    In the simplest case, just invoke the plotter with default values:
+
+    .. code-block:: yaml
+
+       - kind: multiplot
+         type: MultiPlotter1D
+         properties:
+           filename: output.pdf
+
+    To change the settings of each individual line (here the colour and label),
+    supposing you have three lines, you need to specify the properties in a
+    list for each of the drawings:
+
+    .. code-block:: yaml
+
+       - kind: multiplot
+         type: MultiPlotter1D
+         properties:
+           filename: output.pdf
+           properties:
+             drawings:
+               - color: '#FF0000'
+                 label: foo
+               - color: '#00FF00'
+                 label: bar
+               - color: '#0000FF'
+                 label: foobar
+
+    .. important::
+        If you set colours using the hexadecimal RGB triple prefixed by
+        ``#``, you need to explicitly tell YAML that these are strings,
+        surrounding the values by quotation marks.
+
+    """
+
+
+class MultiPlotter1DStacked(aspecd.plotting.MultiPlotter1DStacked):
+    """Stacked 1D plots of multiple datasets.
+
+    Convenience class taking care of 1D plots of multiple datasets.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.plotting.MultiPlotter1DStacked`
+    class for details.
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. Of course, all parameters settable
+    for the superclasses can be set as well. The examples focus each on a
+    single aspect.
+
+    In the simplest case, just invoke the plotter with default values:
+
+    .. code-block:: yaml
+
+       - kind: multiplot
+         type: MultiPlotter1DStacked
+         properties:
+           filename: output.pdf
+
+    To change the settings of each individual line (here the colour and label),
+    supposing you have three lines, you need to specify the properties in a
+    list for each of the drawings:
+
+    .. code-block:: yaml
+
+       - kind: multiplot
+         type: MultiPlotter1DStacked
+         properties:
+           filename: output.pdf
+           properties:
+             drawings:
+               - color: '#FF0000'
+                 label: foo
+               - color: '#00FF00'
+                 label: bar
+               - color: '#0000FF'
+                 label: foobar
+
+    .. important::
+        If you set colours using the hexadecimal RGB triple prefixed by
+        ``#``, you need to explicitly tell YAML that these are strings,
+        surrounding the values by quotation marks.
+
+    Sometimes you want to have horizontal "zero lines" appear for each
+    individual trace of the stacked plot. This can be achieved explicitly
+    setting the "show_zero_lines" parameter to "True" that is set to "False"
+    by default:
+
+    .. code-block:: yaml
+
+       - kind: multiplot
+         type: MultiPlotter1DStacked
+         properties:
+           filename: output.pdf
+           parameters:
+             show_zero_lines: True
+
+    """
+
+
+class CompositePlotter(aspecd.plotting.CompositePlotter):
+    """Base class for plots consisting of multiple axes.
+
+    The underlying idea of composite plotters is to use a dedicated
+    existing plotter for each axis and assign this plotter to the list of
+    plotters of the CompositePlotter object. Thus the actual plotting task
+    is left to the individual plotter and the CompositePlotter only takes
+    care of the specifics of plots consisting of more than one axis.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.plotting.CompositePlotter`
+    class for details.
+
+    """
+
+
+class SingleCompositePlotter(aspecd.plotting.SingleCompositePlotter):
+    """Composite plotter for single datasets
+
+    This composite plotter is used for different representations of one and the
+    same dataset in multiple axes contained in one figure. In this respect,
+    it works like all the other ordinary single plotters derived from
+    :class:`SinglePlotter`, *i.e.* it usually gets called by using the dataset's
+    :meth:`aspecd.dataset.Dataset.plot` method.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.plotting.SingleCompositePlotter`
+    class for details.
+
+    """
+
+
 class Saver(aspecd.plotting.Saver):
-    """Saver for plots and drawings."""
+    """Base class for saving plots.
+
+    For basic saving of plots, no subclassing is necessary, as the
+    :meth:`save` method uses :meth:`matplotlib.figure.Figure.savefig` and
+    can cope with all possible parameters via the :attr:`parameters` property.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.plotting.Saver` class for
+    details.
+
+    """

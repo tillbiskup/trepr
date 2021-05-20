@@ -10,6 +10,7 @@ This is the definite source of information for developers, besides having a look
 
    trepr.analysis
    trepr.dataset
+   trepr.exceptions
    trepr.io
    trepr.plotting
    trepr.processing

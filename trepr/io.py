@@ -24,7 +24,6 @@ import numpy as np
 import xmltodict
 
 import aspecd.annotation
-import aspecd.dataset
 import aspecd.io
 import aspecd.infofile
 import aspecd.metadata
@@ -64,12 +63,12 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
 
     Parameters
     ----------
-    source : str
+    source : :class:`str`
         Path to the raw data.
 
     Attributes
     ----------
-    dataset : :obj:`trepr.dataset.Dataset`
+    dataset : :obj:`trepr.dataset.ExperimentalDataset`
         Entity containing data and metadata.
 
     Raises
@@ -168,6 +167,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         time_stamp = entries[1].split(' : ')[1]
         time_stamp = datetime.datetime.strptime(time_stamp,
                                                 '%a %b %d %H:%M:%S %Y')
+        # noinspection PyTypeChecker
         self._time_stamps = np.append(self._time_stamps, time_stamp)
 
     def _parse_header_2nd_line(self):
@@ -256,8 +256,8 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         """Bring the metadata into a unified format."""
         mapper = \
             aspecd.metadata.MetadataMapper()
-        mapper.version=infofile_version
-        mapper.metadata=self._infofile.parameters
+        mapper.version = infofile_version
+        mapper.metadata = self._infofile.parameters
         root_path = os.path.split(os.path.abspath(__file__))[
                                       0]
         mapper.recipe_filename = os.path.join(
@@ -307,11 +307,29 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
 
 
 class TezImporter(aspecd.io.DatasetImporter):
-    """Importer for MATLAB(r) trepr toolbox format."""
+    """Importer for MATLAB(r) trepr toolbox format.
+
+    The MATLAB(r) trepr toolbox format is basically a ZIP archive consisting
+    of a list of standard IEEE 754 binary files containing the data and an
+    XML file containing the accompanying metadata in structured form,
+    enriched with information necessary to directly convert them back into
+    MATLAB structures (corresponding to a Python :class:`dict`).
+
+    Parameters
+    ----------
+    source : :class:`str`
+        Path to the raw data.
+
+    Attributes
+    ----------
+    dataset : :obj:`trepr.dataset.ExperimentalDataset`
+        Entity containing data and metadata.
+
+    """
 
     def __init__(self, source=''):
         # Dirty fix: Cut file extension
-        if source.endswith((".tez")):
+        if source.endswith(".tez"):
             source = source[:-4]
         super().__init__(source=source)
         # public properties
@@ -470,27 +488,9 @@ class TezImporter(aspecd.io.DatasetImporter):
 
     def _xml_contains_mw_frequencies(self):
         if '#text' in self.xml_dict['struct']['parameters']['bridge'][
-            'MWfrequency']['values']:
+                'MWfrequency']['values']:
             return True
 
     def _remove_tmp_directory(self):
         if os.path.exists(self._tmpdir):
             shutil.rmtree(self._tmpdir)
-
-
-if __name__ == '__main__':
-    import trepr.plotting
-    import trepr.processing
-
-    dataset = trepr.dataset.ExperimentalDataset()
-    imp = SpeksimImporter(source='/home/till/Documents/Uni/Daten/trepr'
-                                 '/Pentacen/20150728/messung01/')
-    dataset.import_from(imp)
-    poc = trepr.processing.PretriggerOffsetCompensation()
-    process1 = dataset.process(poc)
-    saver_obj1 = aspecd.plotting.Saver(filename='plotter.pdf')
-    plotter_obj1 = trepr.plotting.ScaledImagePlot()
-    plotter_obj2 = aspecd.plotting.SinglePlotter2D()
-    plot1 = dataset.plot(plotter_obj2)
-    plotter_obj2.figure.show()
-    plot1.save(saver_obj1)

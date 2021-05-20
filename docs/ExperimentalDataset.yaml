@@ -1,0 +1,266 @@
+data:
+  calculated: false
+  data:
+    type: numpy.ndarray
+    dtype: float64
+    array: []
+  axes:
+  - quantity: ''
+    symbol: ''
+    unit: ''
+    label: ''
+    values:
+      type: numpy.ndarray
+      dtype: float64
+      array: []
+  - quantity: ''
+    symbol: ''
+    unit: ''
+    label: ''
+    values:
+      type: numpy.ndarray
+      dtype: float64
+      array: []
+metadata:
+  measurement:
+    label: ''
+    start: null
+    end: null
+    purpose: ''
+    operator: ''
+    labbook_entry: ''
+  sample:
+    description: ''
+    solvent: ''
+    preparation: ''
+    tube: ''
+    name: ''
+    id: null
+    loi: ''
+  temperature_control:
+    cryostat: ''
+    cryogen: ''
+    temperature:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    controller: ''
+  transient:
+    points: null
+    length:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    trigger_position: null
+  experiment:
+    runs: null
+    shot_repetition_rate:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+  spectrometer:
+    model: ''
+    software: ''
+  magnetic_field:
+    field_probe_type: ''
+    field_probe_model: ''
+    start:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    stop:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    step:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    sequence: ''
+    controller: ''
+    power_supply: ''
+  background:
+    field:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    occurrence: null
+    polarisation: ''
+    intensity:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+  bridge:
+    model: ''
+    controller: ''
+    attenuation:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    power:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    detection: ''
+    frequency_counter: ''
+    mw_frequency:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+  video_amplifier:
+    bandwidth:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    amplification:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+  recorder:
+    model: ''
+    averages: null
+    time_base:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    bandwidth:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    pretrigger:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    coupling: ''
+    impedance:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    sensitivity:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+  probehead:
+    type: ''
+    model: ''
+    coupling: ''
+  pump:
+    type: ''
+    model: ''
+    wavelength:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    power:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    repetition_rate:
+      unit: ''
+      dimension: ''
+      name: ''
+      value: 0.0
+    tunable_type: ''
+    tunable_model: ''
+    tunable_dye: ''
+    tunable_position: null
+    filter: ''
+history: []
+analyses: []
+annotations: []
+representations: []
+id: ''
+label: ''
+references: []
+tasks: []
+time_stamp:
+  calculated: false
+  data:
+    type: numpy.ndarray
+    dtype: float64
+    array: []
+  axes:
+  - quantity: ''
+    symbol: ''
+    unit: ''
+    label: ''
+    values:
+      type: numpy.ndarray
+      dtype: float64
+      array: []
+  - quantity: ''
+    symbol: ''
+    unit: ''
+    label: ''
+    values:
+      type: numpy.ndarray
+      dtype: float64
+      array: []
+microwave_frequency:
+  calculated: false
+  data:
+    type: numpy.ndarray
+    dtype: float64
+    array: []
+  axes:
+  - quantity: ''
+    symbol: ''
+    unit: ''
+    label: ''
+    values:
+      type: numpy.ndarray
+      dtype: float64
+      array: []
+  - quantity: ''
+    symbol: ''
+    unit: ''
+    label: ''
+    values:
+      type: numpy.ndarray
+      dtype: float64
+      array: []
+_origdata:
+  calculated: false
+  data:
+    type: numpy.ndarray
+    dtype: float64
+    array: []
+  axes:
+  - quantity: ''
+    symbol: ''
+    unit: ''
+    label: ''
+    values:
+      type: numpy.ndarray
+      dtype: float64
+      array: []
+  - quantity: ''
+    symbol: ''
+    unit: ''
+    label: ''
+    values:
+      type: numpy.ndarray
+      dtype: float64
+      array: []
+_package_name: trepr
+_history_pointer: -1

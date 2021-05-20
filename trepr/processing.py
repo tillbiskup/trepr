@@ -1,5 +1,24 @@
 """
-General processing facilities.
+Data processing functionality.
+
+.. sidebar:: Processing vs. analysis steps
+
+    The key difference between processing and analysis steps: While a
+    processing step *modifies* the data of the dataset it operates on,
+    an analysis step returns a result based on data of a dataset, but leaves
+    the original dataset unchanged.
+
+
+Key to reproducible science is automatic documentation of each processing
+step applied to the data of a dataset. Such a processing step each is
+self-contained, meaning it contains every necessary information to perform
+the processing task on a given dataset.
+
+Processing steps, in contrast to analysis steps (see :mod:`trepr.analysis`
+for details), not only operate on data of a :class:`trepr.dataset.Dataset`,
+but change its data. The information necessary to reproduce each processing
+step gets added to the :attr:`trepr.dataset.Dataset.history` attribute of a
+dataset.
 
 Due to the inheritance from the :mod:`aspecd.processing` module, all processing
 steps provided are fully self-documenting, i.e. they add all necessary
@@ -13,57 +32,11 @@ import aspecd.processing
 import aspecd.exceptions
 import scipy.signal
 
-
-class Error(Exception):
-    """Base class for exceptions in this module."""
-
-
-class DimensionError(Error):
-    """Exception raised when the dimension isn't zero or one.
-
-    Attributes
-    ----------
-    message : `str`
-        explanation of the error
-
-    """
-
-    def __init__(self, message=''):
-        super().__init__()
-        self.message = message
-
-
-class RangeError(Error):
-    """Exception raised when the given range is out of the dataset's range.
-
-    Attributes
-    ----------
-    message : `str`
-        explanation of the error
-
-    """
-
-    def __init__(self, message=''):
-        super().__init__()
-        self.message = message
-
-
-class UnitError(Error):
-    """Exception raised when the unit isn't either 'axis' or 'index'.
-
-    Attributes
-    ----------
-    message : `str`
-        explanation of the error
-
-    """
-
-    def __init__(self, message=''):
-        super().__init__()
-        self.message = message
+import trepr.exceptions
 
 
 class Averaging(aspecd.processing.SingleProcessingStep):
+    # noinspection PyUnresolvedReferences
     """Averaging of two-dimensional data along a given axis.
 
     When measuring TREPR data, the resulting spectrum is always
@@ -107,13 +80,13 @@ class Averaging(aspecd.processing.SingleProcessingStep):
 
     Raises
     ------
-    DimensionError
+    trepr.exceptions.DimensionError
         Raised if dimension is not in [0, 1].
 
-    UnitError
+    trepr.exceptions.UnitError
         Raised if unit is not in ['axis', 'index'].
 
-    RangeError
+    trepr.exceptions.RangeError
         Raised if range is not within axis.
 
     """
@@ -170,27 +143,29 @@ class Averaging(aspecd.processing.SingleProcessingStep):
 
     def _sanitise_parameters(self):
         if self.parameters['dimension'] not in [0, 1]:
-            raise DimensionError('Wrong dimension. Choose 0 or 1.')
+            raise trepr.exceptions.DimensionError(
+                'Wrong dimension. Choose 0 or 1.')
         if self.parameters['unit'] not in ['index', 'axis']:
-            raise UnitError('Wrong unit. Choose "axis" or "index".')
+            raise trepr.exceptions.UnitError(
+                'Wrong unit. Choose "axis" or "index".')
         if self.parameters['unit'] == 'index':
             if self.parameters['range'][0] not in \
                     range(len(self.dataset.data.axes[self._dim].values)):
-                raise RangeError('Lower index out of range.')
+                raise trepr.exceptions.RangeError('Lower index out of range.')
             if self.parameters['range'][1] not in \
                     range(len(self.dataset.data.axes[self._dim].values)):
-                raise RangeError('Upper index out of range.')
+                raise trepr.exceptions.RangeError('Upper index out of range.')
         if self.parameters['unit'] == 'axis':
             if not self._value_within_vector_range(
                     self.parameters['range'][0],
                     self.dataset.data.axes[self._dim].values):
-                raise RangeError('Lower value out of range.')
+                raise trepr.exceptions.RangeError('Lower value out of range.')
             if not self._value_within_vector_range(
                     self.parameters['range'][1],
                     self.dataset.data.axes[self._dim].values):
-                raise RangeError('Upper value out of range.')
+                raise trepr.exceptions.RangeError('Upper value out of range.')
         if self.parameters['range'][1] < self.parameters['range'][0]:
-            raise RangeError('Values need to be ascending.')
+            raise trepr.exceptions.RangeError('Values need to be ascending.')
 
     @staticmethod
     def _value_within_vector_range(value, vector):
@@ -366,7 +341,7 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
 
     Attributes
     ----------
-    self.parameters['frequency']
+    self.parameters['frequency'] : :class:`float`
         Frequency to correct for.
 
         Default: 9.5
@@ -427,6 +402,7 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
 
 
 class Filter(aspecd.processing.SingleProcessingStep):
+    # noinspection PyUnresolvedReferences
     """Apply a filter to smooth 1D data.
 
     Be careful to show filtered spectra.

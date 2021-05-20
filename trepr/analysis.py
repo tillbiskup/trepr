@@ -1,8 +1,28 @@
 """
-General analysis facilities.
+Data analysis functionality.
+
+.. sidebar:: Processing vs. analysis steps
+
+    The key difference between processing and analysis steps: While a
+    processing step *modifies* the data of the dataset it operates on,
+    an analysis step returns a result based on data of a dataset, but leaves
+    the original dataset unchanged.
+
+
+Key to reproducible science is automatic documentation of each analysis
+step applied to the data of a dataset. Such an analysis step each is
+self-contained, meaning it contains every necessary information to perform
+the analysis task on a given dataset.
+
+Analysis steps, in contrast to processing steps (see
+:mod:`trepr.processing` for details), operate on data of a
+:class:`trepr.dataset.Dataset`, but don't change its data. Rather,
+some result is obtained that is stored separately, together with the
+parameters of the analysis step, in the
+:attr:`trepr.dataset.Dataset.analyses` attribute of the dataset.
 
 In order to quantify the quality of a measured spectrum or to interpret it, it
-may be helpful to perform some analysis steps.
+is often necessary to perform some analysis steps.
 
 Due to inheritance from the :mod:`aspecd.analysis` module all analysis steps
 provided are fully self-documenting, i.e. they add all necessary information
