@@ -1,7 +1,7 @@
 Installation
 ============
 
-Installing the trEPR package is as simple as installing any other Python package, as ASpecD is available from the `Python Package Index (PyPI) <https://www.pypi.org/>`_. Simply open a terminal on your computer and type::
+Installing the trEPR package is as simple as installing any other Python package, as it is available from the `Python Package Index (PyPI) <https://www.pypi.org/>`_. Simply open a terminal on your computer and type::
 
   pip install trepr
 
@@ -13,11 +13,11 @@ Hence, a more thorough sequence of events would be:
 
 #. Install Python (if it is not already installed on your system).
 
-#. Create a Python virtual environment for ASpecD.
+#. Create a Python virtual environment for trEPR.
 
 #. Activate the newly created virtual environment.
 
-#. Install ASpecD therein, using the above command.
+#. Install trEPR therein, using the above command.
 
 A few details for all these steps are given below.
 
