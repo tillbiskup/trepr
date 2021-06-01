@@ -18,8 +18,7 @@ Datasets
 
 Generally, there are two types of datasets: Those containing experimental
 data and those containing calculated data. Therefore, two corresponding
-subclasses exist, and packages building upon the ASpecD framework should
-inherit from either of them:
+subclasses exist:
 
   * :class:`trepr.dataset.ExperimentalDataset`
   * :class:`trepr.dataset.CalculatedDataset`
@@ -52,7 +51,7 @@ section.
 Dataset factory
 ===============
 
-Particularly in case of recipe-driven data analysis (c.f. :mod:`tasks`),
+Particularly in case of recipe-driven data analysis (c.f. :mod:`aspecd.tasks`),
 there is a need to automatically retrieve datasets using nothing more than a
 source string that can be, e.g., a path or LOI. This is where the
 DatasetFactory comes in. This is a factory in the sense of the factory
@@ -267,12 +266,12 @@ class Measurement(aspecd.metadata.Measurement):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
     ----------
-    label : str
+    label : :class:`str`
         Short description of the measurement.
 
     """
@@ -292,21 +291,21 @@ class Sample(aspecd.metadata.Sample):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
     ----------
-    description : str
+    description : :class:`str`
         Description of the measured sample.
 
-    solvent : str
+    solvent : :class:`str`
         Name of the solvent used.
 
-    preparation : str
+    preparation : :class:`str`
         Short details of the sample preparation.
 
-    tube : str
+    tube : :class:`str`
         Type and dimension of the sample tube used.
 
     """
@@ -330,18 +329,18 @@ class Transient(aspecd.metadata.Metadata):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
     ----------
-    points : int
+    points : :class:`int`
         Number of measuring points.
 
-    length : object
+    length : :obj:`aspecd.metadata.PhysicalQuantity`
         Object of the PhysicalQuantity class from ASpecD.
 
-    trigger_position : int
+    trigger_position : :class:`int`
         Position of the trigger.
 
     """
@@ -377,12 +376,12 @@ class Experiment(aspecd.metadata.Metadata):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
     ----------
-    runs : int
+    runs : :class:`int`
         Number of recorded runs.
 
     shot_repetition_rate : :obj:`aspecd.metadata.PhysicalQuantity`
@@ -412,15 +411,15 @@ class Spectrometer(aspecd.metadata.Metadata):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
     ----------
-    model : str
+    model : :class:`str`
         Model of the spectrometer used.
 
-    software : str
+    software : :class:`str`
         Name and version of the software used.
 
     """
@@ -444,19 +443,19 @@ class MagneticField(aspecd.metadata.Metadata):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
     ----------
-    field_probe_type : str
+    field_probe_type : :class:`str`
         Type of field probe used.
 
         Usually, a Hall probe will be used, with a somewhat limited
         accuracy. The other option is to use a Teslameter, *i.e.* a small
         NMR device, providing much higher accuracy.
 
-    field_probe_model : str
+    field_probe_model : :class:`str`
         Model of field probe used.
 
     start : :obj:`aspecd.metadata.PhysicalQuantity`
@@ -468,13 +467,13 @@ class MagneticField(aspecd.metadata.Metadata):
     step : :obj:`aspecd.metadata.PhysicalQuantity`
         Step size of the magnetic field sweep.
 
-    sequence : str
+    sequence : :class:`str`
         Sequence of field steps, such as "up", "down", "out", or "in".
 
-    controller : str
+    controller : :class:`str`
         Model of the controller used.
 
-    power_supply : str
+    power_supply : :class:`str`
         Model of the power supply used.
 
     """
@@ -508,7 +507,7 @@ class Background(aspecd.metadata.Metadata):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
@@ -516,10 +515,10 @@ class Background(aspecd.metadata.Metadata):
     field : :obj:`aspecd.metadata.PhysicalQuantity`
         Magnetic field position of background trace.
 
-    occurrence : int
+    occurrence : :class:`int`
         Number of time traces after which a background trace is recorded.
 
-    polarisation: str
+    polarisation: :class:`str`
         Type of background polarisation *i.e.* absorptive or emissive.
 
         An emissive polarisation is a clear hint that the phase is set 180° off.
@@ -557,15 +556,15 @@ class Bridge(aspecd.metadata.Metadata):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
     ----------
-    model : str
+    model : :class:`str`
         Model of the microwave bridge used.
 
-    controller : str
+    controller : :class:`str`
         Model of the bridge controller used.
 
     attenuation : :obj:`aspecd.metadata.PhysicalQuantity`
@@ -583,7 +582,7 @@ class Bridge(aspecd.metadata.Metadata):
         *i.e.* the source power reduced by the attenuation. Typical values
         are in the range of 20 mW to 20 µW.
 
-    detection : str
+    detection : :class:`str`
         Type of the detection used.
 
         There are two types of detection: diode and mixer. The latter
@@ -594,7 +593,7 @@ class Bridge(aspecd.metadata.Metadata):
         video amplifier get used, whereas conventional cw-EPR bridges only
         have diode detection combined with a rather low-bandwidth preamplifier.
 
-    frequency_counter : str
+    frequency_counter : :class:`str`
         Model of the frequency counter used.
 
         Depending on the setup used, this can be included in the bridge.
@@ -635,7 +634,7 @@ class VideoAmplifier(aspecd.metadata.Metadata):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
@@ -689,15 +688,15 @@ class Recorder(aspecd.metadata.Metadata):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
     ----------
-    model : str
+    model : :class:`str`
         Model of the recorder used.
 
-    averages : int
+    averages : :class:`int`
         Number of accumulations recorded.
 
         Typically, at least 20, but often several hundreds of accumulations
@@ -737,7 +736,7 @@ class Recorder(aspecd.metadata.Metadata):
         and with typical cable lengths of several metres, this translates
         well into tens of nanoseconds.
 
-    coupling : str
+    coupling : :class:`str`
         Type of coupling.
 
         Usually, this is either DC or AC coupling.
@@ -788,12 +787,12 @@ class Probehead(aspecd.metadata.Metadata):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
     ----------
-    type : str
+    type : :class:`str`
         Type of the probehead used.
 
         There are several different types of probeheads regularly used. For
@@ -808,7 +807,7 @@ class Probehead(aspecd.metadata.Metadata):
         Commercial probeheads come with a distinct model that goes in here.
         In all other cases, use a short, memorisable, and unique name.
 
-    coupling : str
+    coupling : :class:`str`
         Type of coupling.
 
         Usually either critically (default) or overcoupled
@@ -837,18 +836,18 @@ class Pump(aspecd.metadata.Metadata):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
     ----------
-    type : str
+    type : :class:`str`
         Type of the pump used.
 
         This typically translates to "laser", and it may be extended by the
         actual type of laser (*e.g.*, Nd:YAG).
 
-    model : str
+    model : :class:`str`
         Model of the pump used.
 
     wavelength : :obj:`aspecd.metadata.PhysicalQuantity`
@@ -888,27 +887,27 @@ class Pump(aspecd.metadata.Metadata):
         state, as the spin polarisation usually decays much faster than the
         sample returns to its ground state.
 
-    tunable_type : str
+    tunable_type : :class:`str`
         Type of the tunable used.
 
         Usually, this is eiter "OPO" or "dye laser".
 
-    tunable_model : str
+    tunable_model : :class:`str`
         Model of the tunable used.
 
-    tunable_dye : str
+    tunable_dye : :class:`str`
         Name of Laser dye.
 
         In case of a dye laser, details of the laser dye used.
 
-    tunable_position : int
+    tunable_position : :class:`str`
         Position of the tunable used.
 
         In case of an OPO, you may provide the position of the stepper motor
         here. Please note that these values can only be used for comparision
         within one setup and one calibration.
 
-    filter : str
+    filter : :class:`str`
         Type of the filter(s) used.
 
         Often, additional filters are placed within the excitation beam.
@@ -939,15 +938,15 @@ class TemperatureControl(aspecd.metadata.TemperatureControl):
 
     Parameters
     ----------
-    dict_ : dict
+    dict_ : :class:`dict`
         Dictionary containing fields corresponding to attributes of the class
 
     Attributes
     ----------
-    cryostat : str
+    cryostat : :class:`str`
         Model of the cryostat used.
 
-    cryogen : str
+    cryogen : :class:`str`
         Cryogen used.
 
         Typically, this is either LN2 (for temperatures down to 80K) or LHe
