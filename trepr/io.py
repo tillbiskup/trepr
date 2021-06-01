@@ -1,8 +1,49 @@
 """
 General facilities for input (and output).
 
-With this module trepr raw data in Freiburg Speksim format and the
-MATLAB trepr toolbox format (tez) can be imported.
+In order to work with TREPR data, these data need to be imported into the
+trepr package. Therefore, the module provides importers for specific file
+formats. In case of TREPR spectroscopy, the measurement control software is
+often lab-written and specific for a local setup. One exception is the
+Bruker BES3T file format written by Bruker Xepr and Xenon software that can
+be used to record TREPR data in combination with a pulsed EPR spectrometer.
+
+Another class implemented in this module is the
+:class:`trepr.io.DatasetImporterFactory`, a prerequisite for recipe-driven
+data analysis. This factory returns the correct dataset importer for a
+specific dataset depending on the information provided (usually, a filename).
+
+
+Importers for specific file formats
+===================================
+
+Currently, two file formats are supported by specific importers:
+
+* :class:`SpeksimImporter`
+
+  The Speksim format was developed in Freiburg in the group of Prof. G.
+  Kothe and used afterwards in the group of Prof. S. Weber. The spectrometer
+  control software was developed by Prof. U. Heinen.
+
+  One speciality of this file format is that each transient is stored in an
+  individual file. For each of these transients, a timestamp as well as the
+  microwave frequency are recorded as well, allowing to analyse frequency
+  drifts and irregularities in the data acquisition.
+
+* :class:`TezImporter`
+
+  The tez file format is the internal format used by the MATLAB(r) trepr
+  toolbox developed by T. Biskup. It vaguely resembles the OpenDocument
+  format used, *e.g.*, by OpenOffice and LibreOffice. In short, the metadata
+  are contained in an XML file, while the numerical data are stored as IEEE
+  754 standard binaries in separate files. The ASpecD dataset format (adf)
+  is similar in some respect.
+
+
+Implementing importers for additional file formats is rather
+straight-forward. For details, see the documentation of the :mod:`aspecd.io`
+module.
+
 
 .. note::
 
@@ -10,6 +51,10 @@ MATLAB trepr toolbox format (tez) can be imported.
     are working. If one wants to make it consistent, with ASpecD, also look
     through all processing and analysis steps and reverse the axis order
     there as well if necessary!
+
+
+Module documentation
+====================
 
 """
 import datetime
@@ -36,8 +81,20 @@ import trepr.dataset
 class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
     """Factory for creating importer objects based on the source provided.
 
-    With regard to the recipe-driven data analysis, it might be helpful not to
-    have to think about data formats and the appropriate importer.
+    Often, data are available in different formats, and deciding which
+    importer is appropriate for a given format can be quite involved. To
+    free other classes from having to contain the relevant code, a factory
+    can be used.
+
+    Currently, the sole information provided to decide about the appropriate
+    importer is the source (a string). A concrete importer object is
+    returned by the method ``get_importer()``. If no source is provided,
+    an exception will be raised.
+
+    If the source string does not match any of the importers handled by this
+    module, the standard importers from the ASpecD framework are checked.
+    See the documentation of the :class:`aspecd.io.DatasetImporterFactory`
+    base class for details.
 
     """
 
@@ -50,13 +107,13 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
 class SpeksimImporter(aspecd.io.DatasetImporter):
     """Import trepr raw data in Freiburg Speksim format including its metadata.
 
-    Trepr raw data consist of several time traces, each of which is stored in a
-    text file. In order to analyse the raw data, it is necessary to store the
-    time traces all together in one dataset.
+    Datasets in this format consist of several time traces, each of which is
+    stored in a text file. In order to analyse the raw data, it is necessary
+    to store the time traces all together in one dataset.
 
     The corresponding metadata are read from an external file in infofile
     format. For further information about the infofile format see:
-    https://www.till-biskup.de/en/software/info/format
+    `<https://www.till-biskup.de/en/software/info/format>`_.
 
     Parameters
     ----------

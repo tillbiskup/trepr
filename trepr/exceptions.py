@@ -14,7 +14,7 @@ class Error(Exception):
 
 
 class DimensionError(Error):
-    """Exception raised when the dimension isn't zero or one.
+    """Exception raised when the dimension of the data does not fit.
 
     Attributes
     ----------
@@ -44,7 +44,7 @@ class RangeError(Error):
 
 
 class UnitError(Error):
-    """Exception raised when the unit isn't either 'axis' or 'index'.
+    """Exception raised when the unit does not fit.
 
     Attributes
     ----------

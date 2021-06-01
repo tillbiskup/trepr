@@ -1,9 +1,116 @@
 """
-General plotting facilities.
+Plotting: Graphical representations of data extracted from datasets.
 
 Graphical representations of TREPR data are an indispensable aspect of data
 analysis. To facilitate this, a series of different plotters are available.
 Additionally, savers (and stylers) are implemented.
+
+Plotting relies on `matplotlib <https://matplotlib.org/>`_, and mainly its
+object-oriented interface should be used for the actual plotting.
+
+Generally, two types of plotters can be distinguished:
+
+* Plotters for handling single datasets
+
+  Shall be derived from :class:`aspecd.plotting.SinglePlotter`.
+
+* Plotters for handling multiple datasets
+
+  Shall be derived from :class:`aspecd.plotting.MultiPlotter`.
+
+In the first case, the plot is usually handled using the :meth:`plot` method
+of the respective :obj:`trepr.dataset.Dataset` object. Additionally,
+those plotters always only operate on the data of a single dataset, and the
+plot can easily be attached as a representation to the respective dataset.
+Plotters handling single datasets should always inherit from the
+:class:`aspecd.plotting.SinglePlotter` class.
+
+In the second case, the plot is handled using the :meth:`plot` method of the
+:obj:`aspecd.plotting.Plotter` object, and the datasets are stored as a list
+within the plotter. As these plots span several datasets, there is no easy
+connection between a single dataset and such a plot in sense of
+representations stored in datasets. Plotters handling multiple datasets should
+always inherit from the :class:`aspecd.plotting.MultiPlotter` class.
+
+
+A note on array dimensions and axes
+===================================
+
+Something often quite confusing is the apparent inconsistency between the
+order of array dimensions and the order of axes. While we are used to assign
+axes in the order *x*, *y*, *z*, and assuming *x* to be horizontal,
+*y* vertical (and *z* sticking out of the paper plane), arrays are usually
+indexed row-first, column-second. That means, however, that if you simply
+plot a 2D array in axes, your *first* dimension is along the *y* axis,
+the *second* dimension along the *x* axis.
+
+Therefore, as the axes of your datasets will always correspond to the array
+dimensions of your data, in case of 2D plots you will need to *either* use
+the information contained in the second axis object for your *x* axis label,
+and the information from the first axis object for your *y* axis label,
+*or* to transpose the data array.
+
+Another aspect to have in mind is the position of the origin. Usually,
+in a Cartesian coordinate system, convention is to have the origin (0,
+0) in the *lower left* of the axes (for the positive quadrant). However,
+for images, convention is to have the corresponding (0, 0) pixel located in
+the *upper left* edge of your image. Therefore, those plotting methods
+dealing with images will usually *revert* the direction of your *y* axis.
+Most probably, eventually you will have to check with real data and ensure
+the plotters to plot data and axes in a consistent fashion.
+
+
+Types of concrete plotters
+==========================
+
+The trepr package comes with a series of concrete plotters included ready
+to be used, thanks to inheriting from the underlying ASpecD framework. As
+stated above, plotters can generally be divided into two types: plotters
+operating on single datasets and plotters combining the data of multiple
+datasets into a single figure.
+
+Additionally, plotters can be categorised with regard to creating figures
+consisting of a single or multiple axes. The latter are plotters inheriting
+from the :class:`aspecd.plotting.CompositePlotter` class. The latter can be
+thought of as templates for the other plotters to operate on, *i.e.* they
+provide the axes for other plotters to display their results.
+
+
+Concrete plotters for single datasets
+-------------------------------------
+
+* :class:`trepr.plotting.SinglePlotter1D`
+
+  Basic line plots for single datasets, allowing to plot a series of
+  line-type plots, including (semi)log plots
+
+* :class:`trepr.plotting.SinglePlotter2D`
+
+  Basic 2D plots for single datasets, allowing to plot a series of 2D plots,
+  including contour plots and image-type display
+
+* :class:`trepr.plotting.SingleCompositePlotter`
+
+  Composite plotter for single datasets, allowing to plot different views of
+  one and the same datasets by using existing plotters for single datasets.
+
+
+Concrete plotters for multiple datasets
+---------------------------------------
+
+* :class:`trepr.plotting.MultiPlotter1D`
+
+  Basic line plots for multiple datasets, allowing to plot a series of
+  line-type plots, including (semi)log plots
+
+* :class:`trepr.plotting.MultiPlotter1DStacked`
+
+  Stacked line plots for multiple datasets, allowing to plot a series of
+  line-type plots, including (semi)log plots
+
+
+Module documentation
+====================
 
 """
 
@@ -73,6 +180,10 @@ class ScaledImagePlot(aspecd.plotting.SinglePlotter):
     description : str
         Describes the aim of the class.
 
+
+    .. deprecated:: 0.1
+        Use :class:`SinglePlotter2D` instead.
+
     """
 
     def __init__(self):
@@ -136,6 +247,10 @@ class LinePlot(aspecd.plotting.SinglePlotter):
     description : str
         Describes the aim of the class.
 
+
+    .. deprecated:: 0.1
+        Use :class:`SinglePlotter1D` instead.
+
     """
 
     def __init__(self):
@@ -180,7 +295,11 @@ class LinePlot(aspecd.plotting.SinglePlotter):
 
 
 class MultiLinePlot(aspecd.plotting.MultiPlotter):
-    """Plot multiple datasets as lines."""
+    """Plot multiple datasets as lines.
+
+    .. deprecated:: 0.1
+        Use :class:`MultiPlotter1D` instead.
+    """
 
     def __init__(self):
         super().__init__()
@@ -233,6 +352,10 @@ class ColormapAdjuster:
 
     normalised_colormap : :class:`matplotlib.colormap`
         Colormap normalised to data of dataset.
+
+
+    .. deprecated:: 0.1
+        Will be included in :class:`aspecd.plotting.SinglePlotter2D`.
 
     """
 
