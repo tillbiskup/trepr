@@ -36,7 +36,7 @@ class TestSpeksimImporter(unittest.TestCase):
 
 class TestTezImporter(unittest.TestCase):
     def setUp(self):
-        self.source = os.path.join(ROOTPATH, 'testdata', 'pentacene')
+        self.source = os.path.join(ROOTPATH, 'testdata', 'tez', 'pentacene')
         self.importer = trepr.io.TezImporter(source=self.source)
         self.dataset = trepr.dataset.ExperimentalDataset()
         self.tempdir = os.path.join(os.path.split(self.source)[0], 'tmp')

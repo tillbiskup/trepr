@@ -14,7 +14,7 @@ ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 class TestAveraging(unittest.TestCase):
     def setUp(self):
         self.processing = trepr.processing.Averaging()
-        source = os.path.join(ROOTPATH, 'testdata/pentacene')
+        source = os.path.join(ROOTPATH, 'testdata/tez/pentacene')
         importer = trepr.dataset.DatasetFactory()
         self.dataset = importer.get_dataset(source=source)
 
@@ -75,7 +75,7 @@ class TestPretriggerOffsetCompensation(unittest.TestCase):
 class TestNormalisation(unittest.TestCase):
     def setUp(self):
         self.processing = trepr.processing.Normalisation()
-        source = os.path.join(ROOTPATH, 'testdata/pentacene')
+        source = os.path.join(ROOTPATH, 'testdata/tez/pentacene')
         importer = trepr.dataset.DatasetFactory()
         self.dataset = importer.get_dataset(source=source)
 

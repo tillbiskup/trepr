@@ -8,7 +8,9 @@ A few ideas how to develop the project further, currently a list as a reminder f
 For version 0.1
 ===============
 
-* Check sequence of axes in importers for consistency with the ASpecD conventions
+* Check TREPR-specific processing steps for correct sequence of axes
+
+* Move tex template to own directory and rename it
 
 * Implement Bruker BES3T importer/copy from cwepr package
 
