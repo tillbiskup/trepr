@@ -75,8 +75,6 @@ import aspecd.metadata
 import aspecd.plotting
 import aspecd.utils
 
-import trepr.dataset
-
 
 class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
     """Factory for creating importer objects based on the source provided.
@@ -135,7 +133,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
     def __init__(self, source=''):
         super().__init__(source=source)
         # public properties
-        self.dataset = trepr.dataset.ExperimentalDataset()
+        self.dataset = None
         # protected properties
         self._headerlines = 5
         self._data = np.array([])
@@ -322,7 +320,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         self.dataset.data.data = self._data
 
     # noinspection PyPep8Naming
-    def _ensure_field_axis_in_SI_unit(self):
+    def _ensure_field_axis_in_SI_unit(self):  # noqa: N802
         """Ensure that the field axis unit is in SI unit."""
         if self._field_unit == 'Gauss':
             self._field_unit = 'mT'
@@ -377,6 +375,11 @@ class TezImporter(aspecd.io.DatasetImporter):
     dataset : :obj:`trepr.dataset.ExperimentalDataset`
         Entity containing data and metadata.
 
+
+    .. todo::
+        Add import of metadata from info file (if present), as the metadata
+        mapper has been implemented in the ASpecD framework in the meanwhile.
+
     """
 
     def __init__(self, source=''):
@@ -387,7 +390,7 @@ class TezImporter(aspecd.io.DatasetImporter):
         # public properties
         self.mapper_filename = 'tez_mapper.yaml'
         self.xml_dict = None
-        self.dataset = trepr.dataset.ExperimentalDataset()
+        self.dataset = None
         self.metadata_filename = ''
         # private properties
         self._root_dir = ''
@@ -539,9 +542,11 @@ class TezImporter(aspecd.io.DatasetImporter):
                 'microwave frequency'
 
     def _xml_contains_mw_frequencies(self):
+        answer = False
         if '#text' in self.xml_dict['struct']['parameters']['bridge'][
                 'MWfrequency']['values']:
-            return True
+            answer = True
+        return answer
 
     def _remove_tmp_directory(self):
         if os.path.exists(self._tmpdir):

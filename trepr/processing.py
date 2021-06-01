@@ -127,10 +127,10 @@ Module documentation
 
 """
 import numpy as np
+import scipy.signal
 
 import aspecd.processing
 import aspecd.exceptions
-import scipy.signal
 
 import trepr.exceptions
 
@@ -350,7 +350,7 @@ class BackgroundCorrection(aspecd.processing.SingleProcessingStep):
             transient -= lower_mean + slope * idx
 
     def _bg_corr_one_side(self):
-        assert type(self.parameters['num_profiles']) == int
+        assert isinstance(self.parameters['num_profiles'], int)
 
         if self.parameters['num_profiles'] < 0:
             self._subtract_from_end()
@@ -1105,6 +1105,22 @@ class Filter(aspecd.processing.SingleProcessingStep):
 
     @staticmethod
     def applicable(dataset):
+        """
+        Check whether processing step is applicable to the given dataset.
+
+        Filtering is only applicable to 1D datasets.
+
+        Parameters
+        ----------
+        dataset : :class:`aspecd.dataset.Dataset`
+            dataset to check
+
+        Returns
+        -------
+        applicable : :class:`bool`
+            `True` if successful, `False` otherwise.
+
+        """
         return len(dataset.data.axes) == 2
 
     def _sanitise_parameters(self):
@@ -1139,8 +1155,8 @@ class Filter(aspecd.processing.SingleProcessingStep):
     def _set_defaults(self):
         self._get_type()
         if not self.parameters['window_width']:
-            self.parameters['window_width'] = int(np.ceil((1/10 * len(
-                self.dataset.data.axes[0].values))) * 2+1)
+            self.parameters['window_width'] = int(np.ceil((1 / 10 * len(
+                self.dataset.data.axes[0].values))) * 2 + 1)
 
     def _apply_savitzky_golay(self):
         filtered_data = \
@@ -1161,9 +1177,9 @@ class Filter(aspecd.processing.SingleProcessingStep):
         """Add padding to get same length of data at the end."""
         width = self.parameters['window_width']
         self.dataset.data.data = np.concatenate((
-            np.ones(int(np.floor(width/2)))*self.dataset.data.data[0],
+            np.ones(int(np.floor(width / 2))) * self.dataset.data.data[0],
             self.dataset.data.data,
-            np.ones(int(np.floor(width/2))+1)*self.dataset.data.data[-1]
+            np.ones(int(np.floor(width / 2)) + 1) * self.dataset.data.data[-1]
         ))
 
     def _perform_binomial_filtering(self):
@@ -1174,7 +1190,7 @@ class Filter(aspecd.processing.SingleProcessingStep):
         self.dataset.data.data = filtered_data
 
     def _perform_boxcar_filtering(self):
-        filter_ = np.ones(self.parameters['window_width'])/self.parameters[
+        filter_ = np.ones(self.parameters['window_width']) / self.parameters[
             'window_width']
         filtered_data = np.array(np.convolve(self.dataset.data.data,
                                              filter_, mode='valid'))

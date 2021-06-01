@@ -24,6 +24,7 @@ pyflakes:
 pylint:
   options:
     max-attributes: 20
+    max-module-lines: 1300
   disable:
     - invalid-name
     - import-error

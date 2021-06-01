@@ -626,7 +626,7 @@ class CompositePlotter(aspecd.plotting.CompositePlotter):
 
 
 class SingleCompositePlotter(aspecd.plotting.SingleCompositePlotter):
-    """Composite plotter for single datasets
+    """Composite plotter for single datasets.
 
     This composite plotter is used for different representations of one and the
     same dataset in multiple axes contained in one figure. In this respect,

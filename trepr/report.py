@@ -49,10 +49,6 @@ class LaTeXReporter(aspecd.report.LaTeXReporter):
     """
 
     def __init__(self, template='', filename=''):
-        """
-        Create a report rendering a template and store all files in the
-        dataset repository.
-        """
         # public properties
         super().__init__(template=template, filename=filename)
         self.dataset = trepr.dataset.Dataset()
@@ -95,8 +91,7 @@ class LaTeXReporter(aspecd.report.LaTeXReporter):
         self._processing_steps = \
             self._change_keys_in_dict_recursively(self._processing_steps)
 
-    @staticmethod
-    def _change_keys_in_dict_recursively(dict_=None):
+    def _change_keys_in_dict_recursively(self, dict_=None):
         """Replace all underscores in the keys with a space.
 
         Note: This is done because LaTeX interprets the underscore not as
@@ -106,7 +101,7 @@ class LaTeXReporter(aspecd.report.LaTeXReporter):
         for key, value in dict_.items():
             if isinstance(value, dict):
                 dict_[key] = \
-                    LaTeXReporter._change_keys_in_dict_recursively(value)
+                    self._change_keys_in_dict_recursively(value)
             tmp_dict[key.replace('_', ' ').capitalize()] = dict_[key]
         return tmp_dict
 

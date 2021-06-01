@@ -91,7 +91,7 @@ class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
         self._delta_mw_freq = max(self.dataset.microwave_frequency.data) - \
             min(self.dataset.microwave_frequency.data)
 
-    def _convert_delta_mw_freq_to_delta_B0(self):
+    def _convert_delta_mw_freq_to_delta_B0(self):  # noqa: N802
         """Calculate delta B0 by using the resonance condition."""
         electron_g_factor = scipy.constants.value('electron g factor')
         bohr_magneton = scipy.constants.value('Bohr magneton')
@@ -105,7 +105,7 @@ class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
             self.dataset.microwave_frequency.axes[0].values[1] \
             - self.dataset.microwave_frequency.axes[0].values[0]
 
-    def _compare_delta_B0_with_step_size(self):
+    def _compare_delta_B0_with_step_size(self):  # noqa: N802
         """Calculate the ratio between delta B0 and the step size."""
         self._ratio_frequency_drift_to_step_size = \
             self._delta_B0 / self._step_size_in_mT
@@ -154,8 +154,7 @@ class TimeStampAnalysis(aspecd.analysis.SingleAnalysisStep):
         self._write_result()
 
     def _create_time_field_matrix(self):
-        """Create a matrix containing the time stamps and the corresponding
-        field points."""
+        """Create matrix with time stamps and corresponding field points."""
         time_stamp_floats = np.zeros(0)
         for time_stamp in self.dataset.time_stamp.data:
             time_stamp_floats = \
