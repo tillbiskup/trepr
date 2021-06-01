@@ -34,13 +34,10 @@ import trepr.dataset
 
 
 class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
-    """Create a :obj:`trepr.io.SpeksimImporter` object.
+    """Factory for creating importer objects based on the source provided.
 
     With regard to the recipe-driven data analysis, it might be helpful not to
     have to think about data formats and the appropriate importer.
-    With only one data format, as is currently the case, the
-    :class:`trepr.DatasetImporterFactory` class does nothing other than
-    initiate a :obj:`trepr.io.SpeksimImporter` object.
 
     """
 

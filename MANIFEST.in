@@ -7,3 +7,5 @@ include VERSION
 # Include the LICENSE
 include LICENSE*
 
+# Include metadata mappers
+include trepr/*mapper.yaml

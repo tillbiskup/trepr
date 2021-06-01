@@ -21,10 +21,12 @@ setup(
         "Documentation": "https://docs.trepr.de/",
         "Source": "https://github.com/tillbiskup/trepr",
     },
-    packages=setuptools.find_packages(exclude=('doc')),
+    packages=setuptools.find_packages(exclude=('tests', 'docs')),
+    include_package_data=True,
     keywords=[
         'spectroscopy', 
-        'trepr', 
+        'time-resolved electron paramagnetic resonance',
+        'trepr',
         'data processing and analysis'
     ],
     classifiers=[
