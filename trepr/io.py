@@ -255,10 +255,8 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
             aspecd.metadata.MetadataMapper()
         mapper.version = infofile_version
         mapper.metadata = self._infofile.parameters
-        root_path = os.path.split(os.path.abspath(__file__))[
-                                      0]
-        mapper.recipe_filename = os.path.join(
-            root_path, 'metadata_mapper.yaml')
+        root_path = os.path.split(os.path.abspath(__file__))[0]
+        mapper.recipe_filename = os.path.join(root_path, 'metadata_mapper.yaml')
         mapper.map()
         self.dataset.metadata.from_dict(mapper.metadata)
 
