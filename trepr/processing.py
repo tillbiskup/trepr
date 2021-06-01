@@ -274,7 +274,18 @@ class BackgroundCorrection(aspecd.processing.SingleProcessingStep):
            parameters:
              num_profiles: 10
 
-    Similarly, if you would like to use the first 5 and the last 10
+    Similarly, if you would want to use only the *last* 10 transients from the
+    lower end of the magnetic field:
+
+    .. code-block:: yaml
+
+       - kind: processing
+         type: BackgroundCorrection
+         properties:
+           parameters:
+             num_profiles: -10
+
+    And finally, if you would like to use the first 5 and the last 10
     transients, you would write:
 
     .. code-block:: yaml

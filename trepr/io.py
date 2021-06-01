@@ -45,14 +45,6 @@ straight-forward. For details, see the documentation of the :mod:`aspecd.io`
 module.
 
 
-.. note::
-
-    The axes are not in the order ASpecD expects, still, the processing steps
-    are working. If one wants to make it consistent, with ASpecD, also look
-    through all processing and analysis steps and reverse the axis order
-    there as well if necessary!
-
-
 Module documentation
 ====================
 
