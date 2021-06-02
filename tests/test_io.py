@@ -88,6 +88,7 @@ class TestTezImporter(unittest.TestCase):
         self.dataset.import_from(self.importer)
         self.assertFalse(self.dataset.data.axes[0].values[0] == 0)
         self.assertFalse(self.dataset.data.axes[1].values[0] == 0)
+        print(self.dataset.metadata.to_dict().keys())
 
     def test_get_physical_quantity(self):
         test_dict = {
@@ -108,6 +109,32 @@ class TestTezImporter(unittest.TestCase):
         }
         ret = self.importer._get_physical_quantity(test_dict['field'])
         self.assertEqual(type(ret), dict)
+
+    def test_import_infofile_is_true(self):
+        self.assertTrue(self.importer.load_infofile)
+
+    def test_infofile_exists_is_true(self):
+        self.assertTrue(self.importer._infofile_exists())
+
+    def test_infofile_is_loaded(self):
+        self.importer._load_infofile()
+        self.assertTrue(
+            self.importer._infofile.parameters['GENERAL']['Operator'])
+        print(self.importer._infofile.parameters['GENERAL']['Operator'])
+
+    def test_map_infofile_into_dataset(self):
+        self.dataset.import_from(self.importer)
+        self.importer._load_infofile()
+        self.importer._map_infofile()
+        self.assertTrue(self.importer._infofile.infofile_info['version'])
+
+    def test_infofile_is_imported(self):
+        self.dataset.import_from(self.importer)
+        self.assertTrue(self.dataset.metadata.measurement.operator)
+        self.assertEqual(20, self.dataset.metadata.pump.repetition_rate.value)
+        print(self.dataset.metadata.bridge.attenuation)
+        self.assertEqual(0.6324555320336759,
+                         self.dataset.metadata.bridge.power.value)
 
 
 if __name__ == '__main__':

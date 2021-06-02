@@ -49,6 +49,7 @@ Module documentation
 ====================
 
 """
+import collections
 import datetime
 import glob
 import io
@@ -66,6 +67,8 @@ import aspecd.infofile
 import aspecd.metadata
 import aspecd.plotting
 import aspecd.utils
+
+import trepr.dataset
 
 
 class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
@@ -380,11 +383,14 @@ class TezImporter(aspecd.io.DatasetImporter):
             source = source[:-4]
         super().__init__(source=source)
         # public properties
-        self.mapper_filename = 'tez_mapper.yaml'
+        self.tez_mapper_filename = 'tez_mapper.yaml'
         self.xml_dict = None
         self.dataset = None
         self.metadata_filename = ''
+        self.load_infofile = True
         # private properties
+        self._metadata = None
+        self._infofile = aspecd.infofile.Infofile()
         self._root_dir = ''
         self._filename = ''
         self._tmpdir = ''
@@ -397,8 +403,11 @@ class TezImporter(aspecd.io.DatasetImporter):
         self._import_xml_data_to_dict()
         self._get_data_from_binary()
         self._parse_axes()
-        # import metadata from infofile
-        # schreib den Mapper, till! :)
+
+        if self.load_infofile and self._infofile_exists():
+            self._load_infofile()
+            self._map_infofile()
+
         self._get_metadata_from_xml()
         self._get_mw_frequencies()
 
@@ -463,6 +472,44 @@ class TezImporter(aspecd.io.DatasetImporter):
             self.dataset.data.axes[1].unit = self.xml_dict['struct']['axes'][
                 'data']['unit'][id_]['#text']
 
+    def _infofile_exists(self):
+        if self._get_infofile_name() and os.path.exists(
+                self._get_infofile_name()[0]):
+            return True
+        print('No infofile found for dataset %s, import continued without '
+              'infofile.' % os.path.split(self.source)[1])
+        return False
+
+    def _get_infofile_name(self):
+        return glob.glob(''.join([self.source.strip(), '.info']))
+
+    def _load_infofile(self):
+        """Import infofile and parse it."""
+        infofile_name = self._get_infofile_name()
+        self._infofile.filename = infofile_name[0]
+        self._infofile.parse()
+
+    def _map_infofile(self):
+        """Bring the metadata to a given format."""
+        infofile_version = self._infofile.infofile_info['version']
+        self._map_metadata(infofile_version)
+        self._assign_comment_as_annotation()
+
+    def _map_metadata(self, infofile_version):
+        """Bring the metadata into a unified format."""
+        mapper = aspecd.metadata.MetadataMapper()
+        mapper.version = infofile_version
+        mapper.metadata = self._infofile.parameters
+        root_path = os.path.split(os.path.abspath(__file__))[0]
+        mapper.recipe_filename = os.path.join(root_path, 'metadata_mapper.yaml')
+        mapper.map()
+        self.dataset.metadata.from_dict(mapper.metadata)
+
+    def _assign_comment_as_annotation(self):
+        comment = aspecd.annotation.Comment()
+        comment.comment = self._infofile.parameters['COMMENT']
+        self.dataset.annotate(comment)
+
     def _get_values_from_xml_dict(self, id_=None):
         values = np.asarray([float(i) for i in
                              self.xml_dict['struct']['axes']['data'][
@@ -472,14 +519,20 @@ class TezImporter(aspecd.io.DatasetImporter):
     def _get_metadata_from_xml(self):
         mapping = aspecd.utils.Yaml()
         rootpath = os.path.split(os.path.abspath(__file__))[0]
-        mapping.read_from(os.path.join(rootpath, self.mapper_filename))
-        metadata_dict = {}
+        mapping.read_from(os.path.join(rootpath, self.tez_mapper_filename))
+        metadata_dict = collections.OrderedDict()
         for key, subdict in mapping.dict.items():
-            metadata_dict[key] = {}
+            metadata_dict[key] = collections.OrderedDict()
             for key2, value in subdict.items():
                 metadata_dict[key][key2] = \
                     self._cascade(self.xml_dict['struct'], value)
-        self.dataset.metadata.from_dict(metadata_dict)
+        metadata = self.dataset.metadata.to_dict()
+        print(metadata)
+        aspecd.utils.copy_values_between_dicts(
+            target=metadata, source=metadata_dict)
+        print(metadata_dict)
+        print(metadata)
+        self.dataset.metadata.from_dict(metadata)
         # Cause Copycat in UdS measurement program:
         self.dataset.metadata.bridge.attenuation.unit = 'dB'
 

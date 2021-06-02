@@ -65,7 +65,8 @@ pump:
   model: parameters.laser.model
   wavelength: parameters.laser.wavelength
   power: parameters.laser.power
-  repetition_rate: parameters.laser.repetitionRate
+  # fix: parameters.shotRepetitionRate instead of parameters.laser.repetitionRate
+  repetition_rate: parameters.shotRepetitionRate
   tunable_type: parameters.laser.tunable.type
   tunable_model: parameters.laser.tunable.model
   tunable_dye: parameters.laser.tunable.dye
