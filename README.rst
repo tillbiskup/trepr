@@ -19,7 +19,7 @@ What is even better: Actual data processing and analysis **no longer requires pr
         properties:
           parameters:
             num_profiles: [10, 10]
-      - kind: aspecd.singleplot
+      - kind: singleplot
         type: SinglePlotter2D
         properties:
           filename:
