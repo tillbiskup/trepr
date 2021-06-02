@@ -44,7 +44,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Application Frameworks'
     ],
     install_requires=[
-        'aspecd>=0.2.0',
+        'aspecd>=0.2.1',
         'jinja2',
         'matplotlib',
         'numpy',

@@ -14,6 +14,7 @@
 # serve to show the default.
 
 import os
+import subprocess
 
 with open(os.path.join(os.path.dirname(__file__), '..', 'VERSION')) as \
         version_file:
@@ -39,7 +40,8 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode',
+    # 'sphinx.ext.viewcode',
+    'sphinx_multiversion',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -127,7 +129,7 @@ todo_include_todos = True
 todo_link_only = True
 
 
-# -- Options for aitodoc extension--------------------------------------------
+# -- Options for autodoc extension--------------------------------------------
 
 autodoc_default_options = {
     'members': True,
@@ -135,6 +137,17 @@ autodoc_default_options = {
     'undoc-members': True,
     'show-inheritance': True,
 }
+
+# -- Configuration for multiversion extension -----------------------------
+
+smv_branch_whitelist = r'^master.*$'
+smv_tag_whitelist = r'^v\d+\.\d+$'
+smv_released_pattern = r'^refs/tags/v\d+\.\d+$'
+
+tag = subprocess.run("git describe --tags `git rev-list --tags "
+                     "--max-count=1`", shell=True, capture_output=True)
+smv_latest_version = tag.stdout.decode().strip()
+
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -255,7 +268,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'trepr.tex', 'trepr Documentation',
-     'Jara Popp', 'manual'),
+     author, 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

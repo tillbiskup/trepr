@@ -14,8 +14,6 @@ For version 0.1
 
 * Implement Bruker BES3T importer/copy from cwepr package
 
-* Sphinx multiversion
-
 
 For later versions
 ==================
