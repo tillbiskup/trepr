@@ -24,14 +24,9 @@
 bla.py
 /abstellgleis/
 
-# Sphinx templates and build
-doc/_build
-doc/_static
-doc/_templates
-doc/.doctrees
+# Sphinx build
 docs/_build
 docs/_static
-docs/_templates
 docs/.doctrees
 
 # tox venvs
