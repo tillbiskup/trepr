@@ -502,7 +502,8 @@ class TezImporter(aspecd.io.DatasetImporter):
         root_path = os.path.split(os.path.abspath(__file__))[0]
         mapper.recipe_filename = os.path.join(root_path, 'metadata_mapper.yaml')
         mapper.map()
-        self.dataset.metadata.from_dict(mapper.metadata)
+        self._metadata = \
+            aspecd.utils.convert_keys_to_variable_names(mapper.metadata)
 
     def _assign_comment_as_annotation(self):
         comment = aspecd.annotation.Comment()
@@ -526,18 +527,16 @@ class TezImporter(aspecd.io.DatasetImporter):
                 metadata_dict[key][key2] = \
                     self._cascade(self.xml_dict['struct'], value)
 
-        # get metadata from infofile as dict
-        complete_metadata = self.fuse_with_existing_metadata(metadata_dict)
-        self.dataset.metadata.from_dict(complete_metadata)
+        self._metadata = self.fuse_with_existing_metadata(metadata_dict)
+        self.dataset.metadata.from_dict(self._metadata)
         # Cause Copycat in UdS measurement program:
         self.dataset.metadata.bridge.attenuation.unit = 'dB'
 
     def fuse_with_existing_metadata(self, metadata_dict):
-        infofile_metadata = self.dataset.metadata.to_dict()
         metadata_dict = \
             aspecd.utils.remove_empty_values_from_dict(metadata_dict)
         infofile_metadata = \
-            aspecd.utils.copy_values_between_dicts(target=infofile_metadata,
+            aspecd.utils.copy_values_between_dicts(target=self._metadata,
                                                    source=metadata_dict)
         return infofile_metadata
 
