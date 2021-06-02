@@ -258,8 +258,3 @@ class TestFilter(unittest.TestCase):
             plt.plot(x_axis, data_copy.data.data, label=filter_)
         plt.legend()
         plt.show()
-
-
-
-if __name__ == '__main__':
-    unittest.main()

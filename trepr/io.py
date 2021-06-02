@@ -301,8 +301,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
 
     def _map_metadata(self, infofile_version):
         """Bring the metadata into a unified format."""
-        mapper = \
-            aspecd.metadata.MetadataMapper()
+        mapper = aspecd.metadata.MetadataMapper()
         mapper.version = infofile_version
         mapper.metadata = self._infofile.parameters
         root_path = os.path.split(os.path.abspath(__file__))[0]
@@ -526,15 +525,21 @@ class TezImporter(aspecd.io.DatasetImporter):
             for key2, value in subdict.items():
                 metadata_dict[key][key2] = \
                     self._cascade(self.xml_dict['struct'], value)
-        metadata = self.dataset.metadata.to_dict()
-        print(metadata)
-        aspecd.utils.copy_values_between_dicts(
-            target=metadata, source=metadata_dict)
-        print(metadata_dict)
-        print(metadata)
-        self.dataset.metadata.from_dict(metadata)
+
+        # get metadata from infofile as dict
+        complete_metadata = self.fuse_with_existing_metadata(metadata_dict)
+        self.dataset.metadata.from_dict(complete_metadata)
         # Cause Copycat in UdS measurement program:
         self.dataset.metadata.bridge.attenuation.unit = 'dB'
+
+    def fuse_with_existing_metadata(self, metadata_dict):
+        infofile_metadata = self.dataset.metadata.to_dict()
+        metadata_dict = \
+            aspecd.utils.remove_empty_values_from_dict(metadata_dict)
+        infofile_metadata = \
+            aspecd.utils.copy_values_between_dicts(target=infofile_metadata,
+                                                   source=metadata_dict)
+        return infofile_metadata
 
     def _cascade(self, dict_, value):
         keys = value.split('.')
