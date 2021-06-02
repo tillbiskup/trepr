@@ -11,6 +11,11 @@ Version 0.1.0
 Not released yet
 
 * First public release
+* Based on ASpecD v.0.2.0
+* List of processing steps specific for TREPR data
+* List of analysis steps specific for TREPR data
+* Importers for different file formats
+* Recipe-driven data analysis
 
 
 Version 0.1.0.dev57
