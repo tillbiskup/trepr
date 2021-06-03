@@ -1,6 +1,10 @@
 trepr
 =====
 
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4897112.svg
+   :target: https://doi.org/10.5281/zenodo.4897112
+   :align: right
+
 trepr is a package for handling data obtained using time-resolved electron paramagnetic resonance (TREPR) spectroscopy. It is based on the `ASpecD framework <https://www.aspecd.de/>`_. Due to inheriting from the ASpecD superclasses, all data generated with the trepr package are completely reproducible and have a complete history.
 
 What is even better: Actual data processing and analysis **no longer requires programming skills**, but is as simple as writing a text file summarising all the steps you want to have been performed on your dataset(s) in an organised way. Curious? Have a look at the following example::

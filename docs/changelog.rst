@@ -8,7 +8,7 @@ This page contains a summary of changes between the official trEPR releases. Onl
 Version 0.1.0
 =============
 
-Not released yet
+Released 2021-06-03
 
 * First public release
 * Based on ASpecD v.0.2.1
