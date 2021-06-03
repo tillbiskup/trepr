@@ -369,11 +369,6 @@ class TezImporter(aspecd.io.DatasetImporter):
     dataset : :obj:`trepr.dataset.ExperimentalDataset`
         Entity containing data and metadata.
 
-
-    .. todo::
-        Add import of metadata from info file (if present), as the metadata
-        mapper has been implemented in the ASpecD framework in the meanwhile.
-
     """
 
     def __init__(self, source=''):

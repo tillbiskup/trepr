@@ -11,7 +11,7 @@ Version 0.1.0
 Not released yet
 
 * First public release
-* Based on ASpecD v.0.2.0
+* Based on ASpecD v.0.2.1
 * List of processing steps specific for TREPR data
 * List of analysis steps specific for TREPR data
 * Importers for different file formats

@@ -60,8 +60,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'trepr package'
-copyright = '2018-19 Jara Popp, 2018– Till Biskup, 2020- Mirjam Schröder'
-author = 'Jara Popp, Till Biskup, Mirjam Schröder'
+copyright = '2018-19 Jara Popp, 2020- Mirjam Schröder, 2018– Till Biskup'
+author = 'Jara Popp, Mirjam Schröder, Till Biskup'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -102,7 +102,7 @@ exclude_patterns = ['_build']
 
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.
-#show_authors = False
+show_authors = True
 
 # import sphinx_theme
 html_theme = 'sphinx_rtd_theme'
@@ -119,8 +119,6 @@ pygments_style = 'sphinx'
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
 
-# Show authors of sections and code
-show_authors = True
 
 # -- Options for todo extension ----------------------------------------------
 

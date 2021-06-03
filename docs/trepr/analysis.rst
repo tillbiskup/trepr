@@ -6,4 +6,11 @@ In nearly all cases, data analysis needs to be preceded with :doc:`data processi
 
 Eventually, fitting spectral simulations to the recorded data can be regarded as analysis steps as well. Usually, they are the only way to extract parameters from tr-EPR data with sufficient accuracy.
 
-* Transient nutation analysis (FFT)
+* Analyses to check for correct data recording
+
+  * Microwave frequency drift analysis
+  * Check for continuous data recording
+
+* Analyses extracting information from the recorded data
+
+  * Transient nutation analysis (FFT)
