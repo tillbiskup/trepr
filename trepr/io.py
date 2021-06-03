@@ -527,12 +527,12 @@ class TezImporter(aspecd.io.DatasetImporter):
                 metadata_dict[key][key2] = \
                     self._cascade(self.xml_dict['struct'], value)
 
-        self._metadata = self.fuse_with_existing_metadata(metadata_dict)
+        self._metadata = self._fuse_with_existing_metadata(metadata_dict)
         self.dataset.metadata.from_dict(self._metadata)
         # Cause Copycat in UdS measurement program:
         self.dataset.metadata.bridge.attenuation.unit = 'dB'
 
-    def fuse_with_existing_metadata(self, metadata_dict):
+    def _fuse_with_existing_metadata(self, metadata_dict):
         metadata_dict = \
             aspecd.utils.remove_empty_values_from_dict(metadata_dict)
         infofile_metadata = \
