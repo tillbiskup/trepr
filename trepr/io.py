@@ -304,8 +304,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         mapper = aspecd.metadata.MetadataMapper()
         mapper.version = infofile_version
         mapper.metadata = self._infofile.parameters
-        root_path = os.path.split(os.path.abspath(__file__))[0]
-        mapper.recipe_filename = os.path.join(root_path, 'metadata_mapper.yaml')
+        mapper.recipe_filename = 'trepr@metadata_mapper.yaml'
         mapper.map()
         self.dataset.metadata.from_dict(mapper.metadata)
 
@@ -494,8 +493,7 @@ class TezImporter(aspecd.io.DatasetImporter):
         mapper = aspecd.metadata.MetadataMapper()
         mapper.version = infofile_version
         mapper.metadata = self._infofile.parameters
-        root_path = os.path.split(os.path.abspath(__file__))[0]
-        mapper.recipe_filename = os.path.join(root_path, 'metadata_mapper.yaml')
+        mapper.recipe_filename = 'trepr@metadata_mapper.yaml'
         mapper.map()
         self._metadata = \
             aspecd.utils.convert_keys_to_variable_names(mapper.metadata)
