@@ -326,7 +326,9 @@ class BackgroundCorrection(aspecd.processing.SingleProcessingStep):
         return len(dataset.data.axes) == 3
 
     def _sanitise_parameters(self):
-        self.parameters['num_profiles'] = list(self.parameters['num_profiles'])
+        if not isinstance(self.parameters['num_profiles'], list):
+            self.parameters['num_profiles'] = \
+                list(self.parameters['num_profiles'])
         if len(self.parameters['num_profiles']) == 1:
             self.parameters['num_profiles'] = self.parameters['num_profiles'][0]
 
@@ -352,10 +354,11 @@ class BackgroundCorrection(aspecd.processing.SingleProcessingStep):
             self._bg_corr_one_side()
 
     def _bg_corr_with_slope(self):
+        print("### From both sides")
         low = self.parameters['num_profiles'][0]
         high = abs(self.parameters['num_profiles'][1])
-        lower_mean = np.mean(self.dataset.data.data[:low])
-        higher_mean = np.mean(self.dataset.data.data[-high:])
+        lower_mean = np.mean(self.dataset.data.data[:low, :], axis=0)
+        higher_mean = np.mean(self.dataset.data.data[-high:, :], axis=0)
         slope = (higher_mean - lower_mean) / self.dataset.data.data.shape[0]
         for idx, transient in enumerate(self.dataset.data.data):
             transient -= lower_mean + slope * idx
@@ -369,11 +372,19 @@ class BackgroundCorrection(aspecd.processing.SingleProcessingStep):
             self._subtract_from_begin()
 
     def _subtract_from_end(self):
-        bg = np.mean(self.dataset.data.data[self.parameters['num_profiles']:])
+        print("### From end")
+        bg = np.mean(
+            self.dataset.data.data[self.parameters['num_profiles']:, :],
+            axis=0
+        )
         self.dataset.data.data -= bg
 
     def _subtract_from_begin(self):
-        bg = np.mean(self.dataset.data.data[:self.parameters['num_profiles']])
+        print("### From begin")
+        bg = np.mean(
+            self.dataset.data.data[:self.parameters['num_profiles'], :],
+            axis=0
+        )
         self.dataset.data.data -= bg
 
 
