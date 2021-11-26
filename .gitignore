@@ -36,3 +36,6 @@ docs/.doctrees
 # coverage
 .coverage
 htmlcov/
+
+# For now, the examples folder
+examples/

@@ -593,3 +593,150 @@ class TezImporter(aspecd.io.DatasetImporter):
     def _remove_tmp_directory(self):
         if os.path.exists(self._tmpdir):
             shutil.rmtree(self._tmpdir)
+
+
+class Fsc2Importer(aspecd.io.DatasetImporter):
+
+    def __init__(self, source=''):
+        super().__init__(source=source)
+        self._header = []
+        self._parameters = dict()
+        self._comment = []
+
+    def _import(self):
+        if not os.path.splitext(self.source)[1]:
+            self.source += '.dat'
+
+        self._read_header()
+        self._load_and_assign_data()
+
+        self._assign_field_axis()
+        self._assign_time_axis()
+        self._assign_intensity_axis()
+
+        self._assign_metadata()
+        self._assign_comment()
+
+    def _read_header(self):
+        in_header = True
+        parameter_line = False
+        with open(self.source, 'r', encoding="utf8") as file:
+            while in_header:
+                line = file.readline()
+                if line.startswith('%'):
+                    self._header.append(line.strip())
+                    if line.startswith('% Number of runs'):
+                        parameter_line = True
+                    if parameter_line:
+                        line = line.replace('%', '', 1).strip()
+                        if ' = ' in line:
+                            key, value = line.split(' = ')
+                            try:
+                                if '.' in value:
+                                    value = float(value)
+                                else:
+                                    value = int(value)
+                            except ValueError:
+                                pass
+                            self._parameters[key.strip()] = value
+                        elif line:
+                            self._comment.append(line)
+                else:
+                    in_header = False
+
+    def _load_and_assign_data(self):
+        data = np.loadtxt(self.source, comments="% ")
+        self.dataset.data.data = \
+            data.reshape([-1, self._parameters['Number of points']])
+
+    def _assign_metadata(self):
+        # transient
+        self.dataset.metadata.transient.points = \
+            self._parameters['Number of points']
+        self.dataset.metadata.transient.trigger_position = \
+            self._parameters['Trigger position']
+        value, unit = self._parameters['Slice length'].split()
+        self.dataset.metadata.transient.length.value = float(value) * 1e-6
+        self.dataset.metadata.transient.length.unit = 's'
+
+        # experiment
+        self.dataset.metadata.experiment.runs = \
+            self._parameters['Number of runs']
+
+        # recorder
+        if 'Sensitivity' in self._parameters:
+            value, unit = self._parameters['Sensitivity'].split()
+            self.dataset.metadata.recorder.sensitivity.value = float(value)
+            self.dataset.metadata.recorder.sensitivity.unit = unit.split('/')[0]
+        if 'Time base' in self._parameters:
+            value, unit = self._parameters['Time base'].split()
+            self.dataset.metadata.recorder.time_base.value = float(value)
+            self.dataset.metadata.recorder.time_base.unit = unit.split('/')[0]
+        if 'Number of averages' in self._parameters:
+            self.dataset.metadata.recorder.averages = \
+                self._parameters['Number of averages']
+        self.dataset.metadata.recorder.pretrigger.value = \
+            np.abs(self.dataset.data.axes[1].values[0])
+        self.dataset.metadata.recorder.pretrigger.unit = \
+            self.dataset.data.axes[1].unit
+
+        # bridge
+        if 'MW frequency' in self._parameters:
+            value, unit = self._parameters['MW frequency'].split()
+            self.dataset.metadata.bridge.mw_frequency.value = float(value)
+            self.dataset.metadata.bridge.mw_frequency.unit = unit
+        if 'Attenuation' in self._parameters:
+            value, unit = self._parameters['Attenuation'].split()
+            self.dataset.metadata.bridge.attenuation.value = float(value)
+            self.dataset.metadata.bridge.attenuation.unit = unit
+
+        # temperature_control
+        if 'Temperature' in self._parameters:
+            value, unit = self._parameters['Temperature'].split()
+            self.dataset.metadata.temperature_control.temperature.value = \
+                float(value)
+            self.dataset.metadata.temperature_control.temperature.unit = unit
+
+        # pump
+        if 'Laser wavelength' in self._parameters:
+            wavelength, repetition_rate = \
+                self._parameters['Laser wavelength'].split(' (')
+            value, unit = wavelength.split()
+            self.dataset.metadata.pump.wavelength.value = float(value)
+            self.dataset.metadata.pump.wavelength.unit = unit
+            value, unit = repetition_rate.split()
+            self.dataset.metadata.pump.repetition_rate.value = float(value)
+            self.dataset.metadata.pump.repetition_rate.unit = \
+                unit.replace(')', '')
+
+    def _assign_field_axis(self):
+        field_start = float(self._parameters['Start field'].split(' ')[0]) / 10
+        field_end = float(self._parameters['End field'].split(' ')[0]) / 10
+        self.dataset.data.axes[0].values = \
+            np.linspace(field_start, field_end, self.dataset.data.data.shape[0])
+        self.dataset.data.axes[0].quantity = 'magnetic field'
+        self.dataset.data.axes[0].unit = 'mT'
+
+    def _assign_time_axis(self):
+        trigger_position = self._parameters['Trigger position']
+        number_of_points = self.dataset.data.data.shape[1]
+        relative_trigger_position = trigger_position / number_of_points
+        slice_length = \
+            float(self._parameters['Slice length'].split(' ')[0]) * 1e-6
+        self.dataset.data.axes[1].values = np.linspace(
+            -slice_length * relative_trigger_position,
+            slice_length - (slice_length * relative_trigger_position),
+            number_of_points
+        )
+        self.dataset.data.axes[1].quantity = 'time'
+        self.dataset.data.axes[1].unit = 's'
+
+    def _assign_intensity_axis(self):
+        self.dataset.data.axes[2].quantity = 'intensity'
+        self.dataset.data.axes[2].unit = 'V'
+
+    def _assign_comment(self):
+        if self._comment:
+            comment = aspecd.annotation.Comment()
+            comment.content = ' '.join(self._comment)
+            self.dataset.annotate(comment)
