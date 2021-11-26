@@ -13,7 +13,12 @@ What is even better: Actual data processing and analysis **no longer requires pr
 .. code-block:: yaml
     :linenos:
 
-    default_package: trepr
+    format:
+      type: ASpecD recipe
+      version: '0.2'
+
+    settings:
+      default_package: trepr
 
     datasets:
       - /path/to/first/dataset
@@ -51,7 +56,7 @@ A list of features:
 
 And to make it even more convenient for users and future-proof:
 
-- Open source project written in Python (>= 3.5)
+- Open source project written in Python (>= 3.7)
 - Extensive user and API documentation
 
 
@@ -111,12 +116,6 @@ You may as well be interested in the `LabInform project <https://www.labinform.d
 
 Finally, don't forget to check out the website on `reproducible research <https://www.reproducible-research.de/>`_ covering in more general terms aspects of reproducible research and good scientific practice.
 
-
-..
-  Contribute
-  ----------
-
-  - Source Code: https://github.com/tillbiskup/trepr
 
 License
 -------

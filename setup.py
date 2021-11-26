@@ -11,10 +11,10 @@ with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
 setup(
     name='trepr',
     version=version,
-    description='TREPR processing and analysis routines.',
+    description='Package for handling tr-EPR data.',
     long_description=readme,
     long_description_content_type='text/x-rst',
-    author='Jara Popp, Till Biskup, Mirjam Schröder',
+    author='Jara Popp, Mirjam Schröder, Till Biskup',
     author_email='till@till-biskup.de',
     url='https://www.trepr.de/',
     project_urls={
@@ -25,9 +25,13 @@ setup(
     include_package_data=True,
     keywords=[
         'spectroscopy', 
+        "EPR spectroscopy",
         'time-resolved electron paramagnetic resonance',
-        'trepr',
-        'data processing and analysis'
+        'data processing and analysis',
+        "reproducible science",
+        "reproducible research",
+        "good scientific practice",
+        "recipe-driven data analysis",
     ],
     classifiers=[
         'Programming Language :: Python :: 3',
@@ -54,5 +58,5 @@ setup(
         'dev': ['prospector'],
         'docs': ['sphinx', 'sphinx_rtd_theme'],
     },
-    python_requires='>=3.5',
+    python_requires='>=3.7',
 )

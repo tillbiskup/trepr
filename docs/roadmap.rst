@@ -16,6 +16,8 @@ For version 0.2
 
 * Implement Bruker BES3T importer/copy from cwepr package
 
+* Implement transient nutation analysis (FFT) (?)
+
 * Implement fsc2 importer (?)
 
 * Improve handling of reports
