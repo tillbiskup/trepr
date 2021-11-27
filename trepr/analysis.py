@@ -213,7 +213,7 @@ class BasicCharacteristics(aspecd.analysis.BasicCharacteristics):
 
         Additionally to those from
         :class:`aspecd.analysis.BasicCharacteristics`, the following
-        parameters are allowed
+        parameters are allowed:
 
         axis : :class:`int`
             Number of the axis to return the axes values or indices for.

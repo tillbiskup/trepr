@@ -490,13 +490,43 @@ class SinglePlotter2D(aspecd.plotting.SinglePlotter2D):
 
 
 class MultiPlotter1D(aspecd.plotting.MultiPlotter1D):
+    # noinspection PyUnresolvedReferences
     """1D plots of multiple datasets.
 
     Convenience class taking care of 1D plots of multiple datasets.
 
-    As the class is fully inherited from ASpecD for simple usage, see the
+    As the class is inherited from ASpecD for simple usage, see the
     ASpecD documentation of the :class:`aspecd.plotting.MultiPlotter1D`
-    class for details.
+    class for its general use.
+
+    Due to the need for displaying tr-EPR spectra, this class implements two
+    additional keys in the :attr:`parameters` attribute documented below.
+    This may be moved up to the parent class in ASpecD at some point.
+
+    Attributes
+    ----------
+    parameters : :class:`dict`
+        All parameters necessary for this step.
+
+        Additionally to those from :class:`aspecd.plotting.MultiPlotter1D`,
+        the following parameters are allowed:
+
+        switch_axes : :class:`bool`
+            Whether to switch *x* and *y* axes
+
+            Normally, the first axis is used as *x* axis, and the second
+            as *y* axis. Sometimes, switching this assignment is
+            necessary or convenient.
+
+            Default: False
+
+        tight: :class:`str`
+            Whether to set the axes limits tight to the data
+
+            Possible values: 'x', 'y', 'both'
+
+            Default: ''
+
 
     Examples
     --------
@@ -540,6 +570,69 @@ class MultiPlotter1D(aspecd.plotting.MultiPlotter1D):
         surrounding the values by quotation marks.
 
     """
+
+    def __init__(self):
+        super().__init__()
+        self.parameters['switch_axes'] = False
+        self.parameters['tight'] = ''
+
+    def _create_plot(self):
+        """Actual drawing of datasets."""
+        plot_function = getattr(self.axes, self.type)
+        self.drawings = []
+        for idx, dataset in enumerate(self.datasets):
+            if not self.properties.drawings[idx].label:
+                self.properties.drawings[idx].label = dataset.label
+            if self.parameters['switch_axes']:
+                drawing, = plot_function(
+                    dataset.data.data,
+                    dataset.data.axes[0].values,
+                    label=self.properties.drawings[idx].label)
+            else:
+                drawing, = plot_function(
+                    dataset.data.axes[0].values,
+                    dataset.data.data,
+                    label=self.properties.drawings[idx].label)
+            self.drawings.append(drawing)
+        if self.parameters['tight']:
+            if self.parameters['tight'] in ('x', 'both'):
+                if self.parameters['switch_axes']:
+                    self.axes.set_xlim([
+                        min([dataset.data.data.min() for dataset in
+                             self.datasets]),
+                        max([dataset.data.data.max() for dataset in
+                             self.datasets])
+                    ])
+                else:
+                    self.axes.set_xlim([
+                        min([dataset.data.axes[0].values.min() for dataset in
+                             self.datasets]),
+                        max([dataset.data.axes[0].values.max() for dataset in
+                             self.datasets])
+                    ])
+            if self.parameters['tight'] in ('y', 'both'):
+                if self.parameters['switch_axes']:
+                    self.axes.set_ylim([
+                        min([dataset.data.axes[0].values.min() for dataset in
+                             self.datasets]),
+                        max([dataset.data.axes[0].values.max() for dataset in
+                             self.datasets])
+                    ])
+                else:
+                    self.axes.set_ylim([
+                        min([dataset.data.data.min() for dataset in
+                             self.datasets]),
+                        max([dataset.data.data.max() for dataset in
+                             self.datasets])
+                    ])
+
+    def _set_axes_labels(self):
+        super(MultiPlotter1D, self)._set_axes_labels()
+        if self.parameters['switch_axes']:
+            old_xlabel = self.axes.get_xlabel()
+            old_ylabel = self.axes.get_ylabel()
+            self.axes.set_xlabel(old_ylabel)
+            self.axes.set_ylabel(old_xlabel)
 
 
 class MultiPlotter1DStacked(aspecd.plotting.MultiPlotter1DStacked):
