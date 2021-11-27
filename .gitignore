@@ -38,4 +38,4 @@ docs/.doctrees
 htmlcov/
 
 # For now, the examples folder
-examples/
+/examples/

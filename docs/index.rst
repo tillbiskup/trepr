@@ -155,6 +155,15 @@ The snake (a python) resembles the lines of a tr-EPR spectrum, most probably a l
 
 .. toctree::
    :maxdepth: 2
+   :caption: Examples:
+   :hidden:
+
+   examples/index
+   examples/list
+
+
+.. toctree::
+   :maxdepth: 2
    :caption: Developers:
    :hidden:
 
