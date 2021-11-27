@@ -18,8 +18,6 @@ For version 0.2
 
 * Implement transient nutation analysis (FFT) (?)
 
-* Implement fsc2 importer (?)
-
 * Improve handling of reports
 
 * Extend documentation (tr-EPR primer)

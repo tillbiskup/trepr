@@ -303,7 +303,7 @@ class BackgroundCorrection(aspecd.processing.SingleProcessingStep):
         # public properties:
         self.description = 'Background correction of 2D spectrum'
         self.undoable = True
-        self.parameters['num_profiles'] = [5, 5]
+        self.parameters['num_profiles'] = None
 
     @staticmethod
     def applicable(dataset):
@@ -327,10 +327,13 @@ class BackgroundCorrection(aspecd.processing.SingleProcessingStep):
 
     def _sanitise_parameters(self):
         if not isinstance(self.parameters['num_profiles'], list):
-            self.parameters['num_profiles'] = \
-                list(self.parameters['num_profiles'])
+            self.parameters['num_profiles'] = [self.parameters['num_profiles']]
         if len(self.parameters['num_profiles']) == 1:
             self.parameters['num_profiles'] = self.parameters['num_profiles'][0]
+
+    def _set_defaults(self):
+        self.parameters['num_profiles'] = \
+            self.parameters['num_profiles'] or [5, 5]
 
     def _perform_task(self):
         self._check_data_size()
@@ -354,7 +357,6 @@ class BackgroundCorrection(aspecd.processing.SingleProcessingStep):
             self._bg_corr_one_side()
 
     def _bg_corr_with_slope(self):
-        print("### From both sides")
         low = self.parameters['num_profiles'][0]
         high = abs(self.parameters['num_profiles'][1])
         lower_mean = np.mean(self.dataset.data.data[:low, :], axis=0)
@@ -372,7 +374,6 @@ class BackgroundCorrection(aspecd.processing.SingleProcessingStep):
             self._subtract_from_begin()
 
     def _subtract_from_end(self):
-        print("### From end")
         bg = np.mean(
             self.dataset.data.data[self.parameters['num_profiles']:, :],
             axis=0
@@ -380,7 +381,6 @@ class BackgroundCorrection(aspecd.processing.SingleProcessingStep):
         self.dataset.data.data -= bg
 
     def _subtract_from_begin(self):
-        print("### From begin")
         bg = np.mean(
             self.dataset.data.data[:self.parameters['num_profiles'], :],
             axis=0
