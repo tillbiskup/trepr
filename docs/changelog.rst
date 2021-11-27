@@ -13,6 +13,20 @@ Not yet released
 **Note:** Starting with this version, cwepr requires **Python >=3.7**
 
 
+New features
+------------
+
+* Importer for Berlin fsc2 format: :class:`trepr.io.Fsc2Importer`
+
+
+Fixes
+-----
+
+* :class:`trepr.processing.BackgroundCorrection` subtracts background
+* :class:`trepr.io.TezImporter` gets mapper from package data
+* :class:`trepr.io.DatasetImporterFactory` falls back to ASpecD-supported formats if no matching format is found.
+
+
 Version 0.1.0
 =============
 

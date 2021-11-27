@@ -17,7 +17,7 @@ specific dataset depending on the information provided (usually, a filename).
 Importers for specific file formats
 ===================================
 
-Currently, two file formats are supported by specific importers:
+Currently, the following importers for specific file formats are available:
 
 * :class:`SpeksimImporter`
 
@@ -38,6 +38,21 @@ Currently, two file formats are supported by specific importers:
   are contained in an XML file, while the numerical data are stored as IEEE
   754 standard binaries in separate files. The ASpecD dataset format (adf)
   is similar in some respect.
+
+  tez files usually carry ".tez" as file extension.
+
+* :class:`Fsc2Importer`
+
+  The fsc2 file format originates from the fsc2 spectrometer control
+  software developed by J. T. Törring at the FU Berlin and used in a number of
+  labs. For details of the software, `see the fsc2 homepage
+  <https://users.physik.fu-berlin.de/~jtt/fsc2.phtml>`_. As the actual
+  experiments are defined in the "Experiment Description Language" (EDL),
+  the importer necessarily makes a number of assumptions that work with
+  the particular set of data recorded at a given time at FU Berlin.
+
+  fsc2 files usually carry ".dat" as file extension, although they are bare
+  text files.
 
 
 Implementing importers for additional file formats is rather
@@ -68,8 +83,6 @@ import aspecd.metadata
 import aspecd.plotting
 import aspecd.utils
 
-import trepr.dataset
-
 
 class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
     """Factory for creating importer objects based on the source provided.
@@ -91,14 +104,42 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
 
     """
 
+    def __init__(self):
+        super().__init__()
+        self.supported_formats = {"Speksim": "",
+                                  "Tez": ".tez",
+                                  "Fsc2": ".dat"}
+        self.data_format = None
+
     def _get_importer(self):
         if os.path.isdir(self.source):
             return SpeksimImporter(source=self.source)
-        return TezImporter(source=self.source)
+        self._find_format()
+        importer = None
+        if self.data_format:
+            importer = aspecd.utils.object_from_class_name(
+                ".".join(["trepr", "io", self.data_format + "Importer"]))
+            importer.source = self.source
+        return importer
+
+    def _find_format(self):
+        _, extension = os.path.splitext(self.source)
+        if extension:
+            if extension in self.supported_formats.values():
+                self.data_format = self._format_from_extension(extension)
+        else:
+            for extension in [extension for extension in
+                              self.supported_formats.values() if extension]:
+                if os.path.isfile(self.source + extension):
+                    self.data_format = self._format_from_extension(extension)
+
+    def _format_from_extension(self, extension):
+        return list(self.supported_formats.keys())[list(
+            self.supported_formats.values()).index(extension)]
 
 
 class SpeksimImporter(aspecd.io.DatasetImporter):
-    """Import trepr raw data in Freiburg Speksim format including its metadata.
+    """Importer for data in Freiburg Speksim format including its metadata.
 
     Datasets in this format consist of several time traces, each of which is
     stored in a text file. In order to analyse the raw data, it is necessary
@@ -376,7 +417,7 @@ class TezImporter(aspecd.io.DatasetImporter):
             source = source[:-4]
         super().__init__(source=source)
         # public properties
-        self.tez_mapper_filename = 'tez_mapper.yaml'
+        self.tez_mapper_filename = 'trepr@tez_mapper.yaml'
         self.xml_dict = None
         self.dataset = None
         self.metadata_filename = ''
@@ -511,8 +552,8 @@ class TezImporter(aspecd.io.DatasetImporter):
 
     def _get_metadata_from_xml(self):
         mapping = aspecd.utils.Yaml()
-        rootpath = os.path.split(os.path.abspath(__file__))[0]
-        mapping.read_from(os.path.join(rootpath, self.tez_mapper_filename))
+        mapping.read_stream(
+            aspecd.utils.get_package_data(self.tez_mapper_filename).encode())
         metadata_dict = collections.OrderedDict()
         for key, subdict in mapping.dict.items():
             metadata_dict[key] = collections.OrderedDict()
@@ -596,12 +637,70 @@ class TezImporter(aspecd.io.DatasetImporter):
 
 
 class Fsc2Importer(aspecd.io.DatasetImporter):
+    """
+    Importer for data in Berlin fsc2 format.
+
+    These data have been recorded using the flexible fsc2 spectrometer
+    control software written by J. T. Törring, allowing to define user-specific
+    experiments. For details, `see the fsc2 homepage
+    <https://users.physik.fu-berlin.de/~jtt/fsc2.phtml>`_. As the actual
+    experiments are defined in the "Experiment Description Language" (EDL),
+    the importer necessarily makes a number of assumptions that work with
+    the particular set of data recorded at a given time at FU Berlin.
+
+    Key aspects of the data format are:
+
+    * The data files are bare text files (ASCII)
+
+    * The entire EDL program defining the experiment is contained in a header
+
+    * The header usually starts with ``%``
+
+    * The data are stored as ASCII numbers in one (very) long column.
+
+    * At the bottom of the header is a series of key-value pairs with
+      crucial metadata necessary to reshape the data and assign the axes.
+
+    The following strategy has been applied to reading the data:
+
+    * Read the header first, separately storing the key-value pairs at the end.
+
+    * Read the data using :func:`numpy.loadtxt`.
+
+    * Reshape the data according to the parameters read from the header.
+
+    Only those parameters that can definitely be obtained from the header
+    are stored within the metadata of the dataset. Note that using this
+    format by the authors predates the development of the info file format,
+    hence many parameters can only implicitly be guessed, as most of the
+    time no corresponding record of metadata exists.
+
+    .. note::
+
+        While it may seem strange to store the data as one long column,
+        this is actually a very robust way of storing data, as each
+        individual trace gets written to the file immediately after
+        obtaining the data from the transient recorder. Thus, even if
+        something crashed during a measurement (blackout, ...), all data up
+        to this event are usually retained.
+
+
+    .. versionadded:: 0.2
+
+    """
 
     def __init__(self, source=''):
         super().__init__(source=source)
         self._header = []
         self._parameters = dict()
         self._comment = []
+        self._devices = []
+        self._device_list = {
+            'tds520A': 'Tektronix TDS520A',
+            'bh15_fc': 'Bruker BH15',
+            'aeg_x_band': 'AEG Magnet Power Supply',
+            'er035m_s': 'Bruker ER 035 M',
+        }
 
     def _import(self):
         if not os.path.splitext(self.source)[1]:
@@ -614,21 +713,34 @@ class Fsc2Importer(aspecd.io.DatasetImporter):
         self._assign_time_axis()
         self._assign_intensity_axis()
 
+        # Metadata can only be assigned after the axes
         self._assign_metadata()
         self._assign_comment()
 
+    # pylint: disable=too-many-nested-blocks
     def _read_header(self):
+        """
+        fsc2 files start with a header containing the entire program.
+
+        The header is usually marked with ``%``, and at the end, after the
+        program, a series of key-value pairs are printed that are crucial to
+        reshape the data and assign the axes.
+
+        The list of parameters got extended over time, and the very end of
+        the header consists of comments the user can enter immediately
+        before starting the experiment.
+        """
         in_header = True
         parameter_line = False
         with open(self.source, 'r', encoding="utf8") as file:
             while in_header:
                 line = file.readline()
                 if line.startswith('%'):
-                    self._header.append(line.strip())
-                    if line.startswith('% Number of runs'):
+                    line = line.replace('%', '', 1).strip()
+                    self._header.append(line)
+                    if line.startswith('Number of runs'):
                         parameter_line = True
                     if parameter_line:
-                        line = line.replace('%', '', 1).strip()
                         if ' = ' in line:
                             key, value = line.split(' = ')
                             try:
@@ -643,71 +755,12 @@ class Fsc2Importer(aspecd.io.DatasetImporter):
                             self._comment.append(line)
                 else:
                     in_header = False
+        self._get_list_of_active_devices()
 
     def _load_and_assign_data(self):
         data = np.loadtxt(self.source, comments="% ")
         self.dataset.data.data = \
             data.reshape([-1, self._parameters['Number of points']])
-
-    def _assign_metadata(self):
-        # transient
-        self.dataset.metadata.transient.points = \
-            self._parameters['Number of points']
-        self.dataset.metadata.transient.trigger_position = \
-            self._parameters['Trigger position']
-        value, unit = self._parameters['Slice length'].split()
-        self.dataset.metadata.transient.length.value = float(value) * 1e-6
-        self.dataset.metadata.transient.length.unit = 's'
-
-        # experiment
-        self.dataset.metadata.experiment.runs = \
-            self._parameters['Number of runs']
-
-        # recorder
-        if 'Sensitivity' in self._parameters:
-            value, unit = self._parameters['Sensitivity'].split()
-            self.dataset.metadata.recorder.sensitivity.value = float(value)
-            self.dataset.metadata.recorder.sensitivity.unit = unit.split('/')[0]
-        if 'Time base' in self._parameters:
-            value, unit = self._parameters['Time base'].split()
-            self.dataset.metadata.recorder.time_base.value = float(value)
-            self.dataset.metadata.recorder.time_base.unit = unit.split('/')[0]
-        if 'Number of averages' in self._parameters:
-            self.dataset.metadata.recorder.averages = \
-                self._parameters['Number of averages']
-        self.dataset.metadata.recorder.pretrigger.value = \
-            np.abs(self.dataset.data.axes[1].values[0])
-        self.dataset.metadata.recorder.pretrigger.unit = \
-            self.dataset.data.axes[1].unit
-
-        # bridge
-        if 'MW frequency' in self._parameters:
-            value, unit = self._parameters['MW frequency'].split()
-            self.dataset.metadata.bridge.mw_frequency.value = float(value)
-            self.dataset.metadata.bridge.mw_frequency.unit = unit
-        if 'Attenuation' in self._parameters:
-            value, unit = self._parameters['Attenuation'].split()
-            self.dataset.metadata.bridge.attenuation.value = float(value)
-            self.dataset.metadata.bridge.attenuation.unit = unit
-
-        # temperature_control
-        if 'Temperature' in self._parameters:
-            value, unit = self._parameters['Temperature'].split()
-            self.dataset.metadata.temperature_control.temperature.value = \
-                float(value)
-            self.dataset.metadata.temperature_control.temperature.unit = unit
-
-        # pump
-        if 'Laser wavelength' in self._parameters:
-            wavelength, repetition_rate = \
-                self._parameters['Laser wavelength'].split(' (')
-            value, unit = wavelength.split()
-            self.dataset.metadata.pump.wavelength.value = float(value)
-            self.dataset.metadata.pump.wavelength.unit = unit
-            value, unit = repetition_rate.split()
-            self.dataset.metadata.pump.repetition_rate.value = float(value)
-            self.dataset.metadata.pump.repetition_rate.unit = \
-                unit.replace(')', '')
 
     def _assign_field_axis(self):
         field_start = float(self._parameters['Start field'].split(' ')[0]) / 10
@@ -735,8 +788,118 @@ class Fsc2Importer(aspecd.io.DatasetImporter):
         self.dataset.data.axes[2].quantity = 'intensity'
         self.dataset.data.axes[2].unit = 'V'
 
+    def _assign_metadata(self):
+        """
+        Assign as many metadata as sensibly possible.
+
+        Admittedly, this is currently pretty much hand-coding. For sure,
+        there are more elegant ways to do it.
+        """
+        self._assign_transient_metadata()
+        self._assign_recorder_metadata()
+        self._assign_bridge_metadata()
+        self._assign_temperature_control_metadata()
+        self._assign_pump_metadata()
+        self._assign_magnetic_field_metadata()
+        # Needs to be done after assigning pump metadata
+        self._assign_experiment_metadata()
+
+    def _assign_transient_metadata(self):
+        self.dataset.metadata.transient.points = \
+            self._parameters['Number of points']
+        self.dataset.metadata.transient.trigger_position = \
+            self._parameters['Trigger position']
+        value, _ = self._parameters['Slice length'].split()
+        self.dataset.metadata.transient.length.value = float(value) * 1e-6
+        self.dataset.metadata.transient.length.unit = 's'
+
+    def _assign_recorder_metadata(self):
+        if 'Sensitivity' in self._parameters:
+            self._assign_value_unit('Sensitivity',
+                                    self.dataset.metadata.recorder.sensitivity)
+        if 'Time base' in self._parameters:
+            self._assign_value_unit('Time base',
+                                    self.dataset.metadata.recorder.time_base)
+        if 'Number of averages' in self._parameters:
+            self.dataset.metadata.recorder.averages = \
+                self._parameters['Number of averages']
+        self.dataset.metadata.recorder.pretrigger.value = \
+            np.abs(self.dataset.data.axes[1].values[0])
+        self.dataset.metadata.recorder.pretrigger.unit = \
+            self.dataset.data.axes[1].unit
+        if 'tds520A' in self._devices:
+            self.dataset.metadata.recorder.model = self._device_list['tds520A']
+
+    def _assign_bridge_metadata(self):
+        if 'MW frequency' in self._parameters:
+            self._assign_value_unit('MW frequency',
+                                    self.dataset.metadata.bridge.mw_frequency)
+        if 'Attenuation' in self._parameters:
+            self._assign_value_unit('Attenuation',
+                                    self.dataset.metadata.bridge.attenuation)
+
+    def _assign_temperature_control_metadata(self):
+        if 'Temperature' in self._parameters:
+            self._assign_value_unit(
+                'Temperature',
+                self.dataset.metadata.temperature_control.temperature)
+
+    def _assign_pump_metadata(self):
+        if 'Laser wavelength' in self._parameters:
+            wavelength, repetition_rate = \
+                self._parameters['Laser wavelength'].split(' (')
+            value, unit = wavelength.split()
+            self.dataset.metadata.pump.wavelength.value = float(value)
+            self.dataset.metadata.pump.wavelength.unit = unit
+            value, unit = repetition_rate.split()
+            self.dataset.metadata.pump.repetition_rate.value = float(value)
+            self.dataset.metadata.pump.repetition_rate.unit = \
+                unit.replace(')', '')
+
+    def _assign_magnetic_field_metadata(self):
+        if 'bh15_fc' in self._devices:
+            self.dataset.metadata.magnetic_field.controller = \
+                self._device_list['bh15_fc']
+            self.dataset.metadata.magnetic_field.power_supply = \
+                self._device_list['bh15_fc']
+            self.dataset.metadata.magnetic_field.field_probe_model = \
+                self._device_list['bh15_fc']
+            self.dataset.metadata.magnetic_field.field_probe_type = 'Hall probe'
+        if 'aeg_x_band' in self._devices:
+            self.dataset.metadata.magnetic_field.controller = 'home-built'
+            self.dataset.metadata.magnetic_field.power_supply = \
+                self._device_list['aeg_x_band']
+        if 'er035m_s' in self._devices:
+            self.dataset.metadata.magnetic_field.field_probe_model = \
+                self._device_list['er035m_s']
+            self.dataset.metadata.magnetic_field.field_probe_type = \
+                'NMR Gaussmeter'
+
+    def _assign_experiment_metadata(self):
+        self.dataset.metadata.experiment.runs = \
+            self._parameters['Number of runs']
+        self.dataset.metadata.experiment.shot_repetition_rate = \
+            self.dataset.metadata.pump.repetition_rate
+
     def _assign_comment(self):
         if self._comment:
             comment = aspecd.annotation.Comment()
             comment.content = ' '.join(self._comment)
             self.dataset.annotate(comment)
+
+    def _assign_value_unit(self, parameter='', metadata=None):
+        value, unit = self._parameters[parameter].split()
+        metadata.value = float(value)
+        metadata.unit = unit.split('/')[0]
+
+    def _get_list_of_active_devices(self):
+        in_devices = False
+        for line in self._header:
+            if 'DEVICES:' in line:
+                in_devices = True
+                continue
+            if 'VARIABLES:' in line:
+                break
+            if in_devices and line and not line.startswith('//'):
+                device = line.split()[0].replace(';', '').strip()
+                self._devices.append(device)

@@ -11,6 +11,39 @@ import trepr.dataset
 ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 
 
+class TestDatasetImporterFactory(unittest.TestCase):
+    def setUp(self):
+        self.factory = trepr.io.DatasetImporterFactory()
+
+    def test_instantiate_class(self):
+        pass
+
+    def test_with_directory_returns_speksim_importer(self):
+        source = os.path.join(ROOTPATH, 'testdata', 'speksim')
+        importer = self.factory.get_importer(source=source)
+        self.assertIsInstance(importer, trepr.io.SpeksimImporter)
+
+    def test_with_tez_extension_returns_tez_importer(self):
+        source = 'test.tez'
+        importer = self.factory.get_importer(source=source)
+        self.assertIsInstance(importer, trepr.io.TezImporter)
+
+    def test_tez_file_without_extension_returns_tez_importer(self):
+        source = os.path.join(ROOTPATH, 'testdata', 'tez', 'pentacene')
+        importer = self.factory.get_importer(source=source)
+        self.assertIsInstance(importer, trepr.io.TezImporter)
+
+    def test_with_dat_extension_returns_fsc2_importer(self):
+        source = 'test.dat'
+        importer = self.factory.get_importer(source=source)
+        self.assertIsInstance(importer, trepr.io.Fsc2Importer)
+
+    def test_fsc2_file_without_extension_returns_fsc2_importer(self):
+        source = os.path.join(ROOTPATH, 'testdata', 'fsc2', 'P10test')
+        importer = self.factory.get_importer(source=source)
+        self.assertIsInstance(importer, trepr.io.Fsc2Importer)
+
+
 class TestSpeksimImporter(unittest.TestCase):
     def setUp(self):
         self.source = os.path.join(ROOTPATH, 'testdata', 'speksim')
@@ -348,3 +381,93 @@ class TestFsc2Importer(unittest.TestCase):
         self.assertEqual('nm', self.dataset.metadata.pump.wavelength.unit)
         self.assertEqual(10., self.dataset.metadata.pump.repetition_rate.value)
         self.assertEqual('Hz', self.dataset.metadata.pump.repetition_rate.unit)
+
+    def test_import_assigns_experiment_srt_metadata(self):
+        self.prepare_fsc2_file(length=30,
+                               header=['Number of runs      = 1',
+                                       'Start field         = 2700.00000 G',
+                                       'End field           = 4300.00000 G',
+                                       'MW frequency        = 9.75000000 GHz',
+                                       'Laser wavelength = 430.000000 nm ('
+                                       '10.0000000 Hz)',
+                                       'Number of points    = 10',
+                                       'Trigger position    = 1',
+                                       'Slice length        = 10.0000000 us',
+                                       f'Number of points   = 10'])
+        self.importer.source = self.datafile
+        self.dataset.import_from(self.importer)
+        self.assertEqual(
+            10., self.dataset.metadata.experiment.shot_repetition_rate.value)
+        self.assertEqual(
+            'Hz', self.dataset.metadata.experiment.shot_repetition_rate.unit)
+
+    def test_import_assigns_recorder_model_metadata(self):
+        self.prepare_fsc2_file(length=30,
+                               header=['DEVICES:',
+                                       'tds520A ;  // oscilloscope module',
+                                       'VARIABLES:',
+                                       '',
+                                       'Number of runs      = 1',
+                                       'Start field         = 2700.00000 G',
+                                       'End field           = 4300.00000 G',
+                                       'Number of points    = 10',
+                                       'Trigger position    = 1',
+                                       'Slice length        = 10.0000000 us',
+                                       f'Number of points   = 10'])
+        self.importer.source = self.datafile
+        self.dataset.import_from(self.importer)
+        self.assertEqual('Tektronix TDS520A',
+                         self.dataset.metadata.recorder.model)
+
+    def test_import_assigns_magnetic_field_devices_metadata(self):
+        self.prepare_fsc2_file(length=30,
+                               header=['DEVICES:',
+                                       'bh15_fc;        // magnet module',
+                                       'VARIABLES:',
+                                       '',
+                                       'Number of runs      = 1',
+                                       'Start field         = 2700.00000 G',
+                                       'End field           = 4300.00000 G',
+                                       'Number of points    = 10',
+                                       'Trigger position    = 1',
+                                       'Slice length        = 10.0000000 us',
+                                       f'Number of points   = 10'])
+        self.importer.source = self.datafile
+        self.dataset.import_from(self.importer)
+        self.assertEqual('Bruker BH15',
+                         self.dataset.metadata.magnetic_field.controller)
+        self.assertEqual('Bruker BH15',
+                         self.dataset.metadata.magnetic_field.power_supply)
+        self.assertEqual(
+            'Bruker BH15',
+            self.dataset.metadata.magnetic_field.field_probe_model)
+        self.assertEqual(
+            'Hall probe',
+            self.dataset.metadata.magnetic_field.field_probe_type)
+
+    def test_import_assigns_aeg_magnetic_field_devices_metadata(self):
+        self.prepare_fsc2_file(length=30,
+                               header=['DEVICES:',
+                                       'er035m_s;        // gaussmeter module',
+                                       'aeg_x_band;      // magnet module',
+                                       'VARIABLES:',
+                                       '',
+                                       'Number of runs      = 1',
+                                       'Start field         = 2700.00000 G',
+                                       'End field           = 4300.00000 G',
+                                       'Number of points    = 10',
+                                       'Trigger position    = 1',
+                                       'Slice length        = 10.0000000 us',
+                                       f'Number of points   = 10'])
+        self.importer.source = self.datafile
+        self.dataset.import_from(self.importer)
+        self.assertEqual('home-built',
+                         self.dataset.metadata.magnetic_field.controller)
+        self.assertEqual('AEG Magnet Power Supply',
+                         self.dataset.metadata.magnetic_field.power_supply)
+        self.assertEqual(
+            'Bruker ER 035 M',
+            self.dataset.metadata.magnetic_field.field_probe_model)
+        self.assertEqual(
+            'NMR Gaussmeter',
+            self.dataset.metadata.magnetic_field.field_probe_type)
