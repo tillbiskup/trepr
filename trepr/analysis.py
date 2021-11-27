@@ -76,6 +76,7 @@ class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
     @staticmethod
     def applicable(dataset):
         """Check whether processing step is applicable to the given dataset."""
+        # noinspection PyUnresolvedReferences
         return dataset.microwave_frequency.data.any()
 
     def _perform_task(self):
@@ -91,6 +92,7 @@ class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
         self._delta_mw_freq = max(self.dataset.microwave_frequency.data) - \
             min(self.dataset.microwave_frequency.data)
 
+    # noinspection PyPep8Naming
     def _convert_delta_mw_freq_to_delta_B0(self):  # noqa: N802
         """Calculate delta B0 by using the resonance condition."""
         electron_g_factor = scipy.constants.value('electron g factor')
@@ -105,6 +107,7 @@ class MwFreqAnalysis(aspecd.analysis.SingleAnalysisStep):
             self.dataset.microwave_frequency.axes[0].values[1] \
             - self.dataset.microwave_frequency.axes[0].values[0]
 
+    # noinspection PyPep8Naming
     def _compare_delta_B0_with_step_size(self):  # noqa: N802
         """Calculate the ratio between delta B0 and the step size."""
         self._ratio_frequency_drift_to_step_size = \
@@ -189,3 +192,47 @@ class TimeStampAnalysis(aspecd.analysis.SingleAnalysisStep):
         The result is assigned to :attr:`aspecd.analysis.AnalysisStep.result`.
         """
         self.result = {'time spent per time trace': self._time_stamp_datetimes}
+
+
+class BasicCharacteristics(aspecd.analysis.BasicCharacteristics):
+    # noinspection PyUnresolvedReferences
+    r"""
+    Extract basic characteristics of a dataset.
+
+    This class extends the ASpecD class by the possibility to return axes
+    values and indices for only one axis in case of *N*\ D datasets with *N*>1.
+
+    Currently a workaround, the functionality may move upwards in the ASpecD
+    framework eventually.
+
+
+    Attributes
+    ----------
+    parameters : :class:`dict`
+        All parameters necessary for this step.
+
+        Additionally to those from
+        :class:`aspecd.analysis.BasicCharacteristics`, the following
+        parameters are allowed
+
+        axis : :class:`int`
+            Number of the axis to return the axes values or indices for.
+
+
+    .. versionadded:: 0.2
+
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.parameters['axis'] = None
+
+    def _sanitise_parameters(self):
+        if self.parameters['axis'] > self.dataset.data.data.ndim - 1:
+            raise IndexError("Axis %i out of bounds" % self.parameters['axis'])
+
+    def _perform_task(self):
+        super()._perform_task()
+        if self.parameters['axis'] is not None \
+                and isinstance(self.result, list):
+            self.result = self.result[self.parameters['axis']]

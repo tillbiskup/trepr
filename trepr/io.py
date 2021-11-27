@@ -701,9 +701,11 @@ class Fsc2Importer(aspecd.io.DatasetImporter):
             'aeg_x_band': 'AEG Magnet Power Supply',
             'er035m_s': 'Bruker ER 035 M',
         }
+        self._orig_source = ''
 
     def _import(self):
         if not os.path.splitext(self.source)[1]:
+            self._orig_source = self.source
             self.source += '.dat'
 
         self._read_header()
@@ -716,6 +718,8 @@ class Fsc2Importer(aspecd.io.DatasetImporter):
         # Metadata can only be assigned after the axes
         self._assign_metadata()
         self._assign_comment()
+
+        self.source = self._orig_source or self.source
 
     # pylint: disable=too-many-nested-blocks
     def _read_header(self):

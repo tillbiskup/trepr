@@ -471,3 +471,7 @@ class TestFsc2Importer(unittest.TestCase):
         self.assertEqual(
             'NMR Gaussmeter',
             self.dataset.metadata.magnetic_field.field_probe_type)
+
+    def test_extension_does_not_get_added_to_dataset_id(self):
+        self.dataset.import_from(self.importer)
+        self.assertEqual(self.source, self.dataset.id)
