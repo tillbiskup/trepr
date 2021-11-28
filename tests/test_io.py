@@ -4,6 +4,7 @@ import shutil
 import unittest
 
 import numpy as np
+import aspecd.io
 
 import trepr.io
 import trepr.dataset
@@ -42,6 +43,11 @@ class TestDatasetImporterFactory(unittest.TestCase):
         source = os.path.join(ROOTPATH, 'testdata', 'fsc2', 'P10test')
         importer = self.factory.get_importer(source=source)
         self.assertIsInstance(importer, trepr.io.Fsc2Importer)
+
+    def test_with_adf_extension_returns_adf_importer(self):
+        source = 'test.adf'
+        importer = self.factory.get_importer(source=source)
+        self.assertIsInstance(importer, aspecd.io.AdfImporter)
 
 
 class TestSpeksimImporter(unittest.TestCase):

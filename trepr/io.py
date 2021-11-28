@@ -102,6 +102,16 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
     See the documentation of the :class:`aspecd.io.DatasetImporterFactory`
     base class for details.
 
+    Attributes
+    ----------
+    supported_formats : :class:`dict`
+        Dictionary who's keys correspond to the base name of the respective
+        importer (*i.e.*, without the suffix "Importer") and who's values are a
+        list of file extensions to detect the correct importer.
+
+    data_format : :class:`str`
+        Name of the format that has been detected.
+
     """
 
     def __init__(self):
