@@ -18,13 +18,13 @@ IRFMT	D
 XPTS	4096
 XMIN	0.000000
 XWID	16380.000000
-YPTS	21
-YMIN	3200.000000
-YWID	200.000000
+YPTS	101
+YMIN	3455.000000
+YWID	50.000000
 *
 *	Documentational Text:
 *
-TITL	'Pentacen transient'
+TITL	'Some radical pair'
 IRNAM	'Intensity'
 XNAM	'Time'
 YNAM	'Field'
@@ -37,8 +37,8 @@ YUNI	'G'
 #SPL	1.2 * STANDARD PARAMETER LAYER
 *
 OPER    johndoe
-DATE    12/02/13
-TIME    15:19:50
+DATE    12/04/13
+TIME    09:54:14
 CMNT    
 SAMP    
 SFOR    
@@ -48,12 +48,12 @@ OXS1    TADC
 AXS1    B0VL
 AXS2    NONE
 AXS3    
-MWPW    0.0006454
-A1CT    0.33
-B0VL    0.33
-A1SW    0.02
-MWFQ    9.722e+09
-AVGS    1
+MWPW    0.002026
+A1CT    0.348
+B0VL    0.3455
+A1SW    0.005
+MWFQ    9.766e+09
+AVGS    5
 *
 ************************************************************
 *
@@ -69,8 +69,8 @@ AcqFineTuning      Never
 AcqScanFTuning     Off
 AcqSliceFTuning    Off
 BridgeCalib        100.0
-Power              0.6454 mW
-PowerAtten         25.0 dB
+Power              2.026 mW
+PowerAtten         20.0 dB
 
 .DVC     endor, 1.0
 
@@ -96,19 +96,19 @@ SumAttenWidth      75.000 dB
 .DVC     fieldCtrl, 1.0
 
 AllegroMode        False
-CenterField        3300.00 G
+CenterField        3480.00 G
 Delay              0.0 s
 FieldFlyback       On
 FieldWait          Wait LED off
 GFactor            2.000000
 SetToSampleG       False
-StaticFieldMon     3180.000 G
+StaticFieldMon     3455.000 G
 SweepDirection     Up
-SweepWidth         200.0 G
+SweepWidth         50.0 G
 
 .DVC     freqCounter, 1.0
 
-FrequencyMon       9.722 GHz
+FrequencyMon       9.766 GHz
 QMonitBridge       On
 
 .DVC     ftBridge, 1.0
@@ -117,7 +117,7 @@ QMonitBridge       On
 .DVC     ftEpr, 1.0
 
 AutoTimeOut        True
-AveragesPerScan    15
+AveragesPerScan    100
 ELDORFreqStart     9.300000 GHz
 ELDORFreqWidth     0.700000 GHz
 FTAcqModeSlct      Run from PulseSPEL
@@ -141,7 +141,7 @@ d4   = 180000  ; delay after laser lamp trigger signal\n\
 \n\
 a    = 50      ; (RESERVED) number of transient averages (TRANS)\n\
 h    = 30      ; (CONVENTION) number of shots per point (INTG and SPT)\n\
-n    = 1       ; (CONVENTION) number of sweeps to accumulate \n\
+n    = 5       ; (CONVENTION) number of sweeps to accumulate \n\
 \n\
 srt  = 10000 * srtu ; (RESERVED) SRT - Shot Repetition Time (srtu=1.02 us)\n\
 \n\
@@ -162,7 +162,7 @@ PlsSPELPrgTxt      \
 ; SpecJet read-out with field sweep\n\
 ;\n\
 begin defs\n\
-  dim s[4096,21]               ; for first experiment\n\
+  dim s[4096,101]               ; for first experiment\n\
   dim1 s[4096,11]              ; for second experiment\n\
                                ; all s dims are:\n\
                                ;   x - npts of time axis\n\
@@ -265,19 +265,19 @@ ShotRepTime        10200.00 us
 ShotsPLoop         1
 SptProgress        100 %
 StochMode          False
-SweepsPExp         1
-TriggerTimeOut     10 s
+SweepsPExp         5
+TriggerTimeOut     11 s
 XAxisQuant         Time
 XSpecRes           4096
 YAxisQuant         Magnetic Field
-YSpecRes           21
+YSpecRes           101
 
 .DVC     recorder, 1.0
 
 BaselineCorr       Off
-NbScansAcc         1
-NbScansDone        1
-NbScansToDo        1
+NbScansAcc         5
+NbScansDone        5
+NbScansToDo        5
 ReplaceMode        Off
 SmoothMode         Auto
 SmoothPoints       1

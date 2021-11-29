@@ -149,10 +149,10 @@ class TestBackgroundCorrection(unittest.TestCase):
         self.assertAlmostEqual(0, self.dataset.data.data[0, 0])
         self.assertAlmostEqual(0, self.dataset.data.data[-1, 0], 2)
 
-    def test_perform_task_with_tuple(self):
+    def test_perform_task_with_list(self):
         self.create_dataset()
         self.dataset.data.data[-10:] += 2
-        self.processing.parameters['num_profiles'] = 5, 10
+        self.processing.parameters['num_profiles'] = [5, 10]
         self.dataset.process(self.processing)
         self.assertGreater(5.0, self.dataset.data.data[16, 0])
         self.assertAlmostEqual(0, self.dataset.data.data[0, 0])

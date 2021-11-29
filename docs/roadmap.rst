@@ -20,11 +20,11 @@ For version 0.2
 
 * Improve handling of reports
 
-* Extend documentation (tr-EPR primer)
-
 
 For later versions
 ==================
+
+* Extend documentation (tr-EPR primer)
 
 * Start to (re)implement functionality test-driven.
 
