@@ -9,7 +9,12 @@ trepr is a package for handling data obtained using time-resolved electron param
 
 What is even better: Actual data processing and analysis **no longer requires programming skills**, but is as simple as writing a text file summarising all the steps you want to have been performed on your dataset(s) in an organised way. Curious? Have a look at the following example::
 
-    default_package: trepr
+    format:
+      type: ASpecD recipe
+      version: '0.2'
+
+    settings:
+      default_package: trepr
 
     datasets:
       - /path/to/first/dataset
