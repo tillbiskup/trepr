@@ -16,6 +16,12 @@ For version 0.2
 
 * Implement Bruker BES3T importer/copy from cwepr package
 
+  * Needs at least some adjustments, as tr-EPR data are usually two-dimensional, but don't necessarily consist of additional file(s) for the axis
+
+* Processing step for setting the trigger point (necessary for BES3T data)
+
+* Analysis steps for MW frequency drift and measurement time: options to return dataset for further investigation
+
 * Implement transient nutation analysis (FFT) (?)
 
 * Improve handling of reports
