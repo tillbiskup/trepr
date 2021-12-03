@@ -1266,6 +1266,10 @@ class TriggerAutodetection(aspecd.processing.SingleProcessingStep):
       resulting in an absorptive signal or otherwise have an absorptive
       signal.
 
+    * The time trace needs to be recorded starting *before* the actual
+      laser flash and hence the signal raise. Currently, at least 50
+      points need to be recorded *before* the actual laser flash.
+
     * The trigger position is the position of the time trace where the
       signal (positively) deviates by a threshold from the value before.
 
@@ -1310,6 +1314,42 @@ class TriggerAutodetection(aspecd.processing.SingleProcessingStep):
     the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
     for how to make use of this class. The examples focus each on a single
     aspect.
+
+    Suppose you have recorded a tr-EPR dataset with a setup that does not
+    allow to set the trigger position to somewhere near the actual laser
+    flash. In this case, you will end up with a time axis starting at
+    zero. To perform steps such as pretrigger offset compensation (via
+    :class:`PretriggerOffetCompensation`), you need to set the trigger
+    position first. Automatically detecting the trigger position and
+    afterwards performing the routine processing steps for tr-EPR data may
+    look like this:
+
+    .. code-block:: yaml
+
+        - kind: processing
+          type: TriggerAutodetection
+        - kind: processing
+          type: PretriggerOffsetCompensation
+        - kind: processing
+          type: BackgroundCorrection
+        - kind: singleplot
+          type: SinglePlotter2D
+          properties:
+            filename: overview_poc_bgc.pdf
+
+    If you like to adjust parameters, simply provide them in the recipe:
+
+    .. code-block:: yaml
+
+        - kind: processing
+          type: TriggerAutodetection
+          properties:
+            parameters:
+              n_sigma: 3
+
+    In this case, the threshold would be set to 3 times the standard
+    deviation (sigma). Note that you are not limited to integer values,
+    but can give floats as well here.
 
 
     .. versionadded:: 0.2
