@@ -1217,3 +1217,139 @@ class Filter(aspecd.processing.SingleProcessingStep):
         filtered_data = np.array(np.convolve(self.dataset.data.data,
                                              filter_, mode='valid'))
         self.dataset.data.data = filtered_data[:-1]
+
+
+class TriggerAutodetection(aspecd.processing.SingleProcessingStep):
+    # noinspection PyUnresolvedReferences
+    """
+    Automatically detect trigger position for time axis.
+
+    Depending on the setup used for recording tr-EPR data, either the
+    trigger position (*i.e.* index of the zero value of the time axis) is
+    set directly in the transient recorder, or it is not set at all (in
+    case the start of recording data of the transient recorder can not be
+    set to times prior to the trigger pulse).
+
+    However, a valid trigger position is a prerequisite for pretrigger
+    offset compensation (via :class:`PregriggerOffsetCompensation`).
+    Therefore, in cases no pretrigger has been set, automatically
+    detecting this position would be helpful.
+
+    .. note::
+
+        Auto-detecting the trigger position depends on the statistics of
+        the time trace used. Hence the position will never be the same as
+        if you synchronise it to the laser pulse (or flash lamp trigger,
+        or else). Nevertheless, keep in mind that even in case of
+        triggering the transient recorder by the laser flash detected by a
+        fast photodiode, signal travel time within your cables will be in
+        the range of tens of nanoseconds (for both, the cable connecting
+        the photodiode with the recorder as well as for the signal path
+        within the EPR bridge). Therefore, trigger positions are always
+        somewhat arbitrary and can never be used to obtain accurate delays
+        between laser flash and raise/maximum of the tr-EPR signal.
+
+    .. important::
+
+        If you try to auto-detect the trigger position, do *not* perform a
+        background subtraction (via :class:`BackgroundCorrection`) before,
+        as this will remove the laser background signal used to
+        auto-detect the trigger position.
+
+    Notes
+    -----
+    Automatically detecting the trigger position relies on a number of
+    assumptions regarding the shape of a time trace and the underlying
+    statistics:
+
+    * The time trace should be dominated by the laser-induced background
+      resulting in an absorptive signal or otherwise have an absorptive
+      signal.
+
+    * The trigger position is the position of the time trace where the
+      signal (positively) deviates by a threshold from the value before.
+
+    In case of two-dimensional data, the first time trace will be used to
+    detect the trigger position.
+
+    The algorithm used for auto-detecting the trigger position works
+    basically as follows:
+
+    * Compute differences of adjacent points of the time trace
+
+    * Smooth the differences by applying a boxcar filter
+
+    * Obtain the first point where the difference is larger than a given
+      threshold
+
+    The window length used for smoothing is set to 1/20 of the length of
+    the time trace, and the threshold is computed as the standard
+    deviation of the first 50 points of the time trace multiplied by a
+    factor (``n_sigma``) that can be set (for details, see below).
+
+
+    Attributes
+    ----------
+    parameters : :class:`dict`
+        All parameters necessary for this step.
+
+        n_sigma : :class:`int` or :class:`float`
+            Threshold used to detect the raise of the signal.
+
+            The trigger position is detected by obtaining the first point
+            of the smoothed differences of the time trace whose value is
+            above a threshold. This threshold is calculated as *n* times
+            the standard deviation (sigma).
+
+            Default: 4
+
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. The examples focus each on a single
+    aspect.
+
+
+    .. versionadded:: 0.2
+
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.description = 'Autodetect trigger position'
+        self.parameters['n_sigma'] = 4
+
+    @staticmethod
+    def applicable(dataset):
+        """
+        Check whether the processing step is applicable to the dataset.
+
+        Trigger autodetection is only possible if the first axis (in case
+        of 1D data) or the second axis (in case of 2D data) is a time axis.
+        """
+        if len(dataset.data.axes) == 2:
+            answer = 'time' in dataset.data.axes[0].quantity
+        else:
+            answer = 'time' in dataset.data.axes[1].quantity
+        return answer
+
+    def _perform_task(self):
+        if len(self.dataset.data.axes) > 2:
+            time_trace = self.dataset.data.data[0, :]
+        else:
+            time_trace = self.dataset.data.data
+        smoothed_differences = np.convolve(np.diff(time_trace), np.ones(
+            int(len(time_trace) / 20)))
+        try:
+            threshold = np.std(smoothed_differences[0:50])\
+                        * self.parameters['n_sigma']
+            trigger_pos = \
+                np.where(smoothed_differences > threshold)[0][0]
+        except IndexError:
+            trigger_pos = 0
+        self.dataset.metadata.transient.trigger_position = trigger_pos
+        for axis in self.dataset.data.axes:
+            if 'time' in axis.quantity:
+                axis.values -= axis.values[trigger_pos]

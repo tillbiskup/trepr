@@ -21,6 +21,7 @@ New features
 * :class:`trepr.analysis.MWFrequencyValues` to extract microwave frequency values from a dataset as a new, calculated dataset (e.g., for graphical display)
 * :class:`trepr.analysis.MWFrequencyDrift` can return (calculated) datasets
 * :class:`trepr.analysis.TimeStampAnalysis` can return (calculated) datasets
+* :class:`trepr.processing.TriggerAutodetection` for automatically detecting the trigger position
 
 
 Changes
