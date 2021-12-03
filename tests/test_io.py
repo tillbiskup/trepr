@@ -1,6 +1,7 @@
 import collections
 import os
 import shutil
+import struct
 import unittest
 
 import numpy as np
@@ -48,6 +49,22 @@ class TestDatasetImporterFactory(unittest.TestCase):
         source = 'test.adf'
         importer = self.factory.get_importer(source=source)
         self.assertIsInstance(importer, aspecd.io.AdfImporter)
+
+    def test_with_dsc_extension_returns_bes3t_importer(self):
+        source = 'test.DSC'
+        importer = self.factory.get_importer(source=source)
+        self.assertIsInstance(importer, trepr.io.BES3TImporter)
+
+    def test_with_dta_extension_returns_bes3t_importer(self):
+        source = 'test.DTA'
+        importer = self.factory.get_importer(source=source)
+        self.assertIsInstance(importer, trepr.io.BES3TImporter)
+
+    def test_dsc_file_without_extension_returns_tez_importer(self):
+        source = os.path.join(ROOTPATH, 'testdata', 'BES3T',
+                              'pentacen-transient-field-vs-time')
+        importer = self.factory.get_importer(source=source)
+        self.assertIsInstance(importer, trepr.io.BES3TImporter)
 
 
 class TestSpeksimImporter(unittest.TestCase):
@@ -481,3 +498,320 @@ class TestFsc2Importer(unittest.TestCase):
     def test_extension_does_not_get_added_to_dataset_id(self):
         self.dataset.import_from(self.importer)
         self.assertEqual(self.source, self.dataset.id)
+
+
+class TestBES3TImporter(unittest.TestCase):
+    def setUp(self):
+        self.source = os.path.join(ROOTPATH, 'testdata', 'BES3T',
+                                   'pentacen-transient-field-vs-time')
+        self.importer = trepr.io.BES3TImporter(source=self.source)
+        self.dataset = trepr.dataset.ExperimentalDataset()
+        self.datafile = 'test.DTA'
+        self.descriptionfile = 'test.DSC'
+
+    def tearDown(self):
+        for filename in [self.datafile, self.descriptionfile]:
+            if os.path.exists(filename):
+                os.remove(filename)
+
+    def prepare_dsc_file(self, contents=None):
+        """
+        Prepare a file that looks like a Bruker BES3T description file.
+
+        ...
+        """
+        with open(self.descriptionfile, 'w', encoding='utf8') as file:
+            for line in contents:
+                file.write(line + '\n')
+
+    def test_importer(self):
+        self.dataset.import_from(self.importer)
+
+    def test_with_minimal_1D_file(self):
+        dsc_contents = [
+            '#DESC	1.2 * DESCRIPTOR INFORMATION ***********************',
+            '*',
+            'DSRC	EXP',
+            'BSEQ	BIG',
+            'IKKF	REAL',
+            'XTYP	IDX',
+            'YTYP	NODATA',
+            'ZTYP	NODATA',
+            'IRFMT	D',
+            'XPTS	4096',
+            'XMIN	3400.000000',
+            'XWID	100.000000',
+            "TITL	'Pentacen transient'",
+            "IRNAM	'Intensity'",
+            "XNAM	'Field'",
+            "IRUNI	''",
+            "XUNI	'G'",
+            "*",
+            "#SPL	1.2 * STANDARD PARAMETER LAYER",
+            "OPER    johndoe",
+            "DATE    12/02/13",
+            "TIME    15:19:50",
+            "CMNT    ",
+            "SAMP    ",
+            "SFOR    ",
+            "STAG    C",
+            "EXPT    PLS",
+            "OXS1    TADC",
+            "AXS1    B0VL",
+            "AXS2    NONE",
+            "AXS3    ",
+            "MWPW    0.0006454",
+            "A1CT    0.33",
+            "B0VL    0.33",
+            "A1SW    0.02",
+            "MWFQ    9.722e+09",
+            "AVGS    1",
+            "*",
+            "#DSL	1.0 * DEVICE SPECIFIC LAYER",
+        ]
+        self.prepare_dsc_file(contents=dsc_contents)
+        with open(self.datafile, 'w+') as file:
+            file.write('')
+        self.importer.source = self.descriptionfile
+        self.dataset.import_from(self.importer)
+        self.assertEqual('Pentacen transient', self.dataset.label)
+        self.assertAlmostEqual(9.722e9,
+                               self.dataset.metadata.bridge.mw_frequency.value)
+        self.assertAlmostEqual(0.0006454,
+                               self.dataset.metadata.bridge.power.value)
+        self.assertEqual(1, self.dataset.metadata.recorder.averages)
+
+    def test_data_real_big_double(self):
+        dsc_contents = [
+            '#DESC	1.2 * DESCRIPTOR INFORMATION ***********************',
+            '*',
+            'BSEQ	BIG',
+            'IKKF	REAL',
+            'XTYP	IDX',
+            'IRFMT	D',
+            'XPTS	10',
+            'XMIN	0.000000',
+            'XWID	100.000000',
+            "XNAM	'Field'",
+            "XUNI	'G'",
+            "IRNAM	'Intensity'",
+            "IRUNI	''",
+            "TITL	'Pentacen transient'",
+        ]
+        self.prepare_dsc_file(contents=dsc_contents)
+        data = list(np.arange(10))
+        with open(self.datafile, 'wb') as file:
+            for value in data:
+                file.write(struct.pack('>d', value))
+        self.importer.source = self.descriptionfile
+        self.dataset.import_from(self.importer)
+        self.assertListEqual(data, list(self.dataset.data.data))
+
+    def test_data_real_little_double(self):
+        dsc_contents = [
+            '#DESC	1.2 * DESCRIPTOR INFORMATION ***********************',
+            '*',
+            'BSEQ	LIT',
+            'IKKF	REAL',
+            'XTYP	IDX',
+            'IRFMT	D',
+            'XPTS	10',
+            'XMIN	0.000000',
+            'XWID	100.000000',
+            "XNAM	'Field'",
+            "XUNI	'G'",
+            "IRNAM	'Intensity'",
+            "IRUNI	''",
+            "TITL	'Pentacen transient'",
+        ]
+        self.prepare_dsc_file(contents=dsc_contents)
+        data = list(np.arange(10))
+        with open(self.datafile, 'wb') as file:
+            for value in data:
+                file.write(struct.pack('<d', value))
+        self.importer.source = self.descriptionfile
+        self.dataset.import_from(self.importer)
+        self.assertListEqual(data, list(self.dataset.data.data))
+
+    def test_data_real_big_short(self):
+        dsc_contents = [
+            '#DESC	1.2 * DESCRIPTOR INFORMATION ***********************',
+            '*',
+            'BSEQ	BIG',
+            'IKKF	REAL',
+            'XTYP	IDX',
+            'IRFMT	S',
+            'XPTS	10',
+            'XMIN	0.000000',
+            'XWID	100.000000',
+            "XNAM	'Field'",
+            "XUNI	'G'",
+            "IRNAM	'Intensity'",
+            "IRUNI	''",
+            "TITL	'Pentacen transient'",
+        ]
+        self.prepare_dsc_file(contents=dsc_contents)
+        data = list(np.arange(10))
+        with open(self.datafile, 'wb') as file:
+            for value in data:
+                file.write(struct.pack('>h', value))
+        self.importer.source = self.descriptionfile
+        self.dataset.import_from(self.importer)
+        self.assertListEqual(data, list(self.dataset.data.data))
+
+    def test_data_real_big_int(self):
+        dsc_contents = [
+            '#DESC	1.2 * DESCRIPTOR INFORMATION ***********************',
+            '*',
+            'BSEQ	BIG',
+            'IKKF	REAL',
+            'XTYP	IDX',
+            'IRFMT	I',
+            'XPTS	10',
+            'XMIN	0.000000',
+            'XWID	100.000000',
+            "XNAM	'Field'",
+            "XUNI	'G'",
+            "IRNAM	'Intensity'",
+            "IRUNI	''",
+            "TITL	'Pentacen transient'",
+        ]
+        self.prepare_dsc_file(contents=dsc_contents)
+        data = list(np.arange(10))
+        with open(self.datafile, 'wb') as file:
+            for value in data:
+                file.write(struct.pack('>i', value))
+        self.importer.source = self.descriptionfile
+        self.dataset.import_from(self.importer)
+        self.assertListEqual(data, list(self.dataset.data.data))
+
+    def test_data_real_big_float(self):
+        dsc_contents = [
+            '#DESC	1.2 * DESCRIPTOR INFORMATION ***********************',
+            '*',
+            'BSEQ	BIG',
+            'IKKF	REAL',
+            'XTYP	IDX',
+            'IRFMT	F',
+            'XPTS	10',
+            'XMIN	0.000000',
+            'XWID	100.000000',
+            "XNAM	'Field'",
+            "XUNI	'G'",
+            "IRNAM	'Intensity'",
+            "IRUNI	''",
+            "TITL	'Pentacen transient'",
+        ]
+        self.prepare_dsc_file(contents=dsc_contents)
+        data = list(np.arange(10))
+        with open(self.datafile, 'wb') as file:
+            for value in data:
+                file.write(struct.pack('>f', value))
+        self.importer.source = self.descriptionfile
+        self.dataset.import_from(self.importer)
+        self.assertListEqual(data, list(self.dataset.data.data))
+
+    def test_2d_data_get_reshaped(self):
+        dsc_contents = [
+            '#DESC	1.2 * DESCRIPTOR INFORMATION ***********************',
+            '*',
+            'BSEQ	BIG',
+            'IKKF	REAL',
+            'XTYP	IDX',
+            'YTYP	IDX',
+            'IRFMT	D',
+            'XPTS	5',
+            'XMIN    3200.000000',
+            'XWID    200.000000',
+            "XNAM	'Field'",
+            "XUNI	'G'",
+            'YPTS    2',
+            'YMIN	0.000000',
+            'YWID	100.000000',
+            "YNAM	'Time'",
+            "YUNI	'ns'",
+            "IRNAM	'Intensity'",
+            "IRUNI	''",
+            "TITL	'Pentacen transient'",
+        ]
+        self.prepare_dsc_file(contents=dsc_contents)
+        data = list(np.arange(10))
+        with open(self.datafile, 'wb') as file:
+            for value in data:
+                file.write(struct.pack('>d', value))
+        self.importer.source = self.descriptionfile
+        self.dataset.import_from(self.importer)
+        self.assertEqual((5, 2), self.dataset.data.data.shape)
+
+    def test_2d_data_with_time_axis_first_get_transposed(self):
+        dsc_contents = [
+            '#DESC	1.2 * DESCRIPTOR INFORMATION ***********************',
+            '*',
+            'BSEQ	BIG',
+            'IKKF	REAL',
+            'XTYP	IDX',
+            'YTYP	IDX',
+            'IRFMT	D',
+            'XPTS	5',
+            'XMIN	0.000000',
+            'XWID	100.000000',
+            "XNAM	'Time'",
+            "XUNI	'ns'",
+            'YPTS    2',
+            'YMIN    3200.000000',
+            'YWID    200.000000',
+            "YNAM	'Field'",
+            "YUNI	'G'",
+            "IRNAM	'Intensity'",
+            "IRUNI	''",
+            "TITL	'Pentacen transient'",
+        ]
+        self.prepare_dsc_file(contents=dsc_contents)
+        data = list(np.arange(10))
+        with open(self.datafile, 'wb') as file:
+            for value in data:
+                file.write(struct.pack('>d', value))
+        self.importer.source = self.descriptionfile
+        self.dataset.import_from(self.importer)
+        self.assertEqual((2, 5), self.dataset.data.data.shape)
+
+    def test_2d_data_with_time_axis_first_assigns_axes(self):
+        dsc_contents = [
+            '#DESC	1.2 * DESCRIPTOR INFORMATION ***********************',
+            '*',
+            'BSEQ	BIG',
+            'IKKF	REAL',
+            'XTYP	IDX',
+            'YTYP	IDX',
+            'IRFMT	D',
+            'XPTS	5',
+            'XMIN	0.000000',
+            'XWID	10000.000000',
+            "XNAM	'Time'",
+            "XUNI	'ns'",
+            'YPTS    2',
+            'YMIN    3200.000000',
+            'YWID    200.000000',
+            "YNAM	'Field'",
+            "YUNI	'G'",
+            "IRNAM	'Intensity'",
+            "IRUNI	''",
+            "TITL	'Pentacen transient'",
+        ]
+        self.prepare_dsc_file(contents=dsc_contents)
+        data = list(np.arange(10))
+        with open(self.datafile, 'wb') as file:
+            for value in data:
+                file.write(struct.pack('>d', value))
+        self.importer.source = self.descriptionfile
+        self.dataset.import_from(self.importer)
+        self.assertListEqual([320., 340.],
+                             list(self.dataset.data.axes[0].values))
+        self.assertListEqual([0, 2.5e-6, 5.0e-6, 7.5e-6, 10.0e-6],
+                             list(self.dataset.data.axes[1].values))
+        self.assertEqual('magnetic field', self.dataset.data.axes[0].quantity)
+        self.assertEqual('mT', self.dataset.data.axes[0].unit)
+        self.assertEqual('time', self.dataset.data.axes[1].quantity)
+        self.assertEqual('s', self.dataset.data.axes[1].unit)
+        self.assertEqual('intensity', self.dataset.data.axes[-1].quantity)
+        self.assertEqual('', self.dataset.data.axes[-1].unit)

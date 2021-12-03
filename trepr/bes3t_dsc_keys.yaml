@@ -1,0 +1,7 @@
+bridge:
+  mw_frequency:
+    value: MWFQ
+  power:
+    value: MWPW
+recorder:
+  averages: AVGS

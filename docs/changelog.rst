@@ -17,8 +17,10 @@ New features
 ------------
 
 * Importer for Berlin fsc2 format: :class:`trepr.io.Fsc2Importer`
+* Importer for Bruker BES3T format: :class:`trepr.io.BES3TImporter`
 * :class:`trepr.analysis.MWFrequencyValues` to extract microwave frequency values from a dataset as a new, calculated dataset (e.g., for graphical display)
 * :class:`trepr.analysis.MWFrequencyDrift` can return (calculated) datasets
+* :class:`trepr.analysis.TimeStampAnalysis` can return (calculated) datasets
 
 
 Changes

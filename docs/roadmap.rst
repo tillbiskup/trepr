@@ -8,10 +8,6 @@ A few ideas how to develop the project further, currently a list as a reminder f
 For version 0.2
 ===============
 
-* Implement Bruker BES3T importer/copy from cwepr package
-
-  * Needs at least some adjustments, as tr-EPR data are usually two-dimensional, but don't necessarily consist of additional file(s) for the axis
-
 * Processing step for setting the trigger point (necessary for BES3T data)
 
 * Implement transient nutation analysis (FFT) (?)
@@ -21,6 +17,11 @@ For version 0.2
 
 For later versions
 ==================
+
+* Extend Bruker BES3T importer
+
+  * complex data
+  * additional axes values data files
 
 * Extend documentation (tr-EPR primer)
 

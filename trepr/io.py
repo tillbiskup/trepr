@@ -116,9 +116,11 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
 
     def __init__(self):
         super().__init__()
-        self.supported_formats = {"Speksim": "",
-                                  "Tez": ".tez",
-                                  "Fsc2": ".dat"}
+        self.supported_formats = {"": "Speksim",
+                                  ".tez": "Tez",
+                                  ".dat": "Fsc2",
+                                  ".DSC": 'BES3T',
+                                  ".DTA": 'BES3T'}
         self.data_format = None
 
     def _get_importer(self):
@@ -135,17 +137,17 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
     def _find_format(self):
         _, extension = os.path.splitext(self.source)
         if extension:
-            if extension in self.supported_formats.values():
+            if extension in self.supported_formats.keys():
                 self.data_format = self._format_from_extension(extension)
         else:
             for extension in [extension for extension in
-                              self.supported_formats.values() if extension]:
+                              self.supported_formats if extension]:
                 if os.path.isfile(self.source + extension):
                     self.data_format = self._format_from_extension(extension)
 
     def _format_from_extension(self, extension):
-        return list(self.supported_formats.keys())[list(
-            self.supported_formats.values()).index(extension)]
+        return list(self.supported_formats.values())[list(
+            self.supported_formats.keys()).index(extension)]
 
 
 class SpeksimImporter(aspecd.io.DatasetImporter):
@@ -917,3 +919,140 @@ class Fsc2Importer(aspecd.io.DatasetImporter):
             if in_devices and line and not line.startswith('//'):
                 device = line.split()[0].replace(';', '').strip()
                 self._devices.append(device)
+
+
+class BES3TImporter(aspecd.io.DatasetImporter):
+    """
+    Importer for data in Bruker BES3T format.
+
+    The Bruker BES3T format consists of at least two files, a data file with
+    extension "DTA" and a descriptor file with extension "DSC". In case of
+    multidimensional data, additional data files may be written (e.g.
+    with extension ".YGF"), similarly to the case where the X axis is not
+    equidistant (at least the BES3T specification allows this situation).
+
+    This importer currently only supports a smaller subset of the
+    specification, *e.g.* only data without additional axes data files and
+    only real values. This may, however, change in the future.
+
+    .. versionadded:: 0.2
+
+    """
+
+    def __init__(self, source=None):
+        super().__init__(source=source)
+        self._orig_source = ''
+        self._dsc_keys = dict()
+        self._mapper_filename = 'bes3t_dsc_keys.yaml'
+
+    def _import(self):
+        base_file, extension = os.path.splitext(self.source)
+        if extension:
+            self._orig_source = self.source
+            self.source = base_file
+
+        self._read_dsc_file()
+        self._map_dsc_file()
+        self._read_dta_file()
+        self._assign_axes()
+
+        self.source = self._orig_source or self.source
+
+    def _read_dsc_file(self):  # noqa: MC0001
+        with open(self.source + '.DSC', 'r', encoding='utf8') as file:
+            file_contents = file.readlines()
+        block = ''
+        for line in file_contents:
+            if '*' in line:
+                line, _ = line.split('*', maxsplit=1)
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith('#'):
+                block, _ = line[1:].split()
+                continue
+            if block and block in ['DESC', 'SPL']:
+                try:
+                    key, value = line.split(maxsplit=1)
+                    value = value.replace("'", "")
+                    try:
+                        if '.' in value:
+                            value = float(value)
+                        else:
+                            value = int(value)
+                    except ValueError:
+                        pass
+                except ValueError:
+                    key = line.split(maxsplit=1)[0]
+                    value = None
+                self._dsc_keys[key] = value
+
+    def _map_dsc_file(self):
+        yaml_file = aspecd.utils.Yaml()
+        yaml_file.read_stream(aspecd.utils.get_package_data(
+            'trepr@' + self._mapper_filename).encode())
+        metadata_dict = {}
+        metadata_dict = self._traverse(yaml_file.dict, metadata_dict)
+        self.dataset.metadata.from_dict(metadata_dict)
+        self.dataset.label = self._dsc_keys['TITL']
+
+    def _traverse(self, dict_, metadata_dict):
+        for key, value in dict_.items():
+            if isinstance(value, dict):
+                metadata_dict[key] = {}
+                self._traverse(value, metadata_dict[key])
+            elif value in self._dsc_keys.keys():
+                metadata_dict[key] = self._dsc_keys[value]
+        return metadata_dict
+
+    def _read_dta_file(self):
+        filename = self.source + '.DTA'
+        byte_order = '>' if self._dsc_keys['BSEQ'] == 'BIG' else '<'
+        format_ = {
+            'S': 'h',
+            'I': 'i',
+            'F': 'f',
+            'D': 'd',
+        }
+        dtype = byte_order + format_[self._dsc_keys['IRFMT']]
+        self.dataset.data.data = np.fromfile(filename, dtype=dtype)
+        if 'YPTS' in self._dsc_keys and self._dsc_keys['YPTS']:
+            self.dataset.data.data = \
+                np.reshape(self.dataset.data.data,
+                           (-1, self._dsc_keys['XPTS'])).T
+        if self._dsc_keys['XNAM'].lower() == "time":
+            self.dataset.data.data = self.dataset.data.data.T
+
+    def _assign_axes(self):
+        yaxis = None
+        xaxis = np.linspace(self._dsc_keys['XMIN'],
+                            self._dsc_keys['XMIN'] + self._dsc_keys['XWID'],
+                            self._dsc_keys['XPTS'])
+        if 'YTYP' in self._dsc_keys and self._dsc_keys['YTYP'] == 'IDX':
+            yaxis = np.linspace(self._dsc_keys['YMIN'],
+                                self._dsc_keys['YMIN']
+                                + self._dsc_keys['YWID'],
+                                self._dsc_keys['YPTS'])
+        if 'XNAM' in self._dsc_keys \
+                and self._dsc_keys['XNAM'].lower() == "time":
+            self.dataset.data.axes[0].values = yaxis
+            self.dataset.data.axes[0].unit = self._dsc_keys['YUNI']
+            self.dataset.data.axes[1].values = xaxis
+            self.dataset.data.axes[1].unit = self._dsc_keys['XUNI']
+        else:
+            self.dataset.data.axes[0].values = xaxis
+            self.dataset.data.axes[0].unit = self._dsc_keys['XUNI']
+            if yaxis is not None:
+                self.dataset.data.axes[1].values = yaxis
+                self.dataset.data.axes[1].unit = self._dsc_keys['YUNI']
+        for axis in self.dataset.data.axes:
+            if axis.unit == 'G':
+                axis.values /= 10
+                axis.unit = 'mT'
+                axis.quantity = 'magnetic field'
+            if axis.unit == 'ns':
+                axis.values /= 1e9
+                axis.unit = 's'
+                axis.quantity = 'time'
+        self.dataset.data.axes[-1].quantity = self._dsc_keys['IRNAM'].lower()
+        self.dataset.data.axes[-1].unit = self._dsc_keys['IRUNI']
