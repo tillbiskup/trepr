@@ -14,8 +14,6 @@ For version 0.2
 
 * Processing step for setting the trigger point (necessary for BES3T data)
 
-* :class:`trepr.analysis.TimeStampAnalysis`: options to return dataset for further investigation
-
 * Implement transient nutation analysis (FFT) (?)
 
 * Improve handling of reports

@@ -1,6 +1,8 @@
+import datetime
 import os
 import unittest
 
+import aspecd.dataset
 import aspecd.exceptions
 import numpy as np
 
@@ -10,7 +12,7 @@ import trepr.dataset
 ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 
 
-class TestMwFreqAnalysis(unittest.TestCase):
+class TestMWFrequencyDrift(unittest.TestCase):
     def setUp(self):
         self.analysis = trepr.analysis.MWFrequencyDrift()
         source = os.path.join(ROOTPATH, 'testdata/speksim/')
@@ -78,7 +80,7 @@ class TestMwFreqAnalysis(unittest.TestCase):
         self.analysis.parameters['output'] = 'dataset'
         analysis = self.dataset.analyse(self.analysis)
         self.assertIsInstance(analysis.result,
-                              trepr.dataset.CalculatedDataset)
+                              aspecd.dataset.CalculatedDataset)
 
     def test_output_dataset_kind_drift_contains_field_drifts_as_data(self):
         dataset = trepr.dataset.ExperimentalDataset()
@@ -152,6 +154,202 @@ class TestTimeStampAnalysis(unittest.TestCase):
     def test_analysis(self):
         analysis = self.dataset.analyse(self.analysis)
         self.assertTrue(analysis.result)
+
+    def test_analyse_without_time_stamp_dataset_raises(self):
+        dataset = trepr.dataset.ExperimentalDataset()
+        with self.assertRaises(aspecd.exceptions.NotApplicableToDatasetError):
+            dataset.analyse(self.analysis)
+
+    def test_analyse_with_unknown_output_raises(self):
+        self.analysis.parameters["output"] = "foo"
+        with self.assertRaisesRegex(ValueError, "Unknown output type foo"):
+            self.dataset.analyse(self.analysis)
+
+    def test_analyse_with_unknown_kind_raises(self):
+        self.analysis.parameters["kind"] = "foo"
+        with self.assertRaisesRegex(ValueError, "Unknown kind foo"):
+            self.dataset.analyse(self.analysis)
+
+    def test_analyse_with_output_values_returns_list(self):
+        self.analysis.parameters['output'] = 'values'
+        analysis = self.dataset.analyse(self.analysis)
+        self.assertIsInstance(analysis.result, list)
+
+    def test_analyse_w_output_values_and_delta_returns_delta_in_seconds(self):
+        dataset = trepr.dataset.ExperimentalDataset()
+        dataset.time_stamp.data = np.asarray([
+            datetime.datetime.strptime('Mon Feb 11 16:21:01 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:11 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+        ])
+        self.analysis.parameters['output'] = 'values'
+        self.analysis.parameters['kind'] = 'delta'
+        analysis = dataset.analyse(self.analysis)
+        self.assertAlmostEqual(10, analysis.result[0], 2)
+
+    def test_analyse_w_output_values_delta_returns_only_positive_values(self):
+        dataset = trepr.dataset.ExperimentalDataset()
+        dataset.time_stamp.data = np.asarray([
+            datetime.datetime.strptime('Mon Feb 11 16:21:21 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:11 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+        ])
+        self.analysis.parameters['output'] = 'values'
+        self.analysis.parameters['kind'] = 'delta'
+        analysis = dataset.analyse(self.analysis)
+        self.assertAlmostEqual(10, analysis.result[0], 2)
+
+    def test_analyse_w_output_values_and_time_returns_times_in_seconds(self):
+        dataset = trepr.dataset.ExperimentalDataset()
+        dataset.time_stamp.data = np.asarray([
+            datetime.datetime.strptime('Mon Feb 11 16:21:01 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:11 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+        ])
+        self.analysis.parameters['output'] = 'values'
+        self.analysis.parameters['kind'] = 'time'
+        analysis = dataset.analyse(self.analysis)
+        self.assertListEqual([0, 10], analysis.result)
+
+    def test_analyse_w_output_values_time_returns_non_negative_values(self):
+        dataset = trepr.dataset.ExperimentalDataset()
+        dataset.time_stamp.data = np.asarray([
+            datetime.datetime.strptime('Mon Feb 11 16:21:21 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:11 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+        ])
+        self.analysis.parameters['output'] = 'values'
+        self.analysis.parameters['kind'] = 'time'
+        analysis = dataset.analyse(self.analysis)
+        self.assertTrue(all([value >= 0 for value in analysis.result]))
+
+    def test_analyse_with_output_dataset_returns_calculated_dataset(self):
+        self.analysis.parameters['output'] = 'dataset'
+        analysis = self.dataset.analyse(self.analysis)
+        self.assertIsInstance(analysis.result,
+                              aspecd.dataset.CalculatedDataset)
+
+    def test_output_dataset_with_delta_has_time_deltas_as_data(self):
+        dataset = trepr.dataset.ExperimentalDataset()
+        dataset.time_stamp.data = np.asarray([
+            datetime.datetime.strptime('Mon Feb 11 16:21:01 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:11 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:21 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+        ])
+        dataset.time_stamp.axes[0].values = \
+            np.asarray([345.0, 347.0, 349.0])
+        self.analysis.parameters['output'] = 'dataset'
+        self.analysis.parameters['kind'] = 'delta'
+        analysis = dataset.analyse(self.analysis)
+        self.assertAlmostEqual(10, analysis.result.data.data[0], 2)
+
+    def test_output_dataset_with_delta_has_field_axis_as_first_axis(self):
+        dataset = trepr.dataset.ExperimentalDataset()
+        dataset.time_stamp.data = np.asarray([
+            datetime.datetime.strptime('Mon Feb 11 16:21:01 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:11 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:21 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+        ])
+        dataset.time_stamp.axes[0].values = \
+            np.asarray([345.0, 347.0, 349.0])
+        dataset.time_stamp.axes[0].quantity = 'magnetic field'
+        dataset.time_stamp.axes[0].unit = 'mT'
+        self.analysis.parameters['output'] = 'dataset'
+        self.analysis.parameters['kind'] = 'delta'
+        analysis = dataset.analyse(self.analysis)
+        self.assertAlmostEqual(347.0,
+                               analysis.result.data.axes[0].values[0], 2)
+        self.assertEqual(dataset.time_stamp.axes[0].quantity,
+                         analysis.result.data.axes[0].quantity)
+        self.assertEqual(dataset.time_stamp.axes[0].unit,
+                         analysis.result.data.axes[0].unit)
+
+    def test_output_dataset_with_delta_has_correct_second_axis(self):
+        dataset = trepr.dataset.ExperimentalDataset()
+        dataset.time_stamp.data = np.asarray([
+            datetime.datetime.strptime('Mon Feb 11 16:21:01 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:11 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:21 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+        ])
+        dataset.time_stamp.axes[0].values = \
+            np.asarray([345.0, 347.0, 349.0])
+        self.analysis.parameters['output'] = 'dataset'
+        self.analysis.parameters['kind'] = 'delta'
+        analysis = dataset.analyse(self.analysis)
+        self.assertEqual('Delta time', analysis.result.data.axes[1].quantity)
+        self.assertEqual('s', analysis.result.data.axes[1].unit)
+
+    def test_output_dataset_with_time_has_time_as_data(self):
+        dataset = trepr.dataset.ExperimentalDataset()
+        dataset.time_stamp.data = np.asarray([
+            datetime.datetime.strptime('Mon Feb 11 16:21:01 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:11 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:21 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+        ])
+        dataset.time_stamp.axes[0].values = \
+            np.asarray([345.0, 347.0, 349.0])
+        self.analysis.parameters['output'] = 'dataset'
+        self.analysis.parameters['kind'] = 'time'
+        analysis = dataset.analyse(self.analysis)
+        self.assertListEqual([0, 10, 20], list(analysis.result.data.data))
+
+    def test_output_dataset_with_time_has_field_axis_as_first_axis(self):
+        dataset = trepr.dataset.ExperimentalDataset()
+        dataset.time_stamp.data = np.asarray([
+            datetime.datetime.strptime('Mon Feb 11 16:21:01 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:11 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:21 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+        ])
+        dataset.time_stamp.axes[0].values = \
+            np.asarray([345.0, 347.0, 349.0])
+        dataset.time_stamp.axes[0].quantity = 'magnetic field'
+        dataset.time_stamp.axes[0].unit = 'mT'
+        self.analysis.parameters['output'] = 'dataset'
+        self.analysis.parameters['kind'] = 'time'
+        analysis = dataset.analyse(self.analysis)
+        self.assertListEqual([345.0, 347.0, 349.0],
+                             list(analysis.result.data.axes[0].values))
+        self.assertEqual(dataset.time_stamp.axes[0].quantity,
+                         analysis.result.data.axes[0].quantity)
+        self.assertEqual(dataset.time_stamp.axes[0].unit,
+                         analysis.result.data.axes[0].unit)
+
+    def test_output_dataset_with_time_has_correct_second_axis(self):
+        dataset = trepr.dataset.ExperimentalDataset()
+        dataset.time_stamp.data = np.asarray([
+            datetime.datetime.strptime('Mon Feb 11 16:21:01 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:11 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+            datetime.datetime.strptime('Mon Feb 11 16:21:21 2013',
+                                       '%a %b %d %H:%M:%S %Y'),
+        ])
+        dataset.time_stamp.axes[0].values = \
+            np.asarray([345.0, 347.0, 349.0])
+        self.analysis.parameters['output'] = 'dataset'
+        self.analysis.parameters['kind'] = 'time'
+        analysis = dataset.analyse(self.analysis)
+        self.assertEqual('time', analysis.result.data.axes[1].quantity)
+        self.assertEqual('s', analysis.result.data.axes[1].unit)
 
 
 class TestBasicCharacteristics(unittest.TestCase):

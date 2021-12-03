@@ -29,10 +29,40 @@ provided are fully self-documenting, i.e. they add all necessary information
 to reproduce each analysis step to the :attr:`aspecd.dataset.Dataset.history`
 attribute of the dataset.
 
-"""
 
-import datetime
-import matplotlib.dates as mdates
+Concrete analysis steps
+=======================
+
+Due to inheritance from the :mod:`aspecd.analysis` module all analysis
+steps defined there are available from within the trepr package.
+Furthermore, a number of **analysis steps specific for tr-EPR spectroscopy**
+have been implemented here:
+
+* :class:`MWFrequencyDrift`
+
+  Calculate the frequency drift and compare it with the step size.
+
+* :class:`MWFrequencyValues`
+
+  Extract microwave frequency values recorded for each time trace.
+
+* :class:`TimeStampAnalysis`
+
+  Calculate the time spent for recording each time trace.
+
+
+And the following classes have been extended with respect to the
+functionality available from the ASpecD classes:
+
+* :class:`BasicCharacteristics`
+
+  Extract basic characteristics of a dataset.
+
+
+Module documentation
+====================
+
+"""
 
 import numpy as np
 import scipy.constants
@@ -54,15 +84,17 @@ class MWFrequencyDrift(aspecd.analysis.SingleAnalysisStep):
     the frequency drift is converted into magnetic field units and can
     thus be compared to the step width of the magnetic field axis.
 
+    This requires the software used to record the tr-EPR data to save the
+    microwave frequency value for each individual time trace. As often,
+    tr-EPR spectra are recorded using individual software, this is merely a
+    design question of the program.
+
     Different outputs, *e.g.* a scalar value or a calculated dataset, are
     available, for details see below.
 
 
     Attributes
     ----------
-    description : str
-        Describes the aim of the class.
-
     parameters : :class:`dict`
         All parameters necessary for this step.
 
@@ -81,7 +113,7 @@ class MWFrequencyDrift(aspecd.analysis.SingleAnalysisStep):
             Default: "ratio"
 
         output : :class:`str`
-            Kind of output: value or dict
+            Kind of output: value, dict. or dataset
 
             Valid values are "value" (default), "dataset", and "dict".
             Usually, only values and datasets can be easily used within a
@@ -89,7 +121,7 @@ class MWFrequencyDrift(aspecd.analysis.SingleAnalysisStep):
 
             Default: "value"
 
-    result : :class:`float`, :class:`dict`, or :class:`trepr.dataset.CalculatedDataset`
+    result : :class:`float`, :class:`dict`, or :class:`aspecd.dataset.CalculatedDataset`
         Results of the microwave frequency drift analysis.
 
         Depending on the output option set via the "output" parameter,
@@ -100,6 +132,15 @@ class MWFrequencyDrift(aspecd.analysis.SingleAnalysisStep):
         In case of datasets, note that due to calculating a difference
         between microwave frequency points, the size of the data is -1
         compared to the size of the original microwave frequency values.
+
+
+    .. note::
+
+        If you set the output to "dataset", you will get a field axis with
+        values centred between the original field values, as the microwave
+        frequency drift analysis requires to calculate differences between
+        points, hence returning vectors with one element less than the
+        original vector.
 
 
     Examples
@@ -122,7 +163,6 @@ class MWFrequencyDrift(aspecd.analysis.SingleAnalysisStep):
             parameters:
               kind: drift
               output: dataset
-          apply_to: speksim/
           result: mwfreq-drift
 
         - kind: singleplot
@@ -151,7 +191,6 @@ class MWFrequencyDrift(aspecd.analysis.SingleAnalysisStep):
             parameters:
               kind: ratio
               output: dataset
-          apply_to: speksim/
           result: mwfreq-ratio
 
         - kind: singleplot
@@ -261,7 +300,7 @@ class MWFrequencyDrift(aspecd.analysis.SingleAnalysisStep):
             elif self.parameters['kind'] == 'drift':
                 self.result = self._delta_B0
         elif self.parameters['output'] == 'dataset':
-            self.result = trepr.dataset.CalculatedDataset()
+            self.result = self.create_dataset()
             self.result.data.data = self._GHz_to_mT(np.diff(
                 self.dataset.microwave_frequency.data))
             self.result.data.axes[0].quantity = \
@@ -286,22 +325,140 @@ class MWFrequencyDrift(aspecd.analysis.SingleAnalysisStep):
 
 
 class TimeStampAnalysis(aspecd.analysis.SingleAnalysisStep):
+    # noinspection PyUnresolvedReferences
     """
     Calculate the time spent for recording each time trace.
 
-    Can be helpful for debugging the spectrometer.
+    Can be helpful for debugging the spectrometer and for assessing
+    whether delays during data acquisition are responsible for artifacts
+    in a recorded dataset.
 
-    An example for using the time stamp analysis step may look like
-    this::
-
-        dataset_ = trepr.dataset.ExperimentalDataset()
-        analysis_step = TimeStampAnalysis()
-        dataset_.analyse(analysis_step)
+    This requires the software used to record the tr-EPR data to save the
+    time stamp for each individual time trace. As often, tr-EPR spectra
+    are recorded using individual software, this is merely a design
+    question of the program.
 
     Attributes
     ----------
-    description : str
-        Describes the aim of the class.
+    parameters : :class:`dict`
+        All parameters necessary for this step.
+
+        kind : :class:`str`
+            Kind of characteristic to extract from the data
+
+            Valid values are "delta" and "time".
+
+            In case of "delta", the time difference (delta) in seconds
+            between adjacent magnetic field points will be returned,
+            in case of "time", the time (in seconds) for each time trace
+            since start of the measurement will be returned.
+
+            Default: "delta"
+
+        output : :class:`str`
+            Kind of output: value, dict. or dataset
+
+            Valid values are "value" (default), "dataset", and "dict".
+            Usually, only values and datasets can be easily used within a
+            recipe.
+
+            Default: "value"
+
+    result : :class:`float`  or :class:`aspecd.dataset.CalculatedDataset`
+        Results of the microwave frequency drift analysis.
+
+        Depending on the output option set via the "output" parameter,
+        either a scalar value (ratio or drift), , a dict containing both
+        values, or a dataset containing either the ratios or the drifts as
+        function of the magnetic field.
+
+        In case of datasets, note that due to calculating a difference
+        between microwave frequency points, the size of the data is -1
+        compared to the size of the original microwave frequency values.
+
+
+    .. note::
+
+        If you set the output to "dataset" and the kind to "delta", you will
+        get a field axis with one value less than the original field axis,
+        as the analysis requires to calculate differences between points,
+        hence returning vectors with one element less than the original
+        vector.
+
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. The examples focus each on a single
+    aspect.
+
+    If you have recorded a dataset containing time stamps for each
+    individual time trace and are interested in the time spent between
+    adjacent magnetic field points, you can obtain a calculated dataset with
+    the values and plot the results:
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: TimeStampAnalysis
+          properties:
+            parameters:
+              kind: delta
+              output: dataset
+          result: time-delta
+
+        - kind: singleplot
+          type: SinglePlotter1D
+          properties:
+            parameters:
+              tight_layout: true
+            filename: time-delta.pdf
+          apply_to: time-delta
+
+
+    Please note that depending on the mode of measurement you will get
+    different times between adjacent field points. In case of a background
+    signal regularly recorded every *n*-th trace during measurement,
+    you will regularly see about twice the time spent, and if you do not
+    record linearly (up or down), but inward or outward with respect to
+    the magnetic field axis, this will be reflected in the time deltas as
+    well.
+
+    Sometimes you may be interested in the relative times rather than the
+    time deltas. This can be achieved similarly to the example above.
+    Simply change "kind" from "delta" to "time":
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: TimeStampAnalysis
+          properties:
+            parameters:
+              kind: time
+              output: dataset
+          result: time-values
+
+        - kind: singleplot
+          type: SinglePlotter1D
+          properties:
+            parameters:
+              tight_layout: true
+            properties:
+              drawing:
+                marker: '*'
+            filename: time-values.pdf
+          apply_to: time-values
+
+
+    To better see the individual time points, here, additional markers are
+    added to the plot. In case of outward measurement scheme, you will see a
+    v-shaped result.
+
+
+    .. versionchanged:: 0.2
+        New parameter ``output`` controlling output format. Returns time
+        deltas in seconds.
 
     """
 
@@ -309,53 +466,57 @@ class TimeStampAnalysis(aspecd.analysis.SingleAnalysisStep):
         super().__init__()
         # public properties
         self.description = 'Time stamp analysis.'
-        # protected properties
-        self._time_field_matrix = None
-        self._time_stamp_datetimes = list()
+        self.parameters['output'] = 'dataset'
+        self.parameters['kind'] = 'delta'
+
+    @staticmethod
+    def applicable(dataset):
+        """
+        Check whether the processing step is applicable to the given dataset.
+
+        To be able to perform a time stamp analysis, time stamps need to
+        be available for each individual time trace of the dataset.
+        """
+        # noinspection PyUnresolvedReferences
+        return dataset.time_stamp.data.any()
+
+    def _sanitise_parameters(self):
+        if self.parameters["output"] not in ['values', 'dataset']:
+            raise ValueError("Unknown output type %s"
+                             % self.parameters["output"])
+        if self.parameters["kind"] not in ['delta', 'time']:
+            raise ValueError("Unknown kind %s"
+                             % self.parameters["kind"])
 
     def _perform_task(self):
         """Perform all methods to do analysis."""
-        self._create_time_field_matrix()
-        self._calculate_time_stamp_delta()
-        self._write_result()
-
-    def _create_time_field_matrix(self):
-        """Create matrix with time stamps and corresponding field points."""
-        time_stamp_floats = np.zeros(0)
-        for time_stamp in self.dataset.time_stamp.data:
-            time_stamp_floats = \
-                np.append(time_stamp_floats, time_stamp.timestamp())
-        self._time_field_matrix = np.zeros((len(time_stamp_floats), 2))
-        self._time_field_matrix[:, 0] = time_stamp_floats
-        self._time_field_matrix[:, 1] = self.dataset.time_stamp.axes[0].values
-        self._time_field_matrix = \
-            self._time_field_matrix[self._time_field_matrix[:, 0].argsort()]
-        for time_stamp in self._time_field_matrix[:, 0]:
-            self._time_stamp_datetimes.append(
-                datetime.datetime.fromtimestamp(time_stamp))
-
-    def _calculate_time_stamp_delta(self):
-        """Calculate the time between the time stamps."""
-        zero = datetime.datetime(2018, 1, 1)
-        for i in range(len(self._time_stamp_datetimes) - 1):
-            self._time_stamp_datetimes[i] = \
-                self._time_stamp_datetimes[i + 1] - \
-                self._time_stamp_datetimes[i] + zero
-        del self._time_stamp_datetimes[-1]
-        zero = mdates.date2num(zero)
-        for i in range(len(self._time_stamp_datetimes)):
-            self._time_stamp_datetimes[i] = \
-                mdates.date2num(self._time_stamp_datetimes[i]) - zero
-        self._time_field_matrix = \
-            np.delete(self._time_field_matrix, -1, axis=0)
-
-    def _write_result(self):
-        """Assign result.
-
-        The result is assigned to :attr:`aspecd.analysis.AnalysisStep.result`.
-        """
-        self.result = {
-            'time spent per time trace': self._time_stamp_datetimes}
+        time_deltas = np.diff(self.dataset.time_stamp.data)
+        time_deltas_in_seconds = [abs(x.total_seconds()) for x in time_deltas]
+        times = [time.total_seconds() for time in
+                 self.dataset.time_stamp.data
+                 - min(self.dataset.time_stamp.data)]
+        if self.parameters['output'] == 'dataset':
+            self.result = self.create_dataset()
+            if self.parameters['kind'] == 'delta':
+                self.result.data.data = np.asarray(time_deltas_in_seconds)
+                self.result.data.axes[0].values = \
+                    self.dataset.time_stamp.axes[0].values[1:]
+                self.result.data.axes[1].quantity = 'Delta time'
+            elif self.parameters['kind'] == 'time':
+                self.result.data.data = np.asarray(times)
+                self.result.data.axes[0].values = \
+                    self.dataset.time_stamp.axes[0].values
+                self.result.data.axes[1].quantity = 'time'
+            self.result.data.axes[0].quantity = \
+                self.dataset.time_stamp.axes[0].quantity
+            self.result.data.axes[0].unit = \
+                self.dataset.time_stamp.axes[0].unit
+            self.result.data.axes[1].unit = 's'
+        else:
+            if self.parameters['kind'] == 'delta':
+                self.result = time_deltas_in_seconds
+            elif self.parameters['kind'] == 'time':
+                self.result = times
 
 
 class BasicCharacteristics(aspecd.analysis.BasicCharacteristics):
