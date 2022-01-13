@@ -66,6 +66,7 @@ Module documentation
 
 import numpy as np
 import scipy.constants
+from scipy.fft import rfft, rfftfreq
 
 import aspecd.analysis
 import aspecd.metadata
@@ -657,3 +658,133 @@ class MWFrequencyValues(aspecd.analysis.SingleAnalysisStep):
         self.result = trepr.dataset.CalculatedDataset()
         self.result.data.data = self.dataset.microwave_frequency.data
         self.result.data.axes = self.dataset.microwave_frequency.axes
+
+
+class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
+    # noinspection PyUnresolvedReferences
+    """
+    Perform FFT to extract transient nutation frequencies.
+
+    A tr-EPR time trace showing transient nutations can be described by a
+    zero-order Bessel function of first kind. Due to relaxation, the Bessel
+    function is damped with an exponential.
+
+    One way to extract the transient nutation frequencies is to perform a 1D
+    discrete Fourier transform (using the FFT algorithm) along the time
+    axis. In case of 2D datasets, this means to perform the FFT for each
+    time trace individually.
+
+    In any case, the analysis step will return a calculated dataset with the
+    data representing the FFT for all time traces.
+
+    In case the time trace has been recorded for negative times
+    (pre-trigger), the FFT will only be performed starting at *t* = 0.
+
+    Generally, if full time traces including the raising flank are analysed,
+    it is best to cut the time traces from the left up to the extremum
+    (maximum of the absolute value) to suppress low-frequency background of
+    the resulting FT. This is the default behaviour and can be controlled
+    using the ``start_in_extremum`` parameter (see below). In case of 2D
+    datasets, the global extremum will be used.
+
+    As a side note: An alternative way to analyse transient nutations would
+    be to fit a damped Bessel function of first kind to the data. Thus one
+    can extract both, frequency and relaxation rate directly from the data.
+
+
+    Attributes
+    ----------
+    parameters : :class:`dict`
+        All parameters necessary for this step.
+
+        start_in_extremum : :class:`bool`
+            Whether to cut the time trace(s) from the left at the extremum.
+
+            Extremum here means the maximum of the absolute values of the
+            data of the dataset.
+
+            Default: True
+
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. The examples focus each on a single
+    aspect.
+
+    In its simplest form, you just apply the analysis step to a dataset and
+    assign it to a result:
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: TransientNutationFFT
+          result: fft
+
+    To plot the data contained in the newly obtained calculated dataset,
+    simply proceed with a plotter of your choice (in this case for a 1D
+    dataset):
+
+    .. code-block:: yaml
+
+        - kind: singleplot
+          type: SinglePlotter1D
+          properties:
+            filename: fft.pdf
+          apply_to: fft
+
+
+    .. versionadded:: 0.2
+
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.description = \
+            'Perform FFT to extract transient nutation frequencies'
+        self.parameters['start_in_extremum'] = True
+
+    @staticmethod
+    def applicable(dataset):
+        """
+        Check whether the processing step is applicable to the given dataset.
+
+        To be able to analyse transient nutations, a time axis needs to be
+        present.
+        """
+        return any(['time' in axis.quantity for axis in dataset.data.axes])
+
+    def _perform_task(self):
+        self.result = self.create_dataset()
+
+        time_axis = 0
+        for idx, axis in enumerate(self.dataset.data.axes):
+            if 'time' in axis.quantity:
+                time_axis = idx
+
+        if self.parameters['start_in_extremum']:
+            cut_index = np.argmax(np.abs(self.dataset.data.data)) % \
+                        self.dataset.data.data.shape[time_axis]
+        else:
+            cut_index = np.argmin(np.abs(self.dataset.data.axes[
+                                             time_axis].values))
+
+        if self.dataset.data.data.ndim > 1:
+            yt = rfft(self.dataset.data.data[:, cut_index:], axis=time_axis)
+            xt = rfftfreq(
+                len(self.dataset.data.data[0, cut_index:]),
+                float(np.diff(self.dataset.data.axes[time_axis].values[-2:])))
+            self.result.data.data = np.abs(yt)
+            for idx in range(len(self.result.data.axes)):
+                if idx != time_axis:
+                    self.result.data.axes[idx] = self.dataset.data.axes[idx]
+        else:
+            xt = rfftfreq(
+                len(self.dataset.data.data[cut_index:]),
+                float(np.diff(self.dataset.data.axes[time_axis].values[-2:])))
+            yt = rfft(self.dataset.data.data[cut_index:])
+            self.result.data.data = np.abs(yt)
+        self.result.data.axes[time_axis].values = xt
+        self.result.data.axes[time_axis].quantity = 'frequency'
+        self.result.data.axes[time_axis].unit = 'Hz'

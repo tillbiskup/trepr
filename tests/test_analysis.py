@@ -5,6 +5,7 @@ import unittest
 import aspecd.dataset
 import aspecd.exceptions
 import numpy as np
+from scipy.fft import rfft, rfftfreq
 
 import trepr.analysis
 import trepr.dataset
@@ -434,3 +435,151 @@ class TestMWFrequencyValues(unittest.TestCase):
         analysis = self.dataset.analyse(self.analysis)
         self.assertEqual(self.dataset.microwave_frequency.axes[1],
                              analysis.result.data.axes[1])
+
+
+class TestTransientNutationFFT(unittest.TestCase):
+
+    def setUp(self):
+        self.analysis = trepr.analysis.TransientNutationFFT()
+        self.dataset = trepr.dataset.ExperimentalDataset()
+
+    def create_time_trace(self, raising_flank=True):
+        """
+        Create a time trace with an oscillation (transient nutation).
+
+        A tr-EPR time trace showing transient nutations can be described by a
+        zero-order Bessel function of first kind. Due to relaxation,
+        the Bessel function is damped with an exponential.
+
+        To add a raising flank to the time trace, the damped Bessel function
+        is convoluted with a Gaussian.
+        """
+        from scipy.special import j0
+
+        n_points = 1000
+
+        x = np.linspace(0, 10, n_points)
+        bessel = j0(x * 2 * np.pi)
+        time_trace = bessel * np.exp(-0.4 * x)
+
+        # Gaussian for convolution to get raising flank
+        x2 = np.linspace(-2, 2, int(n_points / 5))
+        amplitude = 1
+        position = 0
+        width = 2
+        gaussian = amplitude * np.exp(-(x2 - position)**2 / 2 * width**2)
+
+        if raising_flank:
+            time_trace = np.insert(time_trace, 0, np.zeros(int(n_points / 10)))
+            time_trace = np.convolve(time_trace, gaussian)
+            self.dataset.data.axes[0].values = \
+                np.linspace(-1, 9, n_points) * 1e-6
+        else:
+            self.dataset.data.axes[0].values = x * 1e-6
+
+        self.dataset.data.data = time_trace[:n_points]
+        self.dataset.data.axes[0].quantity = 'time'
+        self.dataset.data.axes[0].unit = 's'
+
+    def plot_1D(self, dataset=None):
+        import trepr.plotting
+        import matplotlib.pyplot as plt
+        plotter = trepr.plotting.SinglePlotter1D()
+        if dataset:
+            dataset.plot(plotter)
+        else:
+            self.dataset.plot(plotter)
+        plt.show()
+
+    def plot_2D(self, dataset=None):
+        import trepr.plotting
+        import matplotlib.pyplot as plt
+        plotter = trepr.plotting.SinglePlotter2D()
+        if dataset:
+            dataset.plot(plotter)
+        else:
+            self.dataset.plot(plotter)
+        plt.show()
+
+    def test_instantiate_class(self):
+        pass
+
+    def test_has_sensible_description(self):
+        self.assertIn('Perform FFT to extract transient nutation frequencies',
+                      self.analysis.description)
+
+    def test_requires_time_axis(self):
+        with self.assertRaises(
+                aspecd.exceptions.NotApplicableToDatasetError):
+            self.dataset.analyse(self.analysis)
+
+    def test_analysis_returns_calculated_dataset(self):
+        self.create_time_trace()
+        analysis = self.dataset.analyse(self.analysis)
+        self.assertIsInstance(analysis.result,
+                              aspecd.dataset.CalculatedDataset)
+
+    def test_axis_contains_frequencies(self):
+        self.create_time_trace(raising_flank=False)
+        analysis = self.dataset.analyse(self.analysis)
+
+        xt = rfftfreq(len(self.dataset.data.data),
+                      float(np.diff(self.dataset.data.axes[0].values[-2:])))
+        self.assertListEqual(list(xt),
+                             list(analysis.result.data.axes[0].values))
+
+    def test_cuts_negative_time_values(self):
+        self.create_time_trace(raising_flank=True)
+        self.analysis.parameters['start_in_extremum'] = False
+        analysis = self.dataset.analyse(self.analysis)
+
+        zero_index = np.argmin(np.abs(self.dataset.data.axes[0].values))
+        xt = rfftfreq(len(self.dataset.data.data[zero_index:]),
+                      float(np.diff(self.dataset.data.axes[0].values[-2:])))
+
+        self.assertListEqual(list(xt),
+                             list(analysis.result.data.axes[0].values))
+
+    def test_cuts_in_extremum(self):
+        self.create_time_trace(raising_flank=True)
+        self.analysis.parameters['start_in_extremum'] = True
+        analysis = self.dataset.analyse(self.analysis)
+
+        cut_index = np.argmax(np.abs(self.dataset.data.data))
+        xt = rfftfreq(len(self.dataset.data.data[cut_index:]),
+                      float(np.diff(self.dataset.data.axes[0].values[-2:])))
+
+        self.assertListEqual(list(xt),
+                             list(analysis.result.data.axes[0].values))
+
+    def test_cuts_in_negative_extremum(self):
+        self.create_time_trace()
+        self.dataset.data.data *= -1
+        self.analysis.parameters['start_in_extremum'] = True
+        analysis = self.dataset.analyse(self.analysis)
+
+        cut_index = np.argmax(np.abs(self.dataset.data.data))
+        xt = rfftfreq(len(self.dataset.data.data[cut_index:]),
+                      float(np.diff(self.dataset.data.axes[0].values[-2:])))
+
+        self.assertListEqual(list(xt),
+                             list(analysis.result.data.axes[0].values))
+
+    def test_axis_unit_in_frequency(self):
+        self.create_time_trace()
+        analysis = self.dataset.analyse(self.analysis)
+        self.assertIn('Hz', analysis.result.data.axes[0].unit)
+
+    def test_with_2D_dataset_returns_2D_dataset(self):
+        self.create_time_trace()
+        self.dataset.data.data = np.vstack((self.dataset.data.data,
+                                            self.dataset.data.data))
+        self.dataset.data.axes[0].values = [345., 346.]
+        self.dataset.data.axes[0].quantity = 'magnetic field'
+        self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.data.axes[1].quantity = 'time'
+        self.dataset.data.axes[1].unit = 's'
+
+        analysis = self.dataset.analyse(self.analysis)
+
+        self.assertEqual(2, analysis.result.data.data.ndim)
