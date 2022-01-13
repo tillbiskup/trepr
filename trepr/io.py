@@ -68,6 +68,7 @@ import collections
 import datetime
 import glob
 import io
+import logging
 import os
 import re
 import shutil
@@ -82,6 +83,10 @@ import aspecd.infofile
 import aspecd.metadata
 import aspecd.plotting
 import aspecd.utils
+
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
@@ -171,11 +176,6 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
     dataset : :obj:`trepr.dataset.ExperimentalDataset`
         Entity containing data and metadata.
 
-    Raises
-    ------
-    FileNotFoundError
-        Raised if no infofile could be found.
-
     """
 
     def __init__(self, source=''):
@@ -211,8 +211,9 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         self._ensure_field_axis_in_SI_unit()
         self._hand_axes_to_dataset()
 
-        self._load_infofile()
-        self._map_infofile()
+        if self._infofile_exists():
+            self._load_infofile()
+            self._map_infofile()
 
         self._create_time_stamp_data()
         self._create_mw_freq_data()
@@ -330,11 +331,17 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
                         self._time_stop,
                         num=self._time_points)
 
+    def _infofile_exists(self):
+        if self._get_infofile_name() and os.path.exists(
+                self._get_infofile_name()[0]):
+            return True
+        logger.warning('No infofile found for dataset "%s", import continued '
+                       'without infofile.', os.path.split(self.source)[1])
+        return False
+
     def _load_infofile(self):
         """Import the infofile and parse it."""
         infofile_name = self._get_infofile_name()
-        if not infofile_name:
-            raise FileNotFoundError('Infofile not found.')
         self._infofile.filename = infofile_name[0]
         self._infofile.parse()
 
@@ -420,6 +427,13 @@ class TezImporter(aspecd.io.DatasetImporter):
     ----------
     dataset : :obj:`trepr.dataset.ExperimentalDataset`
         Entity containing data and metadata.
+
+    load_infofile: :class:`bool`
+        Whether to load metadata from info file.
+
+        If no info file is found, import will proceed nevertheless.
+
+        Default: True
 
     """
 
@@ -522,8 +536,8 @@ class TezImporter(aspecd.io.DatasetImporter):
         if self._get_infofile_name() and os.path.exists(
                 self._get_infofile_name()[0]):
             return True
-        print('No infofile found for dataset %s, import continued without '
-              'infofile.' % os.path.split(self.source)[1])
+        logger.warning('No infofile found for dataset "%s", import continued '
+                       'without infofile.', os.path.split(self.source)[1])
         return False
 
     def _get_infofile_name(self):

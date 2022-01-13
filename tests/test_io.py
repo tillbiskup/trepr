@@ -1,7 +1,9 @@
 import collections
+import glob
 import os
 import shutil
 import struct
+import tempfile
 import unittest
 
 import numpy as np
@@ -90,6 +92,14 @@ class TestSpeksimImporter(unittest.TestCase):
         self.dataset.import_from(self.importer)
         self.assertTrue(self.dataset.metadata.measurement.operator)
         self.assertTrue(self.dataset.metadata.spectrometer.software)
+
+    def test_import_with_no_infofile_continues(self):
+        with tempfile.TemporaryDirectory() as testdir:
+            new_source = os.path.join(testdir, 'test-wo-infofile')
+            shutil.copytree(self.source, new_source)
+            os.remove(glob.glob(os.path.join(new_source, '*.info'))[0])
+            self.importer.source = new_source
+            self.dataset.import_from(self.importer)
 
 
 class TestTezImporter(unittest.TestCase):
