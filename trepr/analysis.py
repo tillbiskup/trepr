@@ -705,6 +705,15 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
 
             Default: True
 
+        padding : :class:`int`
+            Factor the original length of the time trace used for FFT should
+            be elongated and padded with zeros ("zero filling").
+
+            Usually, to reasonably resolve lower frequencies, a factor of
+            3--5 is useful.
+
+            Default: 1
+
 
     Examples
     --------
@@ -744,6 +753,7 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
         self.description = \
             'Perform FFT to extract transient nutation frequencies'
         self.parameters['start_in_extremum'] = True
+        self.parameters['padding'] = 1
 
     @staticmethod
     def applicable(dataset):
@@ -771,20 +781,21 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
                                              time_axis].values))
 
         if self.dataset.data.data.ndim > 1:
-            yt = rfft(self.dataset.data.data[:, cut_index:], axis=time_axis)
-            xt = rfftfreq(
-                len(self.dataset.data.data[0, cut_index:]),
-                float(np.diff(self.dataset.data.axes[time_axis].values[-2:])))
-            self.result.data.data = np.abs(yt)
+            n_points = self.dataset.data.data[:, cut_index:].shape[1] \
+                       * self.parameters['padding']
+            y = self.dataset.data.data[:, cut_index:]
             for idx in range(len(self.result.data.axes)):
                 if idx != time_axis:
                     self.result.data.axes[idx] = self.dataset.data.axes[idx]
         else:
-            xt = rfftfreq(
-                len(self.dataset.data.data[cut_index:]),
-                float(np.diff(self.dataset.data.axes[time_axis].values[-2:])))
-            yt = rfft(self.dataset.data.data[cut_index:])
-            self.result.data.data = np.abs(yt)
+            n_points = self.dataset.data.data[cut_index:].shape[0] \
+                       * self.parameters['padding']
+            y = self.dataset.data.data[cut_index:]
+        xt = rfftfreq(
+            n_points,
+            float(np.diff(self.dataset.data.axes[time_axis].values[-2:])))
+        yt = rfft(y, axis=time_axis, n=n_points)
+        self.result.data.data = np.abs(yt)
         self.result.data.axes[time_axis].values = xt
         self.result.data.axes[time_axis].quantity = 'frequency'
         self.result.data.axes[time_axis].unit = 'Hz'
