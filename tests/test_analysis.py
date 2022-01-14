@@ -565,10 +565,11 @@ class TestTransientNutationFFT(unittest.TestCase):
         self.assertListEqual(list(xt),
                              list(analysis.result.data.axes[0].values))
 
-    def test_axis_unit_in_frequency(self):
+    def test_frequency_axis_has_correct_quantity_and_unit(self):
         self.create_time_trace()
         analysis = self.dataset.analyse(self.analysis)
         self.assertIn('Hz', analysis.result.data.axes[0].unit)
+        self.assertEqual('frequency', analysis.result.data.axes[0].quantity)
 
     def test_with_2D_dataset_returns_2D_dataset(self):
         self.create_time_trace()

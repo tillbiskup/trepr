@@ -50,6 +50,10 @@ have been implemented here:
 
   Calculate the time spent for recording each time trace.
 
+* :class:`TransientNutationFFT`
+
+  Perform FFT to extract transient nutation frequencies.
+
 
 And the following classes have been extended with respect to the
 functionality available from the ASpecD classes:
@@ -63,10 +67,13 @@ Module documentation
 ====================
 
 """
+import copy
 
 import numpy as np
 import scipy.constants
 from scipy.fft import rfft, rfftfreq
+from scipy.optimize import curve_fit
+from scipy.signal import windows
 
 import aspecd.analysis
 import aspecd.metadata
@@ -675,7 +682,8 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
     time trace individually.
 
     In any case, the analysis step will return a calculated dataset with the
-    data representing the FFT for all time traces.
+    data representing the FFT for all time traces. Here, the ``nfft`` function
+    from :mod:`scipy.fft` gets used.
 
     In case the time trace has been recorded for negative times
     (pre-trigger), the FFT will only be performed starting at *t* = 0.
@@ -685,11 +693,23 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
     (maximum of the absolute value) to suppress low-frequency background of
     the resulting FT. This is the default behaviour and can be controlled
     using the ``start_in_extremum`` parameter (see below). In case of 2D
-    datasets, the global extremum will be used.
+    datasets, the global extremum will be used for all time traces.
+
+    As long as the oscillation clearly dominates the time trace(s), *i.e.*
+    the signal intensity crossing the zero line multiple times, there should
+    be no need for further preprocessing. Things are different, however,
+    if the time trace is dominated by an exponential decay and the
+    oscillation merely modulates this decay. In this case, you will usually
+    need to subtract the exponential decay from the data to obtain
+    meaningful results from the FFT.
 
     As a side note: An alternative way to analyse transient nutations would
     be to fit a damped Bessel function of first kind to the data. Thus one
     can extract both, frequency and relaxation rate directly from the data.
+    Note, however, that this will only be possible if the oscillation
+    clearly dominates the time trace. In cases where the oscillation merely
+    resides on top of a dominating exponential decay, this will typically
+    not be possible.
 
 
     Attributes
@@ -713,6 +733,55 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
             3--5 is useful.
 
             Default: 1
+
+        subtract_decay : :class:`bool`
+            Whether to subtract a fitted exponential decay from each time trace.
+
+            Sometimes the time trace is dominated by an exponential decay
+            rather than the transient nutation, *i.e.* the nutation appears
+            as modulation *on top* of an exponential decay. In this case,
+            the FFT will usually not allow for reliably extracting the
+            nutation frequencies, due to a huge background at the
+            low-frequency end.
+
+            In this case, fitting and afterwards subtracting an exponential
+            decay from each time trace helps a lot. As usually the exact
+            form and parameters of the exponential decay are not known,
+            here, an exponential decay with two parameters in the form
+            ``f(x) = a * exp(-b * t)`` gets used. While leading to quite
+            reliable results in the FFT, the fitted parameters can usually
+            *not* be interpreted.
+
+            Default: False
+
+        window : :class:`str`
+            Name of the window for apodisation of the data.
+
+            Windows are often applied to the signal before Fourier transform
+            to suppress artifacts (side lobes). Note, however, that applying
+            windows might shift your frequencies, particularly in the
+            low-frequency range, towards higher frequency. Therefore,
+            it is always good to compare non-windowed and windowed signals
+            if you need to extract reliable nutation frequencies from your data.
+
+            All types of windows supported by :mod:`scipy.signal.windows`
+            can be used. See there for further details. If a window requires
+            additional parameters, use the parameter ``window_parameters``.
+            For details, see below.
+
+            Internally, the function :func:`scipy.signal.windows.get_window`
+            is used to obtain the respective window. Note that only the
+            right half of the (symmetric) window is applied to the data.
+
+            Default: None
+
+        window_parameters : :class:`float` or :class:`list`
+            Parameters used for the window for apodising the data.
+
+            For details of data apodisation, see above.
+
+            Default: None
+
 
 
     Examples
@@ -754,6 +823,15 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
             'Perform FFT to extract transient nutation frequencies'
         self.parameters['start_in_extremum'] = True
         self.parameters['padding'] = 1
+        self.parameters['subtract_decay'] = False
+        self.parameters['window'] = None
+        self.parameters['window_parameters'] = None
+
+        self._time_axis = 0
+        self._cut_index = 0
+        self._n_points = 0
+        self._xt = None
+        self._y = None
 
     @staticmethod
     def applicable(dataset):
@@ -768,34 +846,107 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
     def _perform_task(self):
         self.result = self.create_dataset()
 
-        time_axis = 0
+        self._get_time_axis()
+        self._get_cut_index()
+        self._apply_padding()
+        self._cut_data()
+
+        if self.parameters['subtract_decay']:
+            self._subtract_decay()
+
+        if self.parameters['window']:
+            self._apply_window()
+
+        self._perform_fft()
+        self._assign_result_axes()
+
+    def _get_time_axis(self):
         for idx, axis in enumerate(self.dataset.data.axes):
             if 'time' in axis.quantity:
-                time_axis = idx
+                self._time_axis = idx
 
+    def _get_cut_index(self):
         if self.parameters['start_in_extremum']:
-            cut_index = np.argmax(np.abs(self.dataset.data.data)) % \
-                        self.dataset.data.data.shape[time_axis]
+            self._cut_index = np.argmax(np.abs(self.dataset.data.data)) % \
+                              self.dataset.data.data.shape[self._time_axis]
         else:
-            cut_index = np.argmin(np.abs(self.dataset.data.axes[
-                                             time_axis].values))
+            self._cut_index = np.argmin(np.abs(self.dataset.data.axes[
+                                                   self._time_axis].values))
+
+    def _apply_padding(self):
+        if self.dataset.data.data.ndim > 1:
+            self._n_points = \
+                self.dataset.data.data[:, self._cut_index:].shape[1] \
+                * self.parameters['padding']
+        else:
+            self._n_points = \
+                self.dataset.data.data[self._cut_index:].shape[0] \
+                * self.parameters['padding']
+
+    def _cut_data(self):
+        if self.dataset.data.data.ndim > 1:
+            self._y = copy.copy(self.dataset.data.data[:, self._cut_index:])
+        else:
+            self._y = copy.copy(self.dataset.data.data[self._cut_index:])
+
+    def _subtract_decay(self):
+
+        def mono_exponential(x, a, t):
+            return a * np.exp(-t * x)
+
+        start_parameters = (1, 1)
+        time_values = \
+            self.dataset.data.axes[self._time_axis].values[self._cut_index:]
 
         if self.dataset.data.data.ndim > 1:
-            n_points = self.dataset.data.data[:, cut_index:].shape[1] \
-                       * self.parameters['padding']
-            y = self.dataset.data.data[:, cut_index:]
-            for idx in range(len(self.result.data.axes)):
-                if idx != time_axis:
-                    self.result.data.axes[idx] = self.dataset.data.axes[idx]
+            for idx, row in enumerate(self._y):
+                fitted_parameters, cv = curve_fit(mono_exponential,
+                                                  time_values,
+                                                  row,
+                                                  start_parameters)
+                self._y[idx, :] = row - mono_exponential(time_values,
+                                                        *fitted_parameters)
         else:
-            n_points = self.dataset.data.data[cut_index:].shape[0] \
-                       * self.parameters['padding']
-            y = self.dataset.data.data[cut_index:]
-        xt = rfftfreq(
-            n_points,
-            float(np.diff(self.dataset.data.axes[time_axis].values[-2:])))
-        yt = rfft(y, axis=time_axis, n=n_points)
+            fitted_parameters, cv = curve_fit(mono_exponential,
+                                              time_values,
+                                              self._y,
+                                              start_parameters)
+            self._y -= mono_exponential(time_values, *fitted_parameters)
+
+    def _apply_window(self):
+        if self.parameters['window_parameters']:
+            if aspecd.utils.isiterable(self.parameters['window_parameters']):
+                window_name = (self.parameters['window'],
+                               *self.parameters['window_parameters'])
+            else:
+                window_name = (self.parameters['window'],
+                               self.parameters['window_parameters'])
+        else:
+            window_name = self.parameters['window']
+
+        if self.dataset.data.data.ndim > 1:
+            for idx, row in enumerate(self._y):
+                window = windows.get_window(window_name,
+                                            len(row) * 2)[len(row):]
+                self._y[idx, :] *= window
+        else:
+            window = windows.get_window(window_name,
+                                        len(self._y) * 2)[len(self._y):]
+            self._y *= window
+
+    def _perform_fft(self):
+        self._xt = rfftfreq(
+            self._n_points,
+            float(np.diff(self.dataset.data.axes[self._time_axis].values[-2:])))
+        yt = rfft(self._y, axis=self._time_axis, n=self._n_points)
         self.result.data.data = np.abs(yt)
-        self.result.data.axes[time_axis].values = xt
-        self.result.data.axes[time_axis].quantity = 'frequency'
-        self.result.data.axes[time_axis].unit = 'Hz'
+
+    def _assign_result_axes(self):
+        if self.dataset.data.data.ndim > 1:
+            for idx in range(len(self.result.data.axes)):
+                if idx != self._time_axis:
+                    self.result.data.axes[idx] = self.dataset.data.axes[idx]
+        self.result.data.axes[self._time_axis].values = self._xt
+        self.result.data.axes[self._time_axis].quantity = 'frequency'
+        self.result.data.axes[self._time_axis].unit = 'Hz'
+        self.result.data.axes[-1].unit = ''
