@@ -22,6 +22,7 @@ New features
 * :class:`trepr.analysis.MWFrequencyDrift` can return (calculated) datasets
 * :class:`trepr.analysis.TimeStampAnalysis` can return (calculated) datasets
 * :class:`trepr.processing.TriggerAutodetection` for automatically detecting the trigger position
+* :class:`trepr.analysis.TransientNutationFFT` for analysing transient nutations using FFT
 
 
 Changes

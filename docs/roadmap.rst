@@ -8,8 +8,6 @@ A few ideas how to develop the project further, currently a list as a reminder f
 For version 0.2
 ===============
 
-* Implement transient nutation analysis (FFT) (?)
-
 * Improve handling of reports
 
 

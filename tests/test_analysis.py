@@ -480,6 +480,8 @@ class TestTransientNutationFFT(unittest.TestCase):
         self.dataset.data.data = time_trace[:n_points]
         self.dataset.data.axes[0].quantity = 'time'
         self.dataset.data.axes[0].unit = 's'
+        self.dataset.data.axes[1].quantity = 'intensity'
+        self.dataset.data.axes[1].unit = 'V'
 
     def plot_1D(self, dataset=None):
         import trepr.plotting
@@ -565,11 +567,87 @@ class TestTransientNutationFFT(unittest.TestCase):
         self.assertListEqual(list(xt),
                              list(analysis.result.data.axes[0].values))
 
+    def test_padding(self):
+        self.create_time_trace()
+        self.analysis.parameters['padding'] = 5
+        analysis = self.dataset.analyse(self.analysis)
+        cut_index = np.argmax(np.abs(self.dataset.data.data))
+        xt = rfftfreq(len(self.dataset.data.data[cut_index:]) * 5,
+                      float(np.diff(self.dataset.data.axes[0].values[-2:])))
+        self.assertEqual(len(xt),
+                         len(analysis.result.data.data))
+
+    def test_subtract_decay(self):
+        self.create_time_trace()
+        self.dataset.data.data += \
+            15 * np.exp(-2e5 * self.dataset.data.axes[0].values)
+        self.analysis.parameters['padding'] = 10
+        self.analysis.parameters['subtract_decay'] = True
+        analysis = self.dataset.analyse(self.analysis)
+        # The frequency is about 1e6 Hz (slightly larger)
+        self.assertLess(1e6, analysis.result.data.axes[0].values[
+            np.argmax(analysis.result.data.data)])
+
+    def test_apodisation_with_window(self):
+        self.create_time_trace()
+        self.dataset.data.data += \
+            15 * np.exp(-2e5 * self.dataset.data.axes[0].values)
+        self.analysis.parameters['padding'] = 10
+        self.analysis.parameters['subtract_decay'] = True
+        analysis = self.dataset.analyse(self.analysis)
+        self.analysis.parameters['window'] = 'hann'
+        analysis_window = self.dataset.analyse(self.analysis)
+        # Assuming the standard deviation of the high-frequency tail to be
+        # smaller for the apodised signal than the non-apodised one.
+        self.assertLess(np.std(analysis_window.result.data.data[2000:]),
+                        np.std(analysis.result.data.data[2000:]))
+
+    def test_apodisation_with_window_with_parameter(self):
+        self.create_time_trace()
+        self.dataset.data.data += \
+            15 * np.exp(-2e5 * self.dataset.data.axes[0].values)
+        self.analysis.parameters['padding'] = 10
+        self.analysis.parameters['subtract_decay'] = True
+        analysis = self.dataset.analyse(self.analysis)
+        self.analysis.parameters['window'] = 'kaiser'
+        self.analysis.parameters['window_parameters'] = 3
+        analysis_window = self.dataset.analyse(self.analysis)
+        # Assuming the standard deviation of the high-frequency tail to be
+        # smaller for the apodised signal than the non-apodised one.
+        self.assertLess(np.std(analysis_window.result.data.data[2000:]),
+                        np.std(analysis.result.data.data[2000:]))
+
+    def test_apodisation_with_window_with_two_parameters(self):
+        self.create_time_trace()
+        self.dataset.data.data += \
+            15 * np.exp(-2e5 * self.dataset.data.axes[0].values)
+        self.analysis.parameters['padding'] = 10
+        self.analysis.parameters['subtract_decay'] = True
+        analysis = self.dataset.analyse(self.analysis)
+        self.analysis.parameters['window'] = 'general_gaussian'
+        self.analysis.parameters['window_parameters'] = [0.5, 2e2]
+        analysis_window = self.dataset.analyse(self.analysis)
+        # Assuming the standard deviation of the high-frequency tail to be
+        # smaller for the apodised signal than the non-apodised one.
+        self.assertLess(np.std(analysis_window.result.data.data[2000:]),
+                        np.std(analysis.result.data.data[2000:]))
+
     def test_frequency_axis_has_correct_quantity_and_unit(self):
         self.create_time_trace()
         analysis = self.dataset.analyse(self.analysis)
         self.assertIn('Hz', analysis.result.data.axes[0].unit)
         self.assertEqual('frequency', analysis.result.data.axes[0].quantity)
+
+    def test_intensity_axis_has_correct_quantity(self):
+        self.create_time_trace()
+        analysis = self.dataset.analyse(self.analysis)
+        self.assertEqual(self.dataset.data.axes[-1].quantity,
+                         analysis.result.data.axes[-1].quantity)
+
+    def test_intensity_axis_has_no_unit_any_more(self):
+        self.create_time_trace()
+        analysis = self.dataset.analyse(self.analysis)
+        self.assertEqual('', analysis.result.data.axes[-1].unit)
 
     def test_with_2D_dataset_returns_2D_dataset(self):
         self.create_time_trace()

@@ -682,8 +682,8 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
     time trace individually.
 
     In any case, the analysis step will return a calculated dataset with the
-    data representing the FFT for all time traces. Here, the ``nfft`` function
-    from :mod:`scipy.fft` gets used.
+    data representing the FFT for all time traces. Here, the scipy function
+    :func:`scipy.fft.rfft` returning real-valued results gets used.
 
     In case the time trace has been recorded for negative times
     (pre-trigger), the FFT will only be performed starting at *t* = 0.
@@ -701,7 +701,24 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
     if the time trace is dominated by an exponential decay and the
     oscillation merely modulates this decay. In this case, you will usually
     need to subtract the exponential decay from the data to obtain
-    meaningful results from the FFT.
+    meaningful results from the FFT. This can be done by setting the
+    parameter ``subtract_decay`` (see below).
+
+    Additionally, sometimes the frequency domain signal after the Fourier
+    transform exhibits prominent side lobes. This can be suppressed by
+    apodising the data before Fourier transform using a window function.
+    Windows can be set using the ``window`` parameter, and if a window
+    requires additional parameters, use the ``window_parameters`` parameter
+    to supply them.
+
+    Choosing the optimal window and taking informed decisions requires a lot
+    of background knowledge. Just bear in mind that different windows can
+    have different effects on the resulting signal in the frequency domain,
+    *including shifting the maxima*. Therefore, as long as you are only
+    interested in clearly distinct frequencies rather than arbitrarily exact
+    absolute frequencies, apodisation is perfectly fine. Distinguishing
+    between paramagnetic species with different spin multiplicity should not
+    be affected by whatever window you apply.
 
     As a side note: An alternative way to analyse transient nutations would
     be to fit a damped Bessel function of first kind to the data. Thus one
@@ -812,6 +829,117 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
             filename: fft.pdf
           apply_to: fft
 
+    Often the resolution in the frequency domain is insufficient if only the
+    original signal is used for Fourier transform. One way to overcome this
+    problem is to apply padding (zero-filling) to the data. From experience,
+    a factor of 3-5 compared to the original signal length is a good idea:
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: TransientNutationFFT
+          properties:
+            parameters:
+              padding: 5
+          result: fft
+
+    In this case, the signal will be padded with zeros and be five times as
+    long as the original signal.
+
+    Sometimes, time traces are dominated by an exponential decay rather than
+    the oscillation. Fourier transform of such signals results in a large
+    background particularly in the low-frequency range, obfuscating the
+    unequivocal extraction of the frequencies of the transient nutations.
+    One way to deal with this problem is to automatically fit and subtract
+    an exponential to each time trace prior to Fourier transform.
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: TransientNutationFFT
+          properties:
+            parameters:
+              subtract_decay: true
+          result: fft
+
+    Another aspect often occurring during Fourier transform is apodisation
+    to suppress artifacts (side lobes) in the frequency domain. Here,
+    a window function is multiplied to the data (before padding). You can
+    choose from a large range of window functions, actually all window
+    functions that are supported by :mod:`scipy.signal.windows`. Typical
+    windows are ``Hann`` and ``Hamming``, but it seems that a ``cosine``
+    window has less effects on the positions of the maxima in the frequency
+    domain.
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: TransientNutationFFT
+          properties:
+            parameters:
+              window: cosine
+          result: fft
+
+    In any case, take care of the effects windows and apodisation may have
+    to the signals in the frequency domain beyond suppressing artifacts. If
+    you want to use a window requiring extra parameters, provide these
+    parameters as scalar or list:
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: TransientNutationFFT
+          properties:
+            parameters:
+              window: kaiser
+              window_parameters: 3
+          result: fft
+
+    To compare the effect different windows have on the frequency spectrum,
+    you can perform a series of transforms with different windows and
+    compare the results graphically:
+
+    .. code-block:: yaml
+
+        - kind: singleanalysis
+          type: TransientNutationFFT
+          properties:
+            parameters:
+              padding: 5
+          result: fft
+        - kind: singleanalysis
+          type: TransientNutationFFT
+          properties:
+            parameters:
+              padding: 5
+              window: hann
+          result: fft-hann
+        - kind: singleanalysis
+          type: TransientNutationFFT
+          properties:
+            parameters:
+              padding: 5
+              window: cosine
+          result: fft-cosine
+        - kind: multiplot
+          type: MultiPlotter1D
+          properties:
+            parameters:
+              show_legend: true
+            properties:
+              drawings:
+                - label: no window
+                - label: Hann window
+                - label: cosine window
+            filename: fft-compare-windows.pdf
+          apply_to:
+            - fft
+            - fft-hann
+            - fft-cosine
+
+    Of course, you could compare other parameter settings as well in a
+    similar manner.
+
 
     .. versionadded:: 0.2
 
@@ -867,11 +995,11 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
 
     def _get_cut_index(self):
         if self.parameters['start_in_extremum']:
-            self._cut_index = np.argmax(np.abs(self.dataset.data.data)) % \
-                              self.dataset.data.data.shape[self._time_axis]
+            self._cut_index = np.argmax(np.abs(self.dataset.data.data)) \
+                % self.dataset.data.data.shape[self._time_axis]
         else:
             self._cut_index = np.argmin(np.abs(self.dataset.data.axes[
-                                                   self._time_axis].values))
+                                               self._time_axis].values))
 
     def _apply_padding(self):
         if self.dataset.data.data.ndim > 1:
@@ -900,17 +1028,17 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
 
         if self.dataset.data.data.ndim > 1:
             for idx, row in enumerate(self._y):
-                fitted_parameters, cv = curve_fit(mono_exponential,
-                                                  time_values,
-                                                  row,
-                                                  start_parameters)
-                self._y[idx, :] = row - mono_exponential(time_values,
-                                                        *fitted_parameters)
+                fitted_parameters, _ = curve_fit(mono_exponential,  # noqa
+                                                 time_values,
+                                                 row,
+                                                 start_parameters)
+                self._y[idx, :] = \
+                    row - mono_exponential(time_values, *fitted_parameters)
         else:
-            fitted_parameters, cv = curve_fit(mono_exponential,
-                                              time_values,
-                                              self._y,
-                                              start_parameters)
+            fitted_parameters, _ = curve_fit(mono_exponential,  # noqa
+                                             time_values,
+                                             self._y,
+                                             start_parameters)
             self._y -= mono_exponential(time_values, *fitted_parameters)
 
     def _apply_window(self):
@@ -942,10 +1070,9 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
         self.result.data.data = np.abs(yt)
 
     def _assign_result_axes(self):
-        if self.dataset.data.data.ndim > 1:
-            for idx in range(len(self.result.data.axes)):
-                if idx != self._time_axis:
-                    self.result.data.axes[idx] = self.dataset.data.axes[idx]
+        for idx in range(len(self.result.data.axes)):
+            if idx != self._time_axis:
+                self.result.data.axes[idx] = self.dataset.data.axes[idx]
         self.result.data.axes[self._time_axis].values = self._xt
         self.result.data.axes[self._time_axis].quantity = 'frequency'
         self.result.data.axes[self._time_axis].unit = 'Hz'
