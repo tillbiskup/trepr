@@ -1092,7 +1092,8 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
     def _assign_result_axes(self):
         for idx in range(len(self.result.data.axes)):
             if idx != self._time_axis:
-                self.result.data.axes[idx] = self.dataset.data.axes[idx]
+                self.result.data.axes[idx] = \
+                    copy.copy(self.dataset.data.axes[idx])
         self.result.data.axes[self._time_axis].values = self._xt
         self.result.data.axes[self._time_axis].quantity = 'frequency'
         self.result.data.axes[self._time_axis].unit = 'Hz'
