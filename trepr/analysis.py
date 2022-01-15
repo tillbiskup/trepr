@@ -1,7 +1,7 @@
 """
 Data analysis functionality.
 
-.. sidebar:: Processing vs. analysis steps
+.. sidebar:: Processing *vs.* analysis steps
 
     The key difference between processing and analysis steps: While a
     processing step *modifies* the data of the dataset it operates on,
@@ -10,22 +10,21 @@ Data analysis functionality.
 
 
 Key to reproducible science is automatic documentation of each analysis
-step applied to the data of a dataset. Such an analysis step each is
-self-contained, meaning it contains every necessary information to perform
-the analysis task on a given dataset.
+step applied to the data of a dataset. Each analysis step is self-contained,
+meaning it contains every necessary information to perform the analysis task
+on a given dataset.
 
 Analysis steps, in contrast to processing steps (see
 :mod:`trepr.processing` for details), operate on data of a
 :class:`trepr.dataset.Dataset`, but don't change its data. Rather,
-some result is obtained that is stored separately, together with the
-parameters of the analysis step, in the
-:attr:`trepr.dataset.Dataset.analyses` attribute of the dataset.
+some result is obtained that can be everything from a scalar to a full
+(calculated) dataset, depending on the actual analysis task at hand.
 
 In order to quantify the quality of a measured spectrum or to interpret it, it
 is often necessary to perform some analysis steps.
 
 Due to inheritance from the :mod:`aspecd.analysis` module all analysis steps
-provided are fully self-documenting, i.e. they add all necessary information
+provided are fully self-documenting, *i.e.* they add all necessary information
 to reproduce each analysis step to the :attr:`aspecd.dataset.Dataset.history`
 attribute of the dataset.
 
@@ -36,7 +35,11 @@ Concrete analysis steps
 Due to inheritance from the :mod:`aspecd.analysis` module all analysis
 steps defined there are available from within the trepr package.
 Furthermore, a number of **analysis steps specific for tr-EPR spectroscopy**
-have been implemented here:
+have been implemented here.
+
+The first block of analysis steps is concerned with evaluating the quality
+of the recorded data and revealing some possible problems during data
+acquisition:
 
 * :class:`MWFrequencyDrift`
 
@@ -50,6 +53,10 @@ have been implemented here:
 
   Calculate the time spent for recording each time trace.
 
+
+Other analysis steps are "true" analysis steps in terms of obtaining
+information from the data:
+
 * :class:`TransientNutationFFT`
 
   Perform FFT to extract transient nutation frequencies.
@@ -61,6 +68,19 @@ functionality available from the ASpecD classes:
 * :class:`BasicCharacteristics`
 
   Extract basic characteristics of a dataset.
+
+
+Note to developers
+==================
+
+Processing steps can be based on analysis steps, but not *vice versa*.
+Otherwise, we get cyclic dependencies what should obviously be avoided in
+order to keep code working.
+
+Furthermore, if an analysis step returns a (calculated) dataset, use the
+:meth:`aspecd.analysis.AnalysisStep.create_dataset` method to obtain an
+empty instance of this dataset. This will automatically set some parameters
+of the created dataset related to the analysis step.
 
 
 Module documentation

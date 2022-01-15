@@ -1,7 +1,7 @@
 """
 Data processing functionality.
 
-.. sidebar:: Processing vs. analysis steps
+.. sidebar:: Processing *vs.* analysis steps
 
     The key difference between processing and analysis steps: While a
     processing step *modifies* the data of the dataset it operates on,
@@ -10,7 +10,7 @@ Data processing functionality.
 
 
 Key to reproducible science is automatic documentation of each processing
-step applied to the data of a dataset. Such a processing step each is
+step applied to the data of a dataset. Each processing step is
 self-contained, meaning it contains every necessary information to perform
 the processing task on a given dataset.
 
@@ -21,7 +21,7 @@ step gets added to the :attr:`trepr.dataset.Dataset.history` attribute of a
 dataset.
 
 Due to the inheritance from the :mod:`aspecd.processing` module, all processing
-steps provided are fully self-documenting, i.e. they add all necessary
+steps provided are fully self-documenting, *i.e.* they add all necessary
 information to reproduce each processing step to the
 :attr:`trepr.dataset.ExperimentalDataset.history` attribute of the dataset.
 
@@ -30,22 +30,22 @@ Concrete processing steps
 =========================
 
 This module provides a series of processing steps that can be divided into
-those specific for TREPR data and those generally applicable to
-spectroscopic data and directly inherited from the ASpecD framwork.
+those specific for tr-EPR data and those generally applicable to
+spectroscopic data and directly inherited from the ASpecD framework.
 
 What follows is a list as a first overview. For details, see the detailed
 documentation of each of the classes, readily accessible by the link.
 
 
-Processing steps specific for TREPR data
-----------------------------------------
+Processing steps specific for tr-EPR data
+-----------------------------------------
 
-A number of processing steps are rather specific for TREPR data namely
+A number of processing steps are rather specific for tr-EPR data namely
 correcting DC offsets, background, and microwave frequency:
 
 * :class:`PretriggerOffsetCompensation`
 
-  Correct for DC offsets of TREPR data
+  Correct for DC offsets of tr-EPR data
 
 * :class:`BackgroundCorrection`
 
@@ -63,7 +63,7 @@ correcting DC offsets, background, and microwave frequency:
 General processing steps contained in the ASpecD framework
 ----------------------------------------------------------
 
-Besides the processing steps specific for TREPR data, all processing steps
+Besides the processing steps specific for tr-EPR data, all processing steps
 of the underlying ASpecD framework are available. To list those most
 relevant for tr-EPR spectroscopy:
 
@@ -130,13 +130,13 @@ import aspecd.exceptions
 class PretriggerOffsetCompensation(aspecd.processing.SingleProcessingStep):
     # noinspection PyUnresolvedReferences
     """
-    Correct for DC offsets of TREPR data.
+    Correct for DC offsets of tr-EPR data.
 
-    Usually the first processing step after recording TREPR data is to
+    Usually the first processing step after recording tr-EPR data is to
     compensate for DC offsets due to experimental instabilities. This is
     done by setting the average of the pretrigger part of the time trace to
     zero (pretrigger offset compensation). At the same time, this will
-    remove any background signals of stable paramangetic species, as they
+    remove any background signals of stable paramagnetic species, as they
     would appear as DC offset as well.
 
     Attributes
@@ -166,7 +166,7 @@ class PretriggerOffsetCompensation(aspecd.processing.SingleProcessingStep):
          type: PretriggerOffsetCompensation
 
     This will correct your data accordingly and should always be the first
-    step when processing and analysing TREPR data.
+    step when processing and analysing tr-EPR data.
 
     """
 
@@ -214,7 +214,7 @@ class BackgroundCorrection(aspecd.processing.SingleProcessingStep):
     Depending on the spectrometer control and measurement software used,
     this background signal can get automatically subtracted already during
     the measurement. More often, it needs to be done afterwards,
-    and therefore, it is crucial to record the TREPR data with sufficient
+    and therefore, it is crucial to record the tr-EPR data with sufficient
     baseline at both ends of the magnetic field range to allow for reliable
     background correction.
 
@@ -387,7 +387,7 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
     To compare EPR spectra, it is necessary to first correct them for the
     same microwave frequency, *i.e.* to adjust the magnetic field axis
     accordingly. Note that each individual measurement will have its own
-    microwave frequency. Particularly for TREPR data with their usually
+    microwave frequency. Particularly for tr-EPR data with their usually
     quite large steps of the magnetic field axis, one could first check
     whether the difference in microwave frequency is reasonably large
     compared to the magnetic field steps, and only in this case correct for
@@ -461,8 +461,7 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
                                                                 axis.values)
                 self._write_new_frequency()
 
-    def _correct_field_for_frequency(self, nu_target=None,
-                                     b_initial=None):
+    def _correct_field_for_frequency(self, nu_target=None, b_initial=None):
         """
         Calculate new field axis for given frequency.
 

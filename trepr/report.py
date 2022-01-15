@@ -8,6 +8,45 @@ separate the dataset from its metadata.
 This module provides functionality to create a report containing a 1D and 2D
 plot of the dataset, its metadata and all processing steps including
 parameters.
+
+
+"Batteries included": Templates contained in the package
+========================================================
+
+The "batteries included" approach of Python itself is probably responsible
+to a great deal for the success of Python as a language. Similarly,
+the cwepr package tries to provide you with a sensible set of tools you need
+for your routine data analysis. Reports are no exception to that rule.
+
+Thanks to being based on the ASpecD framework, the cwepr package comes bundled
+with a (growing) series of templates allowing you to create reports of
+datasets and alike. Thus, getting access to all information stored in a
+single dataset is as simple as calling a single reporter, and in context of
+recipe-driven data analysis, it is even simpler:
+
+.. code-block:: yaml
+
+    - kind: report
+      type: LaTeXReporter
+      properties:
+        template: dataset.tex
+        filename: report.tex
+      compile: true
+
+This would create a report of a dataset that is then stored in the file
+``report.tex``, using the template ``dataset.tex`` bundled with the cwepr (
+and ASpecD) package. As you even set ``compile`` to true, it would even
+compile the LaTeX report, including all figures generated during cooking the
+recipe and referenced from within the report. Hence, you end up in your current
+directory with both, a LaTeX file ``report.tex`` and a PDF file ``report.pdf``.
+
+For more details, including how to customise reports, have a look at the
+documentation of the :mod:`aspecd.report` module of the ASpecD framework.
+
+
+Module documentation
+====================
+
 """
 
 import collections
@@ -18,7 +57,7 @@ import jinja2
 import aspecd.report
 
 
-class LaTeXReporter(aspecd.report.LaTeXReporter):
+class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
     """
     Generate a report based on a LaTeX template provided.
 
@@ -45,6 +84,10 @@ class LaTeXReporter(aspecd.report.LaTeXReporter):
     ----------
     dataset : :obj:`trepr.dataset.Dataset`
         Dataset structure containing raw dat as well as metadata.
+
+
+    .. deprecated:: 0.1
+        Use the :class:`aspecd.report.LatexReporter` instead
 
     """
 
@@ -148,7 +191,7 @@ if __name__ == '__main__':
     pro = trepr.processing.Averaging(
         avg_range=[4.e-7, 6.e-7], dimension=0, unit='axis')
     dataset.process(pro)
-    report = LaTeXReporter(template_, filename_)
+    report = ExperimentalDatasetLaTeXReporter(template_, filename_)
     report.dataset = dataset
     report.create()
     report.compile()

@@ -1,12 +1,12 @@
 """
 General facilities for input (and output).
 
-In order to work with TREPR data, these data need to be imported into the
+In order to work with tr-EPR data, these data need to be imported into the
 trepr package. Therefore, the module provides importers for specific file
-formats. In case of TREPR spectroscopy, the measurement control software is
+formats. In case of tr-EPR spectroscopy, the measurement control software is
 often lab-written and specific for a local setup. One exception is the
 Bruker BES3T file format written by Bruker Xepr and Xenon software that can
-be used to record TREPR data in combination with a pulsed EPR spectrometer.
+be used to record tr-EPR data in combination with a pulsed EPR spectrometer.
 
 Another class implemented in this module is the
 :class:`trepr.io.DatasetImporterFactory`, a prerequisite for recipe-driven
@@ -54,10 +54,27 @@ Currently, the following importers for specific file formats are available:
   fsc2 files usually carry ".dat" as file extension, although they are bare
   text files.
 
+* :class:`BES3TImporter`
+
+  The Bruker BES3T file format written by Bruker Xepr and Xenon software
+  that can be used to record tr-EPR data in combination with a pulsed EPR
+  spectrometer. This importer currently only supports a smaller subset of the
+  specification, *e.g.* only data without additional axes data files and
+  only real values.
+
 
 Implementing importers for additional file formats is rather
 straight-forward. For details, see the documentation of the :mod:`aspecd.io`
 module.
+
+
+Note to developers
+==================
+
+As a convention, the first axis of a dataset is always the *magnetic field
+axis*, and only the second axis is the time axis. When implementing
+importers for additional file formats, it is important to follow this
+convention to provide a consistent experience throughout the trepr package.
 
 
 Module documentation
