@@ -112,6 +112,20 @@ Concrete plotters for multiple datasets
   line-type plots, including (semi)log plots
 
 
+A note for developers
+=====================
+
+As each kind of spectroscopy comes with own needs for extensions, there is a
+class :class:`PlotterExtensions` that can be used as a mixin class for other
+plotters to provide additional functionality for all plotters.
+
+Make sure when implementing functionality here that it really works with all
+types of plotters, *i.e.* both SinglePlotters and MultiPlotters. This is
+particularly relevant if you need to get information from dataset(s),
+as a SinglePlotter will have an attribute ``dataset``, while a MultiPlotter
+will have an attribute ``datasets``.
+
+
 Module documentation
 ====================
 
@@ -123,6 +137,7 @@ import numpy as np
 
 import aspecd.plotting
 import trepr.dataset
+from trepr import utils
 
 
 class ColormapAdjuster:
@@ -174,7 +189,64 @@ class ColormapAdjuster:
             mpl.colors.Normalize(vmin=self._bound * -1, vmax=self._bound)
 
 
-class SinglePlotter1D(aspecd.plotting.SinglePlotter1D):
+class PlotterExtensions:
+    """Extensions for plots of tr-EPR data.
+
+    This class is meant as a mixin class for plotters of the cwepr package
+    and provides functionality specific for tr-EPR-spectroscopic data.
+
+    Hence it can only be used as mixin in addition to a plotter class.
+
+    Attributes
+    ----------
+    parameters : :class:`dict`
+        All parameters necessary for the plot, implicit and explicit
+
+        The following keys exist, in addition to those defined by the actual
+        plotter:
+
+        g-axis: :class:`bool`
+            Whether to show an additional *g* axis opposite of the magnetic
+            field axis
+
+            This assumes the magnetic field axis to be the *x* axis and the
+            magnetic field values to be in millitesla (mT), as it calls
+            :func:`cwepr.utils.convert_mT2g`.
+
+
+    .. versionadded:: 0.2
+
+    """
+
+    def __init__(self):
+        self.parameters['g-axis'] = False  # noqa
+
+    def _create_g_axis(self, mw_freq=None):
+        """
+        Add a *g* axis as second axis opposite the magnetic field axis.
+
+        Currently, this function assumes the magnetic field axis to be the
+        *x* axis. Additionally, the magnetic field values are assumed to be
+        in millitesla (mT), and the microwave frequency to be in gigahertz (
+        GHz).
+
+        Parameters
+        ----------
+        mw_freq : :class:`float`
+            microwave frequency (**in GHz**) used to convert from mT to g
+
+        """
+        def forward(values):
+            return utils.convert_mT2g(values, mw_freq=mw_freq)
+
+        def backward(values):
+            return utils.convert_g2mT(values, mw_freq=mw_freq)
+
+        gaxis = self.ax.secondary_xaxis('top', functions=(backward, forward))
+        gaxis.set_xlabel(r'$g\ value$')
+
+
+class SinglePlotter1D(aspecd.plotting.SinglePlotter1D, PlotterExtensions):
     """1D plots of single datasets.
 
     Convenience class taking care of 1D plots of single datasets.
@@ -182,6 +254,10 @@ class SinglePlotter1D(aspecd.plotting.SinglePlotter1D):
     As the class is fully inherited from ASpecD for simple usage, see the
     ASpecD documentation of the :class:`aspecd.plotting.SinglePlotter1D`
     class for details.
+
+    Furthermore, the class inhertis all functionality from
+    :class:`PlotterExtensions`. See there for additional details.
+
 
     Examples
     --------
@@ -200,10 +276,29 @@ class SinglePlotter1D(aspecd.plotting.SinglePlotter1D):
          properties:
            filename: output.pdf
 
+
+    In case you would like to have a *g* axis plotted as a second *x* axis on
+    top (note that this only makes sense in case of a calibrated magnetic
+    field axis):
+
+    .. code-block:: yaml
+
+       - kind: singleplot
+         type: SinglePlotter1D
+         properties:
+           parameters:
+             g-axis: true
+           filename: output.pdf
+
     """
 
+    def _create_plot(self):
+        super()._create_plot()
+        if self.parameters['g-axis'] and self.dataset.data.axes[0].unit == 'mT':
+            self._create_g_axis(self.dataset.metadata.bridge.mw_frequency.value)
 
-class SinglePlotter2D(aspecd.plotting.SinglePlotter2D):
+
+class SinglePlotter2D(aspecd.plotting.SinglePlotter2D, PlotterExtensions):
     """2D plots of single datasets.
 
     Convenience class taking care of 2D plots of single datasets.
@@ -211,6 +306,10 @@ class SinglePlotter2D(aspecd.plotting.SinglePlotter2D):
     As the class is fully inherited from ASpecD for simple usage, see the
     ASpecD documentation of the :class:`aspecd.plotting.SinglePlotter2D`
     class for details.
+
+    Furthermore, the class inhertis all functionality from
+    :class:`PlotterExtensions`. See there for additional details.
+
 
     Examples
     --------
@@ -277,10 +376,113 @@ class SinglePlotter2D(aspecd.plotting.SinglePlotter2D):
     Make sure to check the documentation of the ASpecD
     :mod:`aspecd.plotting` module for further parameters that can be set.
 
+    In case you would like to have a *g* axis plotted as a second *x* axis on
+    top (note that this only makes sense in case of a calibrated magnetic
+    field axis):
+
+    .. code-block:: yaml
+
+       - kind: singleplot
+         type: SinglePlotter2D
+         properties:
+           parameters:
+             g-axis: true
+           filename: output.pdf
+
     """
 
+    def _create_plot(self):
+        super()._create_plot()
+        if self.parameters['g-axis'] and self.dataset.data.axes[0].unit == 'mT':
+            self._create_g_axis(self.dataset.metadata.bridge.mw_frequency.value)
 
-class MultiPlotter1D(aspecd.plotting.MultiPlotter1D):
+
+class SinglePlotter2DStacked(aspecd.plotting.SinglePlotter2DStacked,
+                             PlotterExtensions):
+    """Stacked plots of 2D data.
+
+    A stackplot creates a series of lines stacked on top of each other from
+    a 2D dataset.
+
+    As the class is fully inherited from ASpecD for simple usage, see the
+    ASpecD documentation of the :class:`aspecd.plotting.SinglePlotter2DStacked`
+    class for details.
+
+    Furthermore, the class inhertis all functionality from
+    :class:`PlotterExtensions`. See there for additional details.
+
+
+    Examples
+    --------
+    For convenience, a series of examples in recipe style (for details of
+    the recipe-driven data analysis, see :mod:`aspecd.tasks`) is given below
+    for how to make use of this class. Of course, all parameters settable
+    for the superclasses can be set as well. The examples focus each on a
+    single aspect.
+
+    In the simplest case, just invoke the plotter with default values:
+
+    .. code-block:: yaml
+
+       - kind: singleplot
+         type: SinglePlotter2DStacked
+         properties:
+           filename: output.pdf
+
+    If you need to more precisely control the formatting of the y tick
+    labels, particularly the number of decimals shown, you can set the
+    formatting accordingly:
+
+    .. code-block:: yaml
+
+       - kind: singleplot
+         type: SinglePlotter2DStacked
+         properties:
+           filename: output.pdf
+           parameters:
+             yticklabelformat: '%.2f'
+
+    In this particular case, the y tick labels will appear with only two
+    decimals. Note that currently, the "old style" formatting specifications
+    are used due to their widespread use in other programming languages and
+    hence the familiarity of many users with this particular notation.
+
+    Sometimes you want to have horizontal "zero lines" appear for each
+    individual trace of the stacked plot. This can be achieved explicitly
+    setting the "show_zero_lines" parameter to "True" that is set to "False"
+    by default:
+
+    .. code-block:: yaml
+
+       - kind: singleplot
+         type: SinglePlotter2DStacked
+         properties:
+           filename: output.pdf
+           parameters:
+             show_zero_lines: True
+
+    In case you would like to have a *g* axis plotted as a second *x* axis on
+    top (note that this only makes sense in case of a calibrated magnetic
+    field axis):
+
+    .. code-block:: yaml
+
+       - kind: singleplot
+         type: SinglePlotter2DStacked
+         properties:
+           parameters:
+             g-axis: true
+           filename: output.pdf
+
+    """
+
+    def _create_plot(self):
+        super()._create_plot()
+        if self.parameters['g-axis'] and self.dataset.data.axes[0].unit == 'mT':
+            self._create_g_axis(self.dataset.metadata.bridge.mw_frequency.value)
+
+
+class MultiPlotter1D(aspecd.plotting.MultiPlotter1D, PlotterExtensions):
     # noinspection PyUnresolvedReferences
     """1D plots of multiple datasets.
 
@@ -360,6 +562,19 @@ class MultiPlotter1D(aspecd.plotting.MultiPlotter1D):
         ``#``, you need to explicitly tell YAML that these are strings,
         surrounding the values by quotation marks.
 
+    In case you would like to have a *g* axis plotted as a second *x* axis on
+    top (note that this only makes sense in case of a calibrated magnetic
+    field axis):
+
+    .. code-block:: yaml
+
+       - kind: multiplot
+         type: MultiPlotter1D
+         properties:
+           parameters:
+             g-axis: true
+           filename: output.pdf
+
     """
 
     def __init__(self):
@@ -385,6 +600,10 @@ class MultiPlotter1D(aspecd.plotting.MultiPlotter1D):
                     dataset.data.data,
                     label=self.properties.drawings[idx].label)
             self.drawings.append(drawing)
+        if self.parameters['g-axis'] \
+                and self.datasets[0].data.axes[0].unit == 'mT':
+            self._create_g_axis(
+                self.datasets[0].metadata.bridge.mw_frequency.value)
         if self.parameters['tight']:
             if self.parameters['tight'] in ('x', 'both'):
                 if self.parameters['switch_axes']:
@@ -426,7 +645,8 @@ class MultiPlotter1D(aspecd.plotting.MultiPlotter1D):
             self.axes.set_ylabel(old_xlabel)
 
 
-class MultiPlotter1DStacked(aspecd.plotting.MultiPlotter1DStacked):
+class MultiPlotter1DStacked(aspecd.plotting.MultiPlotter1DStacked,
+                            PlotterExtensions):
     """Stacked 1D plots of multiple datasets.
 
     Convenience class taking care of 1D plots of multiple datasets.
@@ -434,6 +654,9 @@ class MultiPlotter1DStacked(aspecd.plotting.MultiPlotter1DStacked):
     As the class is fully inherited from ASpecD for simple usage, see the
     ASpecD documentation of the :class:`aspecd.plotting.MultiPlotter1DStacked`
     class for details.
+
+    Furthermore, the class inhertis all functionality from
+    :class:`PlotterExtensions`. See there for additional details.
 
     Examples
     --------
@@ -490,50 +713,24 @@ class MultiPlotter1DStacked(aspecd.plotting.MultiPlotter1DStacked):
            parameters:
              show_zero_lines: True
 
-    """
+    In case you would like to have a *g* axis plotted as a second *x* axis on
+    top (note that this only makes sense in case of a calibrated magnetic
+    field axis):
 
+    .. code-block:: yaml
 
-class CompositePlotter(aspecd.plotting.CompositePlotter):
-    """Base class for plots consisting of multiple axes.
-
-    The underlying idea of composite plotters is to use a dedicated
-    existing plotter for each axis and assign this plotter to the list of
-    plotters of the CompositePlotter object. Thus the actual plotting task
-    is left to the individual plotter and the CompositePlotter only takes
-    care of the specifics of plots consisting of more than one axis.
-
-    As the class is fully inherited from ASpecD for simple usage, see the
-    ASpecD documentation of the :class:`aspecd.plotting.CompositePlotter`
-    class for details.
+       - kind: multiplot
+         type: MultiPlotter1DStacked
+         properties:
+           parameters:
+             g-axis: true
+           filename: output.pdf
 
     """
 
-
-class SingleCompositePlotter(aspecd.plotting.SingleCompositePlotter):
-    """Composite plotter for single datasets.
-
-    This composite plotter is used for different representations of one and the
-    same dataset in multiple axes contained in one figure. In this respect,
-    it works like all the other ordinary single plotters derived from
-    :class:`SinglePlotter`, *i.e.* it usually gets called by using the dataset's
-    :meth:`aspecd.dataset.Dataset.plot` method.
-
-    As the class is fully inherited from ASpecD for simple usage, see the
-    ASpecD documentation of the :class:`aspecd.plotting.SingleCompositePlotter`
-    class for details.
-
-    """
-
-
-class Saver(aspecd.plotting.Saver):
-    """Base class for saving plots.
-
-    For basic saving of plots, no subclassing is necessary, as the
-    :meth:`save` method uses :meth:`matplotlib.figure.Figure.savefig` and
-    can cope with all possible parameters via the :attr:`parameters` property.
-
-    As the class is fully inherited from ASpecD for simple usage, see the
-    ASpecD documentation of the :class:`aspecd.plotting.Saver` class for
-    details.
-
-    """
+    def _create_plot(self):
+        super()._create_plot()
+        if self.parameters['g-axis'] \
+                and self.datasets[0].data.axes[0].unit == 'mT':
+            self._create_g_axis(
+                self.datasets[0].metadata.bridge.mw_frequency.value)

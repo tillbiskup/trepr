@@ -23,6 +23,8 @@ New features
 * :class:`trepr.analysis.TimeStampAnalysis` can return (calculated) datasets
 * :class:`trepr.processing.TriggerAutodetection` for automatically detecting the trigger position
 * :class:`trepr.analysis.TransientNutationFFT` for analysing transient nutations using FFT
+* Functions :func:`trepr.utils.convert_g2mT` and :func:`trepr.utils.convert_mT2g` to convert between magnetic field values (in mT) and g values
+* Plotters can add *g* axis as second axis opposite the magnetic field axis.
 
 
 Changes
