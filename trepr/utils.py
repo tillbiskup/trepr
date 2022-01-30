@@ -1,7 +1,7 @@
 """General purpose functions and classes used in other modules.
 
 To avoid circular dependencies, this module does *not* depend on any other
-modules of the cwepr package, but it can be imported into every other module.
+modules of the trepr package, but it can be imported into every other module.
 
 
 .. versionadded:: 0.2
@@ -88,7 +88,7 @@ def not_zero(value):
         If you use this function excessively within a module, mostly within
         rather complicated mathematical equations, it might be a good idea
         to import this function explicitly, to shorten the code, such as:
-        ``from cwepr.utils import not_zero``. As usual, readability is king.
+        ``from trepr.utils import not_zero``. As usual, readability is king.
 
     Parameters
     ----------

@@ -124,7 +124,7 @@ Finally, don't forget to check out the website on `reproducible research <https:
 License
 -------
 
-This program is free software: you can redistribute it and/or modify it under the terms of the **BSD License**. However, if you use the cwepr package for your own research, please cite it appropriately. See :ref:`How to cite <sec-how_to_cite>` for details.
+This program is free software: you can redistribute it and/or modify it under the terms of the **BSD License**. However, if you use the trepr package for your own research, please cite it appropriately. See :ref:`How to cite <sec-how_to_cite>` for details.
 
 
 A note on the logo

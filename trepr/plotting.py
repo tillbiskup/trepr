@@ -193,7 +193,7 @@ class PlotterExtensions:
     # noinspection PyUnresolvedReferences
     """Extensions for plots of tr-EPR data.
 
-    This class is meant as a mixin class for plotters of the cwepr package
+    This class is meant as a mixin class for plotters of the trepr package
     and provides functionality specific for tr-EPR-spectroscopic data.
 
     Hence it can only be used as mixin in addition to a plotter class.
@@ -212,7 +212,7 @@ class PlotterExtensions:
 
             This assumes the magnetic field axis to be the *x* axis and the
             magnetic field values to be in millitesla (mT), as it calls
-            :func:`cwepr.utils.convert_mT2g`.
+            :func:`trepr.utils.convert_mT2g`.
 
 
     .. versionadded:: 0.2

@@ -8,9 +8,9 @@ This page contains a summary of changes between the official trEPR releases. Onl
 Version 0.2.0
 =============
 
-Not yet released
+Released 2022-01-30
 
-**Note:** Starting with this version, cwepr requires **Python >=3.7**
+**Note:** Starting with this version, trepr requires **Python >=3.7**
 
 
 New features
