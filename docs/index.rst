@@ -1,3 +1,7 @@
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4897112.svg
+   :target: https://doi.org/10.5281/zenodo.4897112
+   :align: right
+
 trEPR documentation
 ===================
 
@@ -9,7 +13,12 @@ What is even better: Actual data processing and analysis **no longer requires pr
 .. code-block:: yaml
     :linenos:
 
-    default_package: trepr
+    format:
+      type: ASpecD recipe
+      version: '0.2'
+
+    settings:
+      default_package: trepr
 
     datasets:
       - /path/to/first/dataset
@@ -31,7 +40,7 @@ What is even better: Actual data processing and analysis **no longer requires pr
             - second-dataset.pdf
 
 
-Interested in more real-live examples? Check out the :doc:`use cases section <usecases>`.
+Interested in more real-live examples? Check out the :doc:`use cases section <usecases>` and the growing :doc:`list of examples <examples/index>` providing complete recipes for different needs.
 
 
 Features
@@ -47,12 +56,27 @@ A list of features:
 
 And to make it even more convenient for users and future-proof:
 
-- Open source project written in Python (>= 3.5)
+- Open source project written in Python (>= 3.7)
 - Extensive user and API documentation
 
 
 .. warning::
   The trepr package is currently under active development and still considered in Beta development state. Therefore, expect frequent changes in features and public APIs that may break your own code. Nevertheless, feedback as well as feature requests are highly welcome.
+
+
+.. _sec-how_to_cite:
+
+How to cite
+-----------
+
+trepr is free software. However, if you use trepr for your own research, please cite it appropriately:
+
+Jara Popp, Mirjam Schröder, Till Biskup. trepr (2021). `doi:10.5281/zenodo.4897112 <https://doi.org/10.5281/zenodo.4897112>`_
+
+To make things easier, trepr has a `DOI <https://doi.org/10.5281/zenodo.4897112>`_ provided by `Zenodo <https://zenodo.org/>`_, and you may click on the badge below to directly access the record associated with it. Note that this DOI refers to the package as such and always forwards to the most current version.
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4897112.svg
+   :target: https://doi.org/10.5281/zenodo.4897112
 
 
 Where to start
@@ -86,23 +110,21 @@ There is a number of related packages users of the trepr package may well be int
 
 * `cwepr <https://docs.cwepr.de/>`_
 
-  Package for processing and analysing continuous-wave electron paramagnetic resonance (cw-EPR) data, originally implemented by P. Kirchner, currently developed and maintained by M. Schröder and T. Biskup.
+  Package for processing and analysing continuous-wave electron paramagnetic resonance (cw-EPR) data, originally implemented by P. Kirchner, developed and maintained by M. Schröder and T. Biskup.
+
+* `FitPy <https://docs.fitpy.de/>`_
+
+  Framework for the advanced fitting of models to spectroscopic data focussing on reproducibility, developed by T. Biskup.
 
 You may as well be interested in the `LabInform project <https://www.labinform.de/>`_ focussing on the necessary more global infrastructure in a laboratory/scientific workgroup interested in more `reproducible research <https://www.reproducible-research.de/>`_. In short, LabInform is "The Open-Source Laboratory Information System".
 
 Finally, don't forget to check out the website on `reproducible research <https://www.reproducible-research.de/>`_ covering in more general terms aspects of reproducible research and good scientific practice.
 
 
-..
-  Contribute
-  ----------
-
-  - Source Code: https://github.com/tillbiskup/trepr
-
 License
 -------
 
-This program is free software: you can redistribute it and/or modify it under the terms of the **BSD License**.
+This program is free software: you can redistribute it and/or modify it under the terms of the **BSD License**. However, if you use the trepr package for your own research, please cite it appropriately. See :ref:`How to cite <sec-how_to_cite>` for details.
 
 
 A note on the logo
@@ -133,6 +155,15 @@ The snake (a python) resembles the lines of a tr-EPR spectrum, most probably a l
    trepr/recording
    trepr/processing
    trepr/analysis
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Examples:
+   :hidden:
+
+   examples/index
+   examples/list
 
 
 .. toctree::

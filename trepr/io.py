@@ -1,12 +1,12 @@
 """
 General facilities for input (and output).
 
-In order to work with TREPR data, these data need to be imported into the
+In order to work with tr-EPR data, these data need to be imported into the
 trepr package. Therefore, the module provides importers for specific file
-formats. In case of TREPR spectroscopy, the measurement control software is
+formats. In case of tr-EPR spectroscopy, the measurement control software is
 often lab-written and specific for a local setup. One exception is the
 Bruker BES3T file format written by Bruker Xepr and Xenon software that can
-be used to record TREPR data in combination with a pulsed EPR spectrometer.
+be used to record tr-EPR data in combination with a pulsed EPR spectrometer.
 
 Another class implemented in this module is the
 :class:`trepr.io.DatasetImporterFactory`, a prerequisite for recipe-driven
@@ -17,7 +17,7 @@ specific dataset depending on the information provided (usually, a filename).
 Importers for specific file formats
 ===================================
 
-Currently, two file formats are supported by specific importers:
+Currently, the following importers for specific file formats are available:
 
 * :class:`SpeksimImporter`
 
@@ -39,10 +39,42 @@ Currently, two file formats are supported by specific importers:
   754 standard binaries in separate files. The ASpecD dataset format (adf)
   is similar in some respect.
 
+  tez files usually carry ".tez" as file extension.
+
+* :class:`Fsc2Importer`
+
+  The fsc2 file format originates from the fsc2 spectrometer control
+  software developed by J. T. Törring at the FU Berlin and used in a number of
+  labs. For details of the software, `see the fsc2 homepage
+  <https://users.physik.fu-berlin.de/~jtt/fsc2.phtml>`_. As the actual
+  experiments are defined in the "Experiment Description Language" (EDL),
+  the importer necessarily makes a number of assumptions that work with
+  the particular set of data recorded at a given time at FU Berlin.
+
+  fsc2 files usually carry ".dat" as file extension, although they are bare
+  text files.
+
+* :class:`BES3TImporter`
+
+  The Bruker BES3T file format written by Bruker Xepr and Xenon software
+  that can be used to record tr-EPR data in combination with a pulsed EPR
+  spectrometer. This importer currently only supports a smaller subset of the
+  specification, *e.g.* only data without additional axes data files and
+  only real values.
+
 
 Implementing importers for additional file formats is rather
 straight-forward. For details, see the documentation of the :mod:`aspecd.io`
 module.
+
+
+Note to developers
+==================
+
+As a convention, the first axis of a dataset is always the *magnetic field
+axis*, and only the second axis is the time axis. When implementing
+importers for additional file formats, it is important to follow this
+convention to provide a consistent experience throughout the trepr package.
 
 
 Module documentation
@@ -53,6 +85,7 @@ import collections
 import datetime
 import glob
 import io
+import logging
 import os
 import re
 import shutil
@@ -68,7 +101,9 @@ import aspecd.metadata
 import aspecd.plotting
 import aspecd.utils
 
-import trepr.dataset
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
@@ -89,16 +124,56 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
     See the documentation of the :class:`aspecd.io.DatasetImporterFactory`
     base class for details.
 
+    Attributes
+    ----------
+    supported_formats : :class:`dict`
+        Dictionary who's keys correspond to the base name of the respective
+        importer (*i.e.*, without the suffix "Importer") and who's values are a
+        list of file extensions to detect the correct importer.
+
+    data_format : :class:`str`
+        Name of the format that has been detected.
+
     """
+
+    def __init__(self):
+        super().__init__()
+        self.supported_formats = {"": "Speksim",
+                                  ".tez": "Tez",
+                                  ".dat": "Fsc2",
+                                  ".DSC": 'BES3T',
+                                  ".DTA": 'BES3T'}
+        self.data_format = None
 
     def _get_importer(self):
         if os.path.isdir(self.source):
             return SpeksimImporter(source=self.source)
-        return TezImporter(source=self.source)
+        self._find_format()
+        importer = None
+        if self.data_format:
+            importer = aspecd.utils.object_from_class_name(
+                ".".join(["trepr", "io", self.data_format + "Importer"]))
+            importer.source = self.source
+        return importer
+
+    def _find_format(self):
+        _, extension = os.path.splitext(self.source)
+        if extension:
+            if extension in self.supported_formats.keys():
+                self.data_format = self._format_from_extension(extension)
+        else:
+            for extension in [extension for extension in
+                              self.supported_formats if extension]:
+                if os.path.isfile(self.source + extension):
+                    self.data_format = self._format_from_extension(extension)
+
+    def _format_from_extension(self, extension):
+        return list(self.supported_formats.values())[list(
+            self.supported_formats.keys()).index(extension)]
 
 
 class SpeksimImporter(aspecd.io.DatasetImporter):
-    """Import trepr raw data in Freiburg Speksim format including its metadata.
+    """Importer for data in Freiburg Speksim format including its metadata.
 
     Datasets in this format consist of several time traces, each of which is
     stored in a text file. In order to analyse the raw data, it is necessary
@@ -117,11 +192,6 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
     ----------
     dataset : :obj:`trepr.dataset.ExperimentalDataset`
         Entity containing data and metadata.
-
-    Raises
-    ------
-    FileNotFoundError
-        Raised if no infofile could be found.
 
     """
 
@@ -158,8 +228,9 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         self._ensure_field_axis_in_SI_unit()
         self._hand_axes_to_dataset()
 
-        self._load_infofile()
-        self._map_infofile()
+        if self._infofile_exists():
+            self._load_infofile()
+            self._map_infofile()
 
         self._create_time_stamp_data()
         self._create_mw_freq_data()
@@ -277,11 +348,17 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
                         self._time_stop,
                         num=self._time_points)
 
+    def _infofile_exists(self):
+        if self._get_infofile_name() and os.path.exists(
+                self._get_infofile_name()[0]):
+            return True
+        logger.warning('No infofile found for dataset "%s", import continued '
+                       'without infofile.', os.path.split(self.source)[1])
+        return False
+
     def _load_infofile(self):
         """Import the infofile and parse it."""
         infofile_name = self._get_infofile_name()
-        if not infofile_name:
-            raise FileNotFoundError('Infofile not found.')
         self._infofile.filename = infofile_name[0]
         self._infofile.parse()
 
@@ -304,8 +381,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         mapper = aspecd.metadata.MetadataMapper()
         mapper.version = infofile_version
         mapper.metadata = self._infofile.parameters
-        root_path = os.path.split(os.path.abspath(__file__))[0]
-        mapper.recipe_filename = os.path.join(root_path, 'metadata_mapper.yaml')
+        mapper.recipe_filename = 'trepr@metadata_mapper.yaml'
         mapper.map()
         self.dataset.metadata.from_dict(mapper.metadata)
 
@@ -369,6 +445,13 @@ class TezImporter(aspecd.io.DatasetImporter):
     dataset : :obj:`trepr.dataset.ExperimentalDataset`
         Entity containing data and metadata.
 
+    load_infofile: :class:`bool`
+        Whether to load metadata from info file.
+
+        If no info file is found, import will proceed nevertheless.
+
+        Default: True
+
     """
 
     def __init__(self, source=''):
@@ -377,7 +460,7 @@ class TezImporter(aspecd.io.DatasetImporter):
             source = source[:-4]
         super().__init__(source=source)
         # public properties
-        self.tez_mapper_filename = 'tez_mapper.yaml'
+        self.tez_mapper_filename = 'trepr@tez_mapper.yaml'
         self.xml_dict = None
         self.dataset = None
         self.metadata_filename = ''
@@ -470,8 +553,8 @@ class TezImporter(aspecd.io.DatasetImporter):
         if self._get_infofile_name() and os.path.exists(
                 self._get_infofile_name()[0]):
             return True
-        print('No infofile found for dataset %s, import continued without '
-              'infofile.' % os.path.split(self.source)[1])
+        logger.warning('No infofile found for dataset "%s", import continued '
+                       'without infofile.', os.path.split(self.source)[1])
         return False
 
     def _get_infofile_name(self):
@@ -494,8 +577,7 @@ class TezImporter(aspecd.io.DatasetImporter):
         mapper = aspecd.metadata.MetadataMapper()
         mapper.version = infofile_version
         mapper.metadata = self._infofile.parameters
-        root_path = os.path.split(os.path.abspath(__file__))[0]
-        mapper.recipe_filename = os.path.join(root_path, 'metadata_mapper.yaml')
+        mapper.recipe_filename = 'trepr@metadata_mapper.yaml'
         mapper.map()
         self._metadata = \
             aspecd.utils.convert_keys_to_variable_names(mapper.metadata)
@@ -513,8 +595,8 @@ class TezImporter(aspecd.io.DatasetImporter):
 
     def _get_metadata_from_xml(self):
         mapping = aspecd.utils.Yaml()
-        rootpath = os.path.split(os.path.abspath(__file__))[0]
-        mapping.read_from(os.path.join(rootpath, self.tez_mapper_filename))
+        mapping.read_stream(
+            aspecd.utils.get_package_data(self.tez_mapper_filename).encode())
         metadata_dict = collections.OrderedDict()
         for key, subdict in mapping.dict.items():
             metadata_dict[key] = collections.OrderedDict()
@@ -595,3 +677,413 @@ class TezImporter(aspecd.io.DatasetImporter):
     def _remove_tmp_directory(self):
         if os.path.exists(self._tmpdir):
             shutil.rmtree(self._tmpdir)
+
+
+class Fsc2Importer(aspecd.io.DatasetImporter):
+    """
+    Importer for data in Berlin fsc2 format.
+
+    These data have been recorded using the flexible fsc2 spectrometer
+    control software written by J. T. Törring, allowing to define user-specific
+    experiments. For details, `see the fsc2 homepage
+    <https://users.physik.fu-berlin.de/~jtt/fsc2.phtml>`_. As the actual
+    experiments are defined in the "Experiment Description Language" (EDL),
+    the importer necessarily makes a number of assumptions that work with
+    the particular set of data recorded at a given time at FU Berlin.
+
+    Key aspects of the data format are:
+
+    * The data files are bare text files (ASCII)
+
+    * The entire EDL program defining the experiment is contained in a header
+
+    * The header usually starts with ``%``
+
+    * The data are stored as ASCII numbers in one (very) long column.
+
+    * At the bottom of the header is a series of key-value pairs with
+      crucial metadata necessary to reshape the data and assign the axes.
+
+    The following strategy has been applied to reading the data:
+
+    * Read the header first, separately storing the key-value pairs at the end.
+
+    * Read the data using :func:`numpy.loadtxt`.
+
+    * Reshape the data according to the parameters read from the header.
+
+    Only those parameters that can definitely be obtained from the header
+    are stored within the metadata of the dataset. Note that using this
+    format by the authors predates the development of the info file format,
+    hence many parameters can only implicitly be guessed, as most of the
+    time no corresponding record of metadata exists.
+
+    .. note::
+
+        While it may seem strange to store the data as one long column,
+        this is actually a very robust way of storing data, as each
+        individual trace gets written to the file immediately after
+        obtaining the data from the transient recorder. Thus, even if
+        something crashed during a measurement (blackout, ...), all data up
+        to this event are usually retained.
+
+
+    .. versionadded:: 0.2
+
+    """
+
+    def __init__(self, source=''):
+        super().__init__(source=source)
+        self._header = []
+        self._parameters = dict()
+        self._comment = []
+        self._devices = []
+        self._device_list = {
+            'tds520A': 'Tektronix TDS520A',
+            'bh15_fc': 'Bruker BH15',
+            'aeg_x_band': 'AEG Magnet Power Supply',
+            'er035m_s': 'Bruker ER 035 M',
+        }
+        self._orig_source = ''
+
+    def _import(self):
+        if not os.path.splitext(self.source)[1]:
+            self._orig_source = self.source
+            self.source += '.dat'
+
+        self._read_header()
+        self._load_and_assign_data()
+
+        self._assign_field_axis()
+        self._assign_time_axis()
+        self._assign_intensity_axis()
+
+        # Metadata can only be assigned after the axes
+        self._assign_metadata()
+        self._assign_comment()
+
+        self.source = self._orig_source or self.source
+
+    # pylint: disable=too-many-nested-blocks
+    def _read_header(self):
+        """
+        fsc2 files start with a header containing the entire program.
+
+        The header is usually marked with ``%``, and at the end, after the
+        program, a series of key-value pairs are printed that are crucial to
+        reshape the data and assign the axes.
+
+        The list of parameters got extended over time, and the very end of
+        the header consists of comments the user can enter immediately
+        before starting the experiment.
+        """
+        in_header = True
+        parameter_line = False
+        with open(self.source, 'r', encoding="utf8") as file:
+            while in_header:
+                line = file.readline()
+                if line.startswith('%'):
+                    line = line.replace('%', '', 1).strip()
+                    self._header.append(line)
+                    if line.startswith('Number of runs'):
+                        parameter_line = True
+                    if parameter_line:
+                        if ' = ' in line:
+                            key, value = line.split(' = ')
+                            try:
+                                if '.' in value:
+                                    value = float(value)
+                                else:
+                                    value = int(value)
+                            except ValueError:
+                                pass
+                            self._parameters[key.strip()] = value
+                        elif line:
+                            self._comment.append(line)
+                else:
+                    in_header = False
+        self._get_list_of_active_devices()
+
+    def _load_and_assign_data(self):
+        data = np.loadtxt(self.source, comments="% ")
+        self.dataset.data.data = \
+            data.reshape([-1, self._parameters['Number of points']])
+
+    def _assign_field_axis(self):
+        field_start = float(self._parameters['Start field'].split(' ')[0]) / 10
+        field_end = float(self._parameters['End field'].split(' ')[0]) / 10
+        self.dataset.data.axes[0].values = \
+            np.linspace(field_start, field_end, self.dataset.data.data.shape[0])
+        self.dataset.data.axes[0].quantity = 'magnetic field'
+        self.dataset.data.axes[0].unit = 'mT'
+
+    def _assign_time_axis(self):
+        trigger_position = self._parameters['Trigger position']
+        number_of_points = self.dataset.data.data.shape[1]
+        relative_trigger_position = trigger_position / number_of_points
+        slice_length = \
+            float(self._parameters['Slice length'].split(' ')[0]) * 1e-6
+        self.dataset.data.axes[1].values = np.linspace(
+            -slice_length * relative_trigger_position,
+            slice_length - (slice_length * relative_trigger_position),
+            number_of_points
+        )
+        self.dataset.data.axes[1].quantity = 'time'
+        self.dataset.data.axes[1].unit = 's'
+
+    def _assign_intensity_axis(self):
+        self.dataset.data.axes[2].quantity = 'intensity'
+        self.dataset.data.axes[2].unit = 'V'
+
+    def _assign_metadata(self):
+        """
+        Assign as many metadata as sensibly possible.
+
+        Admittedly, this is currently pretty much hand-coding. For sure,
+        there are more elegant ways to do it.
+        """
+        self._assign_transient_metadata()
+        self._assign_recorder_metadata()
+        self._assign_bridge_metadata()
+        self._assign_temperature_control_metadata()
+        self._assign_pump_metadata()
+        self._assign_magnetic_field_metadata()
+        # Needs to be done after assigning pump metadata
+        self._assign_experiment_metadata()
+
+    def _assign_transient_metadata(self):
+        self.dataset.metadata.transient.points = \
+            self._parameters['Number of points']
+        self.dataset.metadata.transient.trigger_position = \
+            self._parameters['Trigger position']
+        value, _ = self._parameters['Slice length'].split()
+        self.dataset.metadata.transient.length.value = float(value) * 1e-6
+        self.dataset.metadata.transient.length.unit = 's'
+
+    def _assign_recorder_metadata(self):
+        if 'Sensitivity' in self._parameters:
+            self._assign_value_unit('Sensitivity',
+                                    self.dataset.metadata.recorder.sensitivity)
+        if 'Time base' in self._parameters:
+            self._assign_value_unit('Time base',
+                                    self.dataset.metadata.recorder.time_base)
+        if 'Number of averages' in self._parameters:
+            self.dataset.metadata.recorder.averages = \
+                self._parameters['Number of averages']
+        self.dataset.metadata.recorder.pretrigger.value = \
+            np.abs(self.dataset.data.axes[1].values[0])
+        self.dataset.metadata.recorder.pretrigger.unit = \
+            self.dataset.data.axes[1].unit
+        if 'tds520A' in self._devices:
+            self.dataset.metadata.recorder.model = self._device_list['tds520A']
+
+    def _assign_bridge_metadata(self):
+        if 'MW frequency' in self._parameters:
+            self._assign_value_unit('MW frequency',
+                                    self.dataset.metadata.bridge.mw_frequency)
+        if 'Attenuation' in self._parameters:
+            self._assign_value_unit('Attenuation',
+                                    self.dataset.metadata.bridge.attenuation)
+
+    def _assign_temperature_control_metadata(self):
+        if 'Temperature' in self._parameters:
+            self._assign_value_unit(
+                'Temperature',
+                self.dataset.metadata.temperature_control.temperature)
+
+    def _assign_pump_metadata(self):
+        if 'Laser wavelength' in self._parameters:
+            wavelength, repetition_rate = \
+                self._parameters['Laser wavelength'].split(' (')
+            value, unit = wavelength.split()
+            self.dataset.metadata.pump.wavelength.value = float(value)
+            self.dataset.metadata.pump.wavelength.unit = unit
+            value, unit = repetition_rate.split()
+            self.dataset.metadata.pump.repetition_rate.value = float(value)
+            self.dataset.metadata.pump.repetition_rate.unit = \
+                unit.replace(')', '')
+
+    def _assign_magnetic_field_metadata(self):
+        if 'bh15_fc' in self._devices:
+            self.dataset.metadata.magnetic_field.controller = \
+                self._device_list['bh15_fc']
+            self.dataset.metadata.magnetic_field.power_supply = \
+                self._device_list['bh15_fc']
+            self.dataset.metadata.magnetic_field.field_probe_model = \
+                self._device_list['bh15_fc']
+            self.dataset.metadata.magnetic_field.field_probe_type = 'Hall probe'
+        if 'aeg_x_band' in self._devices:
+            self.dataset.metadata.magnetic_field.controller = 'home-built'
+            self.dataset.metadata.magnetic_field.power_supply = \
+                self._device_list['aeg_x_band']
+        if 'er035m_s' in self._devices:
+            self.dataset.metadata.magnetic_field.field_probe_model = \
+                self._device_list['er035m_s']
+            self.dataset.metadata.magnetic_field.field_probe_type = \
+                'NMR Gaussmeter'
+
+    def _assign_experiment_metadata(self):
+        self.dataset.metadata.experiment.runs = \
+            self._parameters['Number of runs']
+        self.dataset.metadata.experiment.shot_repetition_rate = \
+            self.dataset.metadata.pump.repetition_rate
+
+    def _assign_comment(self):
+        if self._comment:
+            comment = aspecd.annotation.Comment()
+            comment.content = ' '.join(self._comment)
+            self.dataset.annotate(comment)
+
+    def _assign_value_unit(self, parameter='', metadata=None):
+        value, unit = self._parameters[parameter].split()
+        metadata.value = float(value)
+        metadata.unit = unit.split('/')[0]
+
+    def _get_list_of_active_devices(self):
+        in_devices = False
+        for line in self._header:
+            if 'DEVICES:' in line:
+                in_devices = True
+                continue
+            if 'VARIABLES:' in line:
+                break
+            if in_devices and line and not line.startswith('//'):
+                device = line.split()[0].replace(';', '').strip()
+                self._devices.append(device)
+
+
+class BES3TImporter(aspecd.io.DatasetImporter):
+    """
+    Importer for data in Bruker BES3T format.
+
+    The Bruker BES3T format consists of at least two files, a data file with
+    extension "DTA" and a descriptor file with extension "DSC". In case of
+    multidimensional data, additional data files may be written (e.g.
+    with extension ".YGF"), similarly to the case where the X axis is not
+    equidistant (at least the BES3T specification allows this situation).
+
+    This importer currently only supports a smaller subset of the
+    specification, *e.g.* only data without additional axes data files and
+    only real values. This may, however, change in the future.
+
+    .. versionadded:: 0.2
+
+    """
+
+    def __init__(self, source=None):
+        super().__init__(source=source)
+        self._orig_source = ''
+        self._dsc_keys = dict()
+        self._mapper_filename = 'bes3t_dsc_keys.yaml'
+
+    def _import(self):
+        base_file, extension = os.path.splitext(self.source)
+        if extension:
+            self._orig_source = self.source
+            self.source = base_file
+
+        self._read_dsc_file()
+        self._map_dsc_file()
+        self._read_dta_file()
+        self._assign_axes()
+
+        self.source = self._orig_source or self.source
+
+    def _read_dsc_file(self):  # noqa: MC0001
+        with open(self.source + '.DSC', 'r', encoding='utf8') as file:
+            file_contents = file.readlines()
+        block = ''
+        for line in file_contents:
+            if '*' in line:
+                line, _ = line.split('*', maxsplit=1)
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith('#'):
+                block, _ = line[1:].split()
+                continue
+            if block and block in ['DESC', 'SPL']:
+                try:
+                    key, value = line.split(maxsplit=1)
+                    value = value.replace("'", "")
+                    try:
+                        if '.' in value:
+                            value = float(value)
+                        else:
+                            value = int(value)
+                    except ValueError:
+                        pass
+                except ValueError:
+                    key = line.split(maxsplit=1)[0]
+                    value = None
+                self._dsc_keys[key] = value
+
+    def _map_dsc_file(self):
+        yaml_file = aspecd.utils.Yaml()
+        yaml_file.read_stream(aspecd.utils.get_package_data(
+            'trepr@' + self._mapper_filename).encode())
+        metadata_dict = {}
+        metadata_dict = self._traverse(yaml_file.dict, metadata_dict)
+        self.dataset.metadata.from_dict(metadata_dict)
+        self.dataset.label = self._dsc_keys['TITL']
+
+    def _traverse(self, dict_, metadata_dict):
+        for key, value in dict_.items():
+            if isinstance(value, dict):
+                metadata_dict[key] = {}
+                self._traverse(value, metadata_dict[key])
+            elif value in self._dsc_keys.keys():
+                metadata_dict[key] = self._dsc_keys[value]
+        return metadata_dict
+
+    def _read_dta_file(self):
+        filename = self.source + '.DTA'
+        byte_order = '>' if self._dsc_keys['BSEQ'] == 'BIG' else '<'
+        format_ = {
+            'S': 'h',
+            'I': 'i',
+            'F': 'f',
+            'D': 'd',
+        }
+        dtype = byte_order + format_[self._dsc_keys['IRFMT']]
+        self.dataset.data.data = np.fromfile(filename, dtype=dtype)
+        if 'YPTS' in self._dsc_keys and self._dsc_keys['YPTS']:
+            self.dataset.data.data = \
+                np.reshape(self.dataset.data.data,
+                           (-1, self._dsc_keys['XPTS'])).T
+        if self._dsc_keys['XNAM'].lower() == "time":
+            self.dataset.data.data = self.dataset.data.data.T
+
+    def _assign_axes(self):
+        yaxis = None
+        xaxis = np.linspace(self._dsc_keys['XMIN'],
+                            self._dsc_keys['XMIN'] + self._dsc_keys['XWID'],
+                            self._dsc_keys['XPTS'])
+        if 'YTYP' in self._dsc_keys and self._dsc_keys['YTYP'] == 'IDX':
+            yaxis = np.linspace(self._dsc_keys['YMIN'],
+                                self._dsc_keys['YMIN']
+                                + self._dsc_keys['YWID'],
+                                self._dsc_keys['YPTS'])
+        if 'XNAM' in self._dsc_keys \
+                and self._dsc_keys['XNAM'].lower() == "time":
+            self.dataset.data.axes[0].values = yaxis
+            self.dataset.data.axes[0].unit = self._dsc_keys['YUNI']
+            self.dataset.data.axes[1].values = xaxis
+            self.dataset.data.axes[1].unit = self._dsc_keys['XUNI']
+        else:
+            self.dataset.data.axes[0].values = xaxis
+            self.dataset.data.axes[0].unit = self._dsc_keys['XUNI']
+            if yaxis is not None:
+                self.dataset.data.axes[1].values = yaxis
+                self.dataset.data.axes[1].unit = self._dsc_keys['YUNI']
+        for axis in self.dataset.data.axes:
+            if axis.unit == 'G':
+                axis.values /= 10
+                axis.unit = 'mT'
+                axis.quantity = 'magnetic field'
+            if axis.unit == 'ns':
+                axis.values /= 1e9
+                axis.unit = 's'
+                axis.quantity = 'time'
+        self.dataset.data.axes[-1].quantity = self._dsc_keys['IRNAM'].lower()
+        self.dataset.data.axes[-1].unit = self._dsc_keys['IRUNI']

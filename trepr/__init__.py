@@ -20,8 +20,10 @@ Available modules
 
 Utilities
 ---------
+:mod:`trepr.utils`
+    General purpose functions and classes used in other modules.
 :mod:`trepr.exceptions`
-    Exceptions for the trepr package
+    Exceptions for the trepr package.
 
 
 """

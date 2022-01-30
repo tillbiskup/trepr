@@ -1,0 +1,148 @@
+format:
+  type: ASpecD recipe
+  version: '0.2'
+
+settings:
+  default_package: trepr
+  autosave_plots: false
+
+directories:
+  datasets_source: ../../tests/testdata/fsc2/
+  
+datasets:
+  #- radical-pair
+  - triplet
+
+tasks:
+  - kind: processing
+    type: PretriggerOffsetCompensation
+    comment: >
+        Compensate for DC offsets of the signal prior to the laser flash
+  - kind: processing
+    type: BackgroundCorrection
+    comment: >
+        Correct for laser-induced background signal.
+  - kind: singleanalysis
+    type: BasicCharacteristics
+    properties:
+      parameters:
+        kind: max
+        output: indices
+        axis: 0
+    result: max_field
+    comment: Extract index of field axis for global maximum of the dataset
+  - kind: singleanalysis
+    type: BasicCharacteristics
+    properties:
+      parameters:
+        kind: min
+        output: indices
+        axis: 0
+    result: min_field
+    comment: Extract index of field axis for global minimum of the dataset
+  - kind: singleanalysis
+    type: BasicCharacteristics
+    properties:
+      parameters:
+        kind: max
+        output: indices
+        axis: 1
+    result: max_time
+    comment: Extract index of time axis for global maximum of the dataset
+  - kind: singleanalysis
+    type: BasicCharacteristics
+    properties:
+      parameters:
+        kind: min
+        output: indices
+        axis: 1
+    result: min_time
+    comment: Extract index of time axis for global minimum of the dataset
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: max_field
+        axis: 0
+    result: time_trace_max
+    comment: Extract transient for global maximum of the dataset
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: min_field
+        axis: 0
+    result: time_trace_min
+    comment: Extract transient for global minimum of the dataset
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: max_time
+        axis: 1
+    result: spectrum_max
+    comment: Extract spectrum for global maximum of the dataset
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: min_time
+        axis: 1
+    result: spectrum_min
+    comment: Extract spectrum for global minimum of the dataset
+  - kind: multiplot
+    type: MultiPlotter1D
+    properties:
+      parameters:
+        switch_axes: true
+        tight_layout: true
+        tight: y
+      properties:
+        grid:
+          show: true
+          axis: y
+    apply_to:
+    - time_trace_max
+    - time_trace_min
+    result: transients
+  - kind: multiplot
+    type: MultiPlotter1D
+    properties:
+      parameters:
+        tight_layout: true
+        tight: x
+      properties:
+        grid:
+          show: true
+          axis: x
+    apply_to:
+    - spectrum_max
+    - spectrum_min
+    result: spectra
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+      type: contourf
+    result: 2D
+  - kind: compositeplot
+    type: CompositePlotter
+    properties:
+      properties:
+        figure:
+          dpi: 150
+          size: [8, 8]
+      grid_dimensions: [2, 2]
+      subplot_locations:
+        - [0, 0, 1, 1]
+        - [0, 1, 1, 1]
+        - [1, 0, 1, 1]
+      plotter:
+        - 2D
+        - transients
+        - spectra
+      filename: characteristics.png

@@ -1,11 +1,20 @@
 trepr
 =====
 
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.4897112.svg
+   :target: https://doi.org/10.5281/zenodo.4897112
+   :align: right
+
 trepr is a package for handling data obtained using time-resolved electron paramagnetic resonance (TREPR) spectroscopy. It is based on the `ASpecD framework <https://www.aspecd.de/>`_. Due to inheriting from the ASpecD superclasses, all data generated with the trepr package are completely reproducible and have a complete history.
 
 What is even better: Actual data processing and analysis **no longer requires programming skills**, but is as simple as writing a text file summarising all the steps you want to have been performed on your dataset(s) in an organised way. Curious? Have a look at the following example::
 
-    default_package: trepr
+    format:
+      type: ASpecD recipe
+      version: '0.2'
+
+    settings:
+      default_package: trepr
 
     datasets:
       - /path/to/first/dataset
@@ -68,6 +77,10 @@ There is a number of related packages users of the trepr package may well be int
 * `cwepr <https://docs.cwepr.de/>`_
 
   Package for processing and analysing continuous-wave electron paramagnetic resonance (cw-EPR) data, originally implemented by P. Kirchner, currently developed and maintained by M. Schröder and T. Biskup.
+
+* `FitPy <https://docs.fitpy.de/>`_
+
+  Framework for the advanced fitting of models to spectroscopic data focussing on reproducibility, developed by T. Biskup.
 
 You may as well be interested in the `LabInform project <https://www.labinform.de/>`_ focussing on the necessary more global infrastructure in a laboratory/scientific workgroup interested in more `reproducible research <https://www.reproducible-research.de/>`_. In short, LabInform is "The Open-Source Laboratory Information System".
 

@@ -1,0 +1,149 @@
+\begin{multicols}{2}
+
+\subsection{Messung}
+
+%{ if dataset.metadata.measurement.values() | list | unique is true }%
+\begin{description}
+%{ for key, value in dataset.metadata.measurement.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] {@ value | replace("_", "\\_") | replace("#", "\\#") }
+%{ endif }%
+%{ endfor }%
+\end{description}
+%{ else }%
+Es sind keine Metadaten verfügbar
+%{ endif }%
+
+\subsection{Probe}
+
+%{ if dataset.metadata.sample.values() | list | unique is true }%
+\begin{description}
+%{ for key, value in dataset.metadata.sample.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] {@ value | replace("_", "\\_") | replace("#", "\\#") }
+%{ endif }%
+%{ endfor }%
+\end{description}
+%{ else }%
+Es sind keine Metadaten verfügbar
+%{ endif }%
+
+\subsection{Temperatur}
+
+\begin{description}
+%{ for key, value in dataset.metadata.temperatureControl.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] %{ if 'value' in value }%{@ value.value } {@ value.unit }%{ else }%{@ value | replace("_", "\\_") | replace("#", "\\#") }%{ endif }%
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Experiment}
+
+\begin{description}
+%{ for key, value in dataset.metadata.experiment.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] %{ if not value|int and 'value' in value }%{@ value.value } {@ value.unit }%{ else }%{@ value | replace("_", "\\_") | replace("#", "\\#") }%{ endif }%
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Spektrometer}
+
+%{ if dataset.metadata.spectrometer.values() | list | unique is true }%
+\begin{description}
+%{ for key, value in dataset.metadata.spectrometer.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] {@ value | replace("_", "\\_") | replace("#", "\\#") }
+%{ endif }%
+%{ endfor }%
+\end{description}
+%{ else }%
+Es sind keine Metadaten verfügbar
+%{ endif }%
+
+\subsection{Zeitspur}
+
+\begin{description}
+%{ for key, value in dataset.metadata.transient.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] %{ if not value|int and 'value' in value }%{@ value.value } {@ value.unit }%{ else }%{@ value | replace("_", "\\_") | replace("#", "\\#") }%{ endif }%
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Magnetfeld}
+
+\begin{description}
+%{ for key, value in dataset.metadata.magneticField.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] %{ if not value|int and 'value' in value }%{@ value.value } {@ value.unit }%{ else }%{@ value | replace("_", "\\_") | replace("#", "\\#") }%{ endif }%
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Hintergrund}
+
+\begin{description}
+%{ for key, value in dataset.metadata.background.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] %{ if not value|int and 'value' in value }%{@ value.value } {@ value.unit }%{ else }%{@ value | replace("_", "\\_") | replace("#", "\\#") }%{ endif }%
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Mikrowellenbrücke}
+
+\begin{description}
+%{ for key, value in dataset.metadata.bridge.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] %{ if not value|int and 'value' in value }%{@ value.value } {@ value.unit }%{ else }%{@ value | replace("_", "\\_") | replace("#", "\\#") }%{ endif }%
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Videoverstärker}
+
+\begin{description}
+%{ for key, value in dataset.metadata.videoAmplifier.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] %{ if not value|int and 'value' in value }%{@ value.value } {@ value.unit }%{ else }%{@ value | replace("_", "\\_") | replace("#", "\\#") }%{ endif }%
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Transientenrekorder}
+
+\begin{description}
+%{ for key, value in dataset.metadata.recorder.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] %{ if not value|int and 'value' in value }%{@ value.value } {@ value.unit }%{ else }%{@ value | replace("_", "\\_") | replace("#", "\\#") }%{ endif }%
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Anregungslicht-Quelle}
+
+\begin{description}
+%{ for key, value in dataset.metadata.pump.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] %{ if not value|int and 'value' in value }%{@ value.value } {@ value.unit }%{ else }%{@ value | replace("_", "\\_") | replace("#", "\\#") }%{ endif }%
+%{ endif }%
+%{ endfor }%
+\end{description}
+
+\subsection{Resonator}
+
+%{ if dataset.metadata.probehead.values() | list | unique is true }%
+\begin{description}
+%{ for key, value in dataset.metadata.probehead.items() }%
+%{ if value }%
+\item[{@ key | replace("_", "\\_") | replace("#", "\\#") }] %{ if not value|int and 'value' in value }%{@ value.value } {@ value.unit }%{ else }%{@ value | replace("_", "\\_") | replace("#", "\\#") }%{ endif }%
+%{ endif }%
+%{ endfor }%
+\end{description}
+%{ else }%
+Es sind keine Metadaten verfügbar
+%{ endif }%
+
+\end{multicols}

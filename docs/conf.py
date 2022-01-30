@@ -60,7 +60,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'trepr package'
-copyright = '2018-19 Jara Popp, 2020- Mirjam Schröder, 2018– Till Biskup'
+copyright = '2018-19 Jara Popp, 2020- Mirjam Schröder, 2018– Till Biskup.'
 author = 'Jara Popp, Mirjam Schröder, Till Biskup'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -180,7 +180,7 @@ html_favicon = 'favicon.ico'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -189,7 +189,7 @@ html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-#html_last_updated_fmt = '%b %d, %Y'
+html_last_updated_fmt = '%Y-%m-%d'
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
@@ -335,3 +335,9 @@ intersphinx_mapping = {
     'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
     'aspecd': ('https://docs.aspecd.de/', None),
 }
+
+# -- Options for todo extension ----------------------------------------------
+
+# If true, `todo` and `todoList` produce output, else they produce nothing.
+todo_include_todos = True
+todo_link_only = True
