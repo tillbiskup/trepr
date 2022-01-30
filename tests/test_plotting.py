@@ -1,9 +1,119 @@
 import unittest
 
+import matplotlib
 import numpy as np
 
 import trepr.dataset
 import trepr.plotting
+
+
+class TestSinglePlotter1D(unittest.TestCase):
+
+    def setUp(self):
+        self.plotter = trepr.plotting.SinglePlotter1D()
+        self.dataset = trepr.dataset.ExperimentalDataset()
+        self.dataset.data.data = np.random.random(5)
+        self.dataset.data.axes[0].quantity = 'magnetic field'
+        self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.data.axes[1].quantity = 'intensity'
+        self.dataset.data.axes[1].unit = 'V'
+        self.plotter.dataset = self.dataset
+
+    def test_has_g_axis_parameter(self):
+        self.assertTrue('g-axis' in self.plotter.parameters)
+
+    def test_g_axis_adds_secondary_axis(self):
+        self.plotter.parameters['g-axis'] = True
+        self.plotter.plot()
+        secondary_axes = [
+            child for child in self.plotter.ax.get_children()
+            if isinstance(child, matplotlib.axes._secondary_axes.SecondaryAxis)
+        ]
+        self.assertTrue(secondary_axes)
+
+    def test_g_axis_has_correct_label(self):
+        self.plotter.parameters['g-axis'] = True
+        self.plotter.plot()
+        secondary_axes = [
+            child for child in self.plotter.ax.get_children()
+            if isinstance(child, matplotlib.axes._secondary_axes.SecondaryAxis)
+        ]
+        self.assertIn('g\\ value',
+                      secondary_axes[0].get_xaxis().get_label().get_text())
+
+
+class TestSinglePlotter2D(unittest.TestCase):
+
+    def setUp(self):
+        self.plotter = trepr.plotting.SinglePlotter2D()
+        self.dataset = trepr.dataset.ExperimentalDataset()
+        self.dataset.data.data = np.random.random([5, 5])
+        self.dataset.data.axes[0].quantity = 'magnetic field'
+        self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.data.axes[1].quantity = 'time'
+        self.dataset.data.axes[1].unit = 's'
+        self.dataset.data.axes[2].quantity = 'intensity'
+        self.dataset.data.axes[2].unit = 'V'
+        self.plotter.dataset = self.dataset
+
+    def test_has_g_axis_parameter(self):
+        self.assertTrue('g-axis' in self.plotter.parameters)
+
+    def test_g_axis_adds_secondary_axis(self):
+        self.plotter.parameters['g-axis'] = True
+        self.plotter.plot()
+        secondary_axes = [
+            child for child in self.plotter.ax.get_children()
+            if isinstance(child, matplotlib.axes._secondary_axes.SecondaryAxis)
+        ]
+        self.assertTrue(secondary_axes)
+
+    def test_g_axis_has_correct_label(self):
+        self.plotter.parameters['g-axis'] = True
+        self.plotter.plot()
+        secondary_axes = [
+            child for child in self.plotter.ax.get_children()
+            if isinstance(child, matplotlib.axes._secondary_axes.SecondaryAxis)
+        ]
+        self.assertIn('g\\ value',
+                      secondary_axes[0].get_xaxis().get_label().get_text())
+
+
+class TestSinglePlotter2DStacked(unittest.TestCase):
+
+    def setUp(self):
+        self.plotter = trepr.plotting.SinglePlotter2DStacked()
+        self.dataset = trepr.dataset.ExperimentalDataset()
+        self.dataset.data.data = np.random.random([5, 5])
+        self.dataset.data.axes[0].quantity = 'magnetic field'
+        self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.data.axes[1].quantity = 'time'
+        self.dataset.data.axes[1].unit = 's'
+        self.dataset.data.axes[2].quantity = 'intensity'
+        self.dataset.data.axes[2].unit = 'V'
+        self.plotter.dataset = self.dataset
+
+    def test_has_g_axis_parameter(self):
+        self.assertTrue('g-axis' in self.plotter.parameters)
+
+    def test_g_axis_adds_secondary_axis(self):
+        self.plotter.parameters['g-axis'] = True
+        self.plotter.plot()
+        secondary_axes = [
+            child for child in self.plotter.ax.get_children()
+            if isinstance(child, matplotlib.axes._secondary_axes.SecondaryAxis)
+        ]
+        self.assertTrue(secondary_axes)
+
+    def test_g_axis_has_correct_label(self):
+        self.plotter.parameters['g-axis'] = True
+        self.plotter.plot()
+        secondary_axes = [
+            child for child in self.plotter.ax.get_children()
+            if isinstance(child, matplotlib.axes._secondary_axes.SecondaryAxis)
+        ]
+        self.assertIn('g\\ value',
+                      secondary_axes[0].get_xaxis().get_label().get_text())
 
 
 class TestMultiPlotter1D(unittest.TestCase):
@@ -18,60 +128,59 @@ class TestMultiPlotter1D(unittest.TestCase):
         self.dataset.data.axes[1].unit = 'V'
         self.plotter.datasets = [self.dataset]
 
-    def test_instantiate_class(self):
-        pass
+    def test_has_g_axis_parameter(self):
+        self.assertTrue('g-axis' in self.plotter.parameters)
 
-    def test_has_switch_axes_parameter(self):
-        self.assertTrue('switch_axes' in self.plotter.parameters)
-
-    def test_switch_axes_sets_correct_axes_labels(self):
-        self.plotter.parameters['switch_axes'] = True
+    def test_g_axis_adds_secondary_axis(self):
+        self.plotter.parameters['g-axis'] = True
         self.plotter.plot()
-        self.assertIn('intensity', self.plotter.ax.get_xlabel())
-        self.assertIn('magnetic', self.plotter.ax.get_ylabel())
+        secondary_axes = [
+            child for child in self.plotter.ax.get_children()
+            if isinstance(child, matplotlib.axes._secondary_axes.SecondaryAxis)
+        ]
+        self.assertTrue(secondary_axes)
 
-    def test_has_tight_parameter(self):
-        self.assertTrue('tight' in self.plotter.parameters)
-
-    def test_tight_sets_correct_x_axes_limits(self):
-        self.plotter.parameters['tight'] = 'x'
+    def test_g_axis_has_correct_label(self):
+        self.plotter.parameters['g-axis'] = True
         self.plotter.plot()
-        self.assertListEqual([0, 4], list(self.plotter.ax.get_xlim()))
+        secondary_axes = [
+            child for child in self.plotter.ax.get_children()
+            if isinstance(child, matplotlib.axes._secondary_axes.SecondaryAxis)
+        ]
+        self.assertIn('g\\ value',
+                      secondary_axes[0].get_xaxis().get_label().get_text())
 
-    def test_tight_sets_correct_y_axes_limits(self):
-        self.plotter.parameters['tight'] = 'y'
-        self.plotter.plot()
-        self.assertListEqual([min(self.dataset.data.data),
-                              max(self.dataset.data.data)],
-                             list(self.plotter.ax.get_ylim()))
 
-    def test_tight_sets_correct_axes_limits_with(self):
-        self.plotter.parameters['tight'] = 'both'
-        self.plotter.plot()
-        self.assertListEqual([0, 4], list(self.plotter.ax.get_xlim()))
-        self.assertListEqual([min(self.dataset.data.data),
-                              max(self.dataset.data.data)],
-                             list(self.plotter.ax.get_ylim()))
+class TestMultiPlotter1DStacked(unittest.TestCase):
 
-    def test_tight_sets_correct_x_axes_limits_with_switched_axes(self):
-        self.plotter.parameters['switch_axes'] = True
-        self.plotter.parameters['tight'] = 'x'
-        self.plotter.plot()
-        self.assertListEqual([min(self.dataset.data.data),
-                              max(self.dataset.data.data)],
-                             list(self.plotter.ax.get_xlim()))
+    def setUp(self):
+        self.plotter = trepr.plotting.MultiPlotter1DStacked()
+        self.dataset = trepr.dataset.ExperimentalDataset()
+        self.dataset.data.data = np.random.random(5)
+        self.dataset.data.axes[0].quantity = 'magnetic field'
+        self.dataset.data.axes[0].unit = 'mT'
+        self.dataset.data.axes[1].quantity = 'intensity'
+        self.dataset.data.axes[1].unit = 'V'
+        self.plotter.datasets = [self.dataset]
 
-    def test_tight_sets_correct_y_axes_limits_with_switched_axes(self):
-        self.plotter.parameters['switch_axes'] = True
-        self.plotter.parameters['tight'] = 'y'
-        self.plotter.plot()
-        self.assertListEqual([0, 4], list(self.plotter.ax.get_ylim()))
+    def test_has_g_axis_parameter(self):
+        self.assertTrue('g-axis' in self.plotter.parameters)
 
-    def test_tight_sets_correct_axes_limits_with_switched_axes(self):
-        self.plotter.parameters['switch_axes'] = True
-        self.plotter.parameters['tight'] = 'both'
+    def test_g_axis_adds_secondary_axis(self):
+        self.plotter.parameters['g-axis'] = True
         self.plotter.plot()
-        self.assertListEqual([min(self.dataset.data.data),
-                              max(self.dataset.data.data)],
-                             list(self.plotter.ax.get_xlim()))
-        self.assertListEqual([0, 4], list(self.plotter.ax.get_ylim()))
+        secondary_axes = [
+            child for child in self.plotter.ax.get_children()
+            if isinstance(child, matplotlib.axes._secondary_axes.SecondaryAxis)
+        ]
+        self.assertTrue(secondary_axes)
+
+    def test_g_axis_has_correct_label(self):
+        self.plotter.parameters['g-axis'] = True
+        self.plotter.plot()
+        secondary_axes = [
+            child for child in self.plotter.ax.get_children()
+            if isinstance(child, matplotlib.axes._secondary_axes.SecondaryAxis)
+        ]
+        self.assertIn('g\\ value',
+                      secondary_axes[0].get_xaxis().get_label().get_text())
