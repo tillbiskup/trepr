@@ -5,6 +5,18 @@ Changelog
 This page contains a summary of changes between the official trEPR releases. Only the biggest changes are listed here. A complete and detailed log of all changes is available through the `GitHub Repository Browser <https://github.com/tillbiskup/trepr/commits/master>`_.
 
 
+Version 0.3.0
+=============
+
+Not yet released
+
+Documentation
+-------------
+
+* New section on :doc:`metadata during data acquisition <metadata>`
+* New section with :doc:`data publications <examples/data-publications>`
+
+
 Version 0.2.0
 =============
 

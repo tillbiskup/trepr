@@ -1,0 +1,107 @@
+trEPR Info file - v. 0.1.6 (2016-01-18)
+
+GENERAL
+Filename:               sample42
+Date start:             2014-12-01
+Date end:               2014-12-01
+Time start:             10:00:00
+Time end:               10:15:00
+Operator:               John Doe
+Label:                  #42 @ 120 K
+Purpose:                First overview
+
+SAMPLE
+Name:                   something 
+ID:                     42
+Description:            frozen solution
+Solvent:                oDCB 
+Preparation:            1 mM, degassed
+Tube:                   3.8 x 3 x 180 mm
+
+EXPERIMENT
+Runs:                   1
+Shot Repetition Rate:   1 Hz
+
+SPECTROMETER
+Model:                  ESP380E
+Software:               Transient, Vers. 0.6
+
+MAGNETIC FIELD
+Field probe type:       Hall 
+Field probe model:      xxx 
+Start:                  290 mT
+Stop:                   390 mT
+Step:                   0.4 mT
+Sequence:               inward 
+Controller:             Bruker 032 T
+Power supply:           Bruker 083 C
+
+BACKGROUND
+Field:                  300.0 mT
+Occurrence:             10
+Polarisation:           absorptive
+Intensity:              8.8 mV
+
+BRIDGE
+Model:                  Bruker ER 046 MRT
+Controller:             Bruker MBC
+Attenuation:            20 dB
+Power:                  2.01 mW
+Detection:              mixer
+Frequency counter:      HP 5352B
+MW frequency:           9.6657 GHz
+
+VIDEO AMPLIFIER
+Bandwidth:              25 MHz
+Amplification:          42 dB
+
+RECORDER
+Model:                  LeCroy 9354A
+Averages:               1000
+Time base:              2 ns
+Bandwidth:              500 MHz
+Pretrigger:             1.001 us
+Coupling:               DC
+Impedance:              50 Ohm
+Sensitivity:            20 mV
+
+TRANSIENT
+Points:                 5000
+Length:                 10 us
+Trigger Position:       500
+
+PROBEHEAD
+Type:                   dielectric
+Model:                  Bruker ER 4118X-MD5
+Coupling:               critical
+
+PUMP
+Type:                   Laser
+Model:                  GCR 190-10
+Wavelength:             460 nm
+Power:                  1 mJ
+Repetition rate:        10 Hz
+Tunable type:           OPO
+Tunable model:          OPTA BBO VIS/IR
+Tunable dye:            N/A
+Tunable position:       11450
+Filter:                 ND T=0.25
+
+TEMPERATURE
+Temperature:            120 K
+Controller:             Oxford ITC 503
+Cryostat:               Oxford ESR935
+Cryogen:                LN2
+
+FIELD CALIBRATION
+Filename:               N/A
+Field probe type:       Gaussmeter
+Field probe model:      xxx 
+Standard:               LiLiF
+Signal field:           xx G       
+MW Frequency:           xx GHz
+
+COMMENT
+Deviation GM-HP of about 1.1 G.
+After 480 transients, coupling and field 
+had been drifted. Readjustment at 3499.2 G.
