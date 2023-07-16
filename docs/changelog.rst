@@ -14,7 +14,6 @@ Documentation
 -------------
 
 * New section on :doc:`metadata during data acquisition <metadata>`
-* New section with :doc:`data publications <examples/data-publications>`
 
 
 Version 0.2.0
