@@ -2,7 +2,7 @@
 Overview
 ========
 
-Here, we present a (growing) series of working examples of how to use the cwepr package to perform both, day-to-day routine tasks in a laboratory working with tr-EPR spectroscopy as well as more complex processing and analysis tasks.
+Here, we present a (growing) series of working examples of how to use the trEPR package to perform both, day-to-day routine tasks in a laboratory working with tr-EPR spectroscopy as well as more complex processing and analysis tasks.
 
 For each of the examples, a full recipe is provided ready to be copied and pasted and run on your local computer.
 
