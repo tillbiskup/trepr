@@ -185,8 +185,9 @@ class ColormapAdjuster:
 
     def _set_norm(self):
         """Normalize the colormap."""
-        self.normalised_colormap = \
-            mpl.colors.Normalize(vmin=self._bound * -1, vmax=self._bound)
+        self.normalised_colormap = mpl.colors.Normalize(
+            vmin=self._bound * -1, vmax=self._bound
+        )
 
 
 class PlotterExtensions:
@@ -220,7 +221,7 @@ class PlotterExtensions:
     """
 
     def __init__(self):
-        self.parameters['g-axis'] = False  # noqa
+        self.parameters["g-axis"] = False  # noqa
 
     def _create_g_axis(self, mw_freq=None):
         """
@@ -237,14 +238,15 @@ class PlotterExtensions:
             microwave frequency (**in GHz**) used to convert from mT to g
 
         """
+
         def forward(values):
             return utils.convert_mT2g(values, mw_freq=mw_freq)
 
         def backward(values):
             return utils.convert_g2mT(values, mw_freq=mw_freq)
 
-        gaxis = self.ax.secondary_xaxis('top', functions=(backward, forward))
-        gaxis.set_xlabel(r'$g\ value$')
+        gaxis = self.ax.secondary_xaxis("top", functions=(backward, forward))
+        gaxis.set_xlabel(r"$g\ value$")
 
 
 class SinglePlotter1D(aspecd.plotting.SinglePlotter1D, PlotterExtensions):
@@ -295,8 +297,13 @@ class SinglePlotter1D(aspecd.plotting.SinglePlotter1D, PlotterExtensions):
 
     def _create_plot(self):
         super()._create_plot()
-        if self.parameters['g-axis'] and self.dataset.data.axes[0].unit == 'mT':
-            self._create_g_axis(self.dataset.metadata.bridge.mw_frequency.value)
+        if (
+            self.parameters["g-axis"]
+            and self.dataset.data.axes[0].unit == "mT"
+        ):
+            self._create_g_axis(
+                self.dataset.metadata.bridge.mw_frequency.value
+            )
 
 
 class SinglePlotter2D(aspecd.plotting.SinglePlotter2D, PlotterExtensions):
@@ -394,12 +401,18 @@ class SinglePlotter2D(aspecd.plotting.SinglePlotter2D, PlotterExtensions):
 
     def _create_plot(self):
         super()._create_plot()
-        if self.parameters['g-axis'] and self.dataset.data.axes[0].unit == 'mT':
-            self._create_g_axis(self.dataset.metadata.bridge.mw_frequency.value)
+        if (
+            self.parameters["g-axis"]
+            and self.dataset.data.axes[0].unit == "mT"
+        ):
+            self._create_g_axis(
+                self.dataset.metadata.bridge.mw_frequency.value
+            )
 
 
-class SinglePlotter2DStacked(aspecd.plotting.SinglePlotter2DStacked,
-                             PlotterExtensions):
+class SinglePlotter2DStacked(
+    aspecd.plotting.SinglePlotter2DStacked, PlotterExtensions
+):
     """Stacked plots of 2D data.
 
     A stackplot creates a series of lines stacked on top of each other from
@@ -479,8 +492,13 @@ class SinglePlotter2DStacked(aspecd.plotting.SinglePlotter2DStacked,
 
     def _create_plot(self):
         super()._create_plot()
-        if self.parameters['g-axis'] and self.dataset.data.axes[0].unit == 'mT':
-            self._create_g_axis(self.dataset.metadata.bridge.mw_frequency.value)
+        if (
+            self.parameters["g-axis"]
+            and self.dataset.data.axes[0].unit == "mT"
+        ):
+            self._create_g_axis(
+                self.dataset.metadata.bridge.mw_frequency.value
+            )
 
 
 class MultiPlotter1D(aspecd.plotting.MultiPlotter1D, PlotterExtensions):
@@ -556,14 +574,18 @@ class MultiPlotter1D(aspecd.plotting.MultiPlotter1D, PlotterExtensions):
     def _create_plot(self):
         """Actual drawing of datasets."""
         super()._create_plot()
-        if self.parameters['g-axis'] \
-                and self.datasets[0].data.axes[0].unit == 'mT':
+        if (
+            self.parameters["g-axis"]
+            and self.datasets[0].data.axes[0].unit == "mT"
+        ):
             self._create_g_axis(
-                self.datasets[0].metadata.bridge.mw_frequency.value)
+                self.datasets[0].metadata.bridge.mw_frequency.value
+            )
 
 
-class MultiPlotter1DStacked(aspecd.plotting.MultiPlotter1DStacked,
-                            PlotterExtensions):
+class MultiPlotter1DStacked(
+    aspecd.plotting.MultiPlotter1DStacked, PlotterExtensions
+):
     """Stacked 1D plots of multiple datasets.
 
     Convenience class taking care of 1D plots of multiple datasets.
@@ -647,7 +669,10 @@ class MultiPlotter1DStacked(aspecd.plotting.MultiPlotter1DStacked,
 
     def _create_plot(self):
         super()._create_plot()
-        if self.parameters['g-axis'] \
-                and self.datasets[0].data.axes[0].unit == 'mT':
+        if (
+            self.parameters["g-axis"]
+            and self.datasets[0].data.axes[0].unit == "mT"
+        ):
             self._create_g_axis(
-                self.datasets[0].metadata.bridge.mw_frequency.value)
+                self.datasets[0].metadata.bridge.mw_frequency.value
+            )

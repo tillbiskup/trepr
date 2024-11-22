@@ -14,7 +14,7 @@ ROOTPATH = os.path.split(os.path.abspath(__file__))[0]
 class TestPretriggerOffsetCompensation(unittest.TestCase):
     def setUp(self):
         self.processing = trepr.processing.PretriggerOffsetCompensation()
-        source = os.path.join(ROOTPATH, 'testdata/speksim/')
+        source = os.path.join(ROOTPATH, "testdata/speksim/")
         importer = trepr.dataset.DatasetFactory()
         self.dataset = importer.get_dataset(source=source)
 
@@ -24,7 +24,7 @@ class TestPretriggerOffsetCompensation(unittest.TestCase):
     def test_zeropoint_index(self):
         self.processing.dataset = self.dataset
         self.processing._get_zeropoint_index()
-        self.assertNotEqual(0, self.processing.parameters['zeropoint_index'])
+        self.assertNotEqual(0, self.processing.parameters["zeropoint_index"])
 
 
 class TestBackgroundCorrection(unittest.TestCase):
@@ -39,8 +39,8 @@ class TestBackgroundCorrection(unittest.TestCase):
 
     def test_description(self):
         self.create_dataset()
-        self.assertNotIn('abstract', self.processing.description.lower())
-        self.assertIn('background', self.processing.description.lower())
+        self.assertNotIn("abstract", self.processing.description.lower())
+        self.assertIn("background", self.processing.description.lower())
 
     def test_1D_dataset_raises(self):
         self.dataset.data.data = np.ones(200)
@@ -59,14 +59,14 @@ class TestBackgroundCorrection(unittest.TestCase):
 
     def test_perform_task_with_list_one_element(self):
         self.create_dataset()
-        self.processing.parameters['num_profiles'] = [-10]
+        self.processing.parameters["num_profiles"] = [-10]
         self.dataset.process(self.processing)
         self.assertGreater(5.0, self.dataset.data.data[16, 0])
 
     def test_perform_task_with_list_two_elements(self):
         self.create_dataset()
         self.dataset.data.data[-10:] += 2
-        self.processing.parameters['num_profiles'] = [10, -10]
+        self.processing.parameters["num_profiles"] = [10, -10]
         self.dataset.process(self.processing)
         self.assertGreater(5.0, self.dataset.data.data[16, 0])
         self.assertAlmostEqual(0, self.dataset.data.data[0, 0])
@@ -75,7 +75,7 @@ class TestBackgroundCorrection(unittest.TestCase):
     def test_perform_task_with_list_two_other_elements(self):
         self.create_dataset()
         self.dataset.data.data[-10:] += 2
-        self.processing.parameters['num_profiles'] = [5, 10]
+        self.processing.parameters["num_profiles"] = [5, 10]
         self.dataset.process(self.processing)
         self.assertGreater(5.0, self.dataset.data.data[16, 0])
         self.assertAlmostEqual(0, self.dataset.data.data[0, 0])
@@ -84,7 +84,7 @@ class TestBackgroundCorrection(unittest.TestCase):
     def test_perform_task_with_list(self):
         self.create_dataset()
         self.dataset.data.data[-10:] += 2
-        self.processing.parameters['num_profiles'] = [5, 10]
+        self.processing.parameters["num_profiles"] = [5, 10]
         self.dataset.process(self.processing)
         self.assertGreater(5.0, self.dataset.data.data[16, 0])
         self.assertAlmostEqual(0, self.dataset.data.data[0, 0])
@@ -107,7 +107,7 @@ class TestTriggerAutodetection(unittest.TestCase):
         amplitude = 1
         position = 0
         width = 2
-        y2 = amplitude * np.exp(-(x2 - position) ** 2 / 2 * width ** 2)
+        y2 = amplitude * np.exp(-((x2 - position) ** 2) / 2 * width**2)
         convolved = np.convolve(y1, y2)
         return convolved + np.random.random(len(convolved))
 
@@ -115,8 +115,9 @@ class TestTriggerAutodetection(unittest.TestCase):
         pass
 
     def test_has_appropriate_description(self):
-        self.assertIn('autodetect trigger position',
-                      self.processing.description.lower())
+        self.assertIn(
+            "autodetect trigger position", self.processing.description.lower()
+        )
 
     def test_with_1D_dataset_without_time_axis_raises(self):
         dataset = trepr.dataset.ExperimentalDataset()
@@ -132,31 +133,33 @@ class TestTriggerAutodetection(unittest.TestCase):
     def test_with_2D_dataset_with_time_axis(self):
         dataset = trepr.dataset.ExperimentalDataset()
         dataset.data.data = np.random.random([5, 100])
-        dataset.data.axes[1].quantity = 'time'
+        dataset.data.axes[1].quantity = "time"
         dataset.process(self.processing)
 
     def test_with_1D_dataset_sets_trigger_position(self):
         self.dataset.data.data = self.create_time_trace()
-        self.dataset.data.axes[0].quantity = 'time'
+        self.dataset.data.axes[0].quantity = "time"
         self.dataset.process(self.processing)
         self.assertGreaterEqual(
-            self.dataset.metadata.transient.trigger_position, 100)
+            self.dataset.metadata.transient.trigger_position, 100
+        )
 
     def test_with_2D_dataset_sets_trigger_position(self):
         self.dataset.data.data = np.tile(self.create_time_trace(), (5, 1))
-        self.dataset.data.axes[1].quantity = 'time'
+        self.dataset.data.axes[1].quantity = "time"
         self.dataset.process(self.processing)
         self.assertGreaterEqual(
-            self.dataset.metadata.transient.trigger_position, 100)
+            self.dataset.metadata.transient.trigger_position, 100
+        )
 
     def test_with_1D_dataset_sets_time_axis(self):
         self.dataset.data.data = self.create_time_trace()
-        self.dataset.data.axes[0].quantity = 'time'
+        self.dataset.data.axes[0].quantity = "time"
         self.dataset.process(self.processing)
         self.assertLess(self.dataset.data.axes[0].values[0], 0)
 
     def test_with_2D_dataset_sets_time_axis(self):
         self.dataset.data.data = np.tile(self.create_time_trace(), (5, 1))
-        self.dataset.data.axes[1].quantity = 'time'
+        self.dataset.data.axes[1].quantity = "time"
         self.dataset.process(self.processing)
         self.assertLess(self.dataset.data.axes[1].values[0], 0)

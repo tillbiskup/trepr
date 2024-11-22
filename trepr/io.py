@@ -81,6 +81,7 @@ Module documentation
 ====================
 
 """
+
 import collections
 import datetime
 import glob
@@ -138,11 +139,13 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
 
     def __init__(self):
         super().__init__()
-        self.supported_formats = {"": "Speksim",
-                                  ".tez": "Tez",
-                                  ".dat": "Fsc2",
-                                  ".DSC": 'BES3T',
-                                  ".DTA": 'BES3T'}
+        self.supported_formats = {
+            "": "Speksim",
+            ".tez": "Tez",
+            ".dat": "Fsc2",
+            ".DSC": "BES3T",
+            ".DTA": "BES3T",
+        }
         self.data_format = None
 
     def _get_importer(self):
@@ -152,24 +155,27 @@ class DatasetImporterFactory(aspecd.io.DatasetImporterFactory):
         importer = None
         if self.data_format:
             importer = aspecd.utils.object_from_class_name(
-                ".".join(["trepr", "io", self.data_format + "Importer"]))
+                ".".join(["trepr", "io", self.data_format + "Importer"])
+            )
             importer.source = self.source
         return importer
 
     def _find_format(self):
         _, extension = os.path.splitext(self.source)
         if extension:
-            if extension in self.supported_formats.keys():
+            if extension in self.supported_formats:
                 self.data_format = self._format_from_extension(extension)
         else:
-            for extension in [extension for extension in
-                              self.supported_formats if extension]:
+            for extension in [
+                extension for extension in self.supported_formats if extension
+            ]:
                 if os.path.isfile(self.source + extension):
                     self.data_format = self._format_from_extension(extension)
 
     def _format_from_extension(self, extension):
-        return list(self.supported_formats.values())[list(
-            self.supported_formats.keys()).index(extension)]
+        return list(self.supported_formats.values())[
+            list(self.supported_formats.keys()).index(extension)
+        ]
 
 
 class SpeksimImporter(aspecd.io.DatasetImporter):
@@ -195,7 +201,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
 
     """
 
-    def __init__(self, source=''):
+    def __init__(self, source=""):
         super().__init__(source=source)
         # public properties
         self.dataset = None
@@ -213,7 +219,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         self._time_axis = np.array([])
         self._field_axis = np.array([])
         self._infofile = aspecd.infofile.Infofile()
-        self._header = list()
+        self._header = []
         self._format_no = int()
         self._time_start = float()
         self._time_stop = float()
@@ -240,27 +246,30 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         filenames = self._get_filenames()
         for filename in filenames:
             self._process_timetrace(filename)
-        self._data = \
-            np.reshape(self._data, [len(filenames), self._time_points])
+        self._data = np.reshape(
+            self._data, [len(filenames), self._time_points]
+        )
 
     def _get_filenames(self):
-        filenames = sorted(glob.glob(os.path.join(self.source,
-                                                  '*.[0-9][0-9][0-9]')))
+        filenames = sorted(
+            glob.glob(os.path.join(self.source, "*.[0-9][0-9][0-9]"))
+        )
         return filenames
 
     def _process_timetrace(self, filename):
-        with open(filename) as file:
+        with open(filename, encoding="ascii") as file:
             raw_data = file.read()
         lines = raw_data.splitlines()
-        self._header = lines[0:self._headerlines]
+        self._header = lines[0 : self._headerlines]
         self._parse_header()
         numeric_data = self._process_numeric_data(raw_data)
         self._data = np.append(self._data, numeric_data)
 
     def _process_numeric_data(self, raw_data):
         # noinspection PyTypeChecker
-        numeric_data = np.loadtxt(io.StringIO(raw_data),
-                                  skiprows=self._headerlines)
+        numeric_data = np.loadtxt(
+            io.StringIO(raw_data), skiprows=self._headerlines
+        )
         numeric_data = np.reshape(numeric_data, self._time_points)
         return numeric_data
 
@@ -280,11 +289,12 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
             Source : transient; Time : Wed Jun 7 08:44:57 2017
 
         """
-        entries = self._header[0].split(';')
-        self._file_format = entries[0].split(':')[1].strip()
-        time_stamp = entries[1].split(' : ')[1]
-        time_stamp = datetime.datetime.strptime(time_stamp,
-                                                '%a %b %d %H:%M:%S %Y')
+        entries = self._header[0].split(";")
+        self._file_format = entries[0].split(":")[1].strip()
+        time_stamp = entries[1].split(" : ")[1]
+        time_stamp = datetime.datetime.strptime(
+            time_stamp, "%a %b %d %H:%M:%S %Y"
+        )
         # noinspection PyTypeChecker
         self._time_stamps = np.append(self._time_stamps, time_stamp)
 
@@ -298,10 +308,12 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         """
 
         def parse_line(line):
-            matches = re.search('([A-Za-z0-9]*) = ([0-9.]*) ([A-Za-z]*)', line)
+            matches = re.search(
+                "([A-Za-z0-9]*) = ([0-9.]*) ([A-Za-z]*)", line
+            )
             return float(matches.group(2)), matches.group(3)
 
-        entries = self._header[1].split(',')
+        entries = self._header[1].split(",")
         field, self._field_unit = parse_line(entries[0])
         mwfreq, self._mwfreq_unit = parse_line(entries[1])
         self._field_axis = np.append(self._field_axis, field)
@@ -343,17 +355,20 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
 
     def _create_time_axis(self):
         """Create the time axis using the start, end, and time points."""
-        self._time_axis = \
-            np.linspace(self._time_start,
-                        self._time_stop,
-                        num=self._time_points)
+        self._time_axis = np.linspace(
+            self._time_start, self._time_stop, num=self._time_points
+        )
 
     def _infofile_exists(self):
         if self._get_infofile_name() and os.path.exists(
-                self._get_infofile_name()[0]):
+            self._get_infofile_name()[0]
+        ):
             return True
-        logger.warning('No infofile found for dataset "%s", import continued '
-                       'without infofile.', os.path.split(self.source)[1])
+        logger.warning(
+            'No infofile found for dataset "%s", import continued '
+            "without infofile.",
+            os.path.split(self.source)[1],
+        )
         return False
 
     def _load_infofile(self):
@@ -363,17 +378,17 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         self._infofile.parse()
 
     def _get_infofile_name(self):
-        return glob.glob(os.path.join(self.source, '*.info'))
+        return glob.glob(os.path.join(self.source, "*.info"))
 
     def _map_infofile(self):
         """Bring the metadata to a given format."""
-        infofile_version = self._infofile.infofile_info['version']
+        infofile_version = self._infofile.infofile_info["version"]
         self._map_metadata(infofile_version)
         self._assign_comment_as_annotation()
 
     def _assign_comment_as_annotation(self):
         comment = aspecd.annotation.Comment()
-        comment.comment = self._infofile.parameters['COMMENT']
+        comment.comment = self._infofile.parameters["COMMENT"]
         self.dataset.annotate(comment)
 
     def _map_metadata(self, infofile_version):
@@ -381,7 +396,7 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
         mapper = aspecd.metadata.MetadataMapper()
         mapper.version = infofile_version
         mapper.metadata = self._infofile.parameters
-        mapper.recipe_filename = 'trepr@metadata_mapper.yaml'
+        mapper.recipe_filename = "trepr@metadata_mapper.yaml"
         mapper.map()
         self.dataset.metadata.from_dict(mapper.metadata)
 
@@ -392,38 +407,39 @@ class SpeksimImporter(aspecd.io.DatasetImporter):
     # noinspection PyPep8Naming
     def _ensure_field_axis_in_SI_unit(self):  # noqa: N802
         """Ensure that the field axis unit is in SI unit."""
-        if self._field_unit == 'Gauss':
-            self._field_unit = 'mT'
+        if self._field_unit == "Gauss":
+            self._field_unit = "mT"
             self._field_axis = self._field_axis / 10
 
     def _hand_axes_to_dataset(self):
         """Hand the axes and intensity to the dataset structure."""
         self.dataset.data.axes[0].values = self._field_axis
         self.dataset.data.axes[0].unit = self._field_unit
-        self.dataset.data.axes[0].quantity = 'magnetic field'
+        self.dataset.data.axes[0].quantity = "magnetic field"
         self.dataset.data.axes[1].values = self._time_axis
         self.dataset.data.axes[1].unit = self._time_unit
-        self.dataset.data.axes[1].quantity = 'time'
+        self.dataset.data.axes[1].quantity = "time"
         self.dataset.data.axes[2].unit = self._intensity_unit
-        self.dataset.data.axes[2].quantity = 'intensity'
+        self.dataset.data.axes[2].quantity = "intensity"
 
     def _create_time_stamp_data(self):
         """Hand the time stamp data to the dataset structure."""
         self.dataset.time_stamp.data = self._time_stamps
         self.dataset.time_stamp.axes[0].values = self._field_axis
         self.dataset.time_stamp.axes[0].unit = self._field_unit
-        self.dataset.time_stamp.axes[0].quantity = 'magnetic field'
-        self.dataset.time_stamp.axes[1].quantity = 'date'
+        self.dataset.time_stamp.axes[0].quantity = "magnetic field"
+        self.dataset.time_stamp.axes[1].quantity = "date"
 
     def _create_mw_freq_data(self):
         """Hand the microwave frequency data to the dataset structure."""
         self.dataset.microwave_frequency.data = self._mwfreq
         self.dataset.microwave_frequency.axes[0].values = self._field_axis
         self.dataset.microwave_frequency.axes[0].unit = self._field_unit
-        self.dataset.microwave_frequency.axes[0].quantity = 'magnetic field'
+        self.dataset.microwave_frequency.axes[0].quantity = "magnetic field"
         self.dataset.microwave_frequency.axes[1].unit = self._mwfreq_unit
-        self.dataset.microwave_frequency.axes[1].quantity = \
-            'microwave frequency'
+        self.dataset.microwave_frequency.axes[1].quantity = (
+            "microwave frequency"
+        )
 
 
 class TezImporter(aspecd.io.DatasetImporter):
@@ -454,25 +470,25 @@ class TezImporter(aspecd.io.DatasetImporter):
 
     """
 
-    def __init__(self, source=''):
+    def __init__(self, source=""):
         # Dirty fix: Cut file extension
         if source.endswith(".tez"):
             source = source[:-4]
         super().__init__(source=source)
         # public properties
-        self.tez_mapper_filename = 'trepr@tez_mapper.yaml'
+        self.tez_mapper_filename = "trepr@tez_mapper.yaml"
         self.xml_dict = None
         self.dataset = None
-        self.metadata_filename = ''
+        self.metadata_filename = ""
         self.load_infofile = True
         # private properties
         self._metadata = None
         self._infofile = aspecd.infofile.Infofile()
-        self._root_dir = ''
-        self._filename = ''
-        self._tmpdir = ''
-        self._raw_data_name = ''
-        self._raw_data_shape_filename = ''
+        self._root_dir = ""
+        self._filename = ""
+        self._tmpdir = ""
+        self._raw_data_name = ""
+        self._raw_data_shape_filename = ""
 
     def _import(self):
         self._unpack_zip()
@@ -492,73 +508,87 @@ class TezImporter(aspecd.io.DatasetImporter):
 
     def _unpack_zip(self):
         self._root_dir, self._filename = os.path.split(self.source)
-        self._tmpdir = os.path.join(self._root_dir, 'tmp')
-        with ZipFile(self.source + '.tez', 'r') as zip_obj:
+        self._tmpdir = os.path.join(self._root_dir, "tmp")
+        with ZipFile(self.source + ".tez", "r") as zip_obj:
             zip_obj.extractall(self._tmpdir)
 
     def _get_dir_and_filenames(self):
-        hidden_filename = os.listdir(os.path.join(self._root_dir, 'tmp'))[0]
-        self.metadata_filename = os.path.join(self._root_dir, 'tmp',
-                                              hidden_filename, 'struct.xml')
-        self._raw_data_name = \
-            os.path.join(self._root_dir, 'tmp', hidden_filename,
-                         'binaryData', 'data')
-        self._raw_data_shape_filename = os.path.join(self._raw_data_name +
-                                                     '.dim')
+        hidden_filename = os.listdir(os.path.join(self._root_dir, "tmp"))[0]
+        self.metadata_filename = os.path.join(
+            self._root_dir, "tmp", hidden_filename, "struct.xml"
+        )
+        self._raw_data_name = os.path.join(
+            self._root_dir, "tmp", hidden_filename, "binaryData", "data"
+        )
+        self._raw_data_shape_filename = os.path.join(
+            self._raw_data_name + ".dim"
+        )
 
     def _import_xml_data_to_dict(self):
-        with open(self.metadata_filename, 'r') as file:
+        with open(self.metadata_filename, "r", encoding="utf8") as file:
             xml_data = file.read()
         self.xml_dict = xmltodict.parse(xml_data)
 
     def _get_data_from_binary(self):
-        with open(self._raw_data_shape_filename, 'r') as f:
-            shape = list([int(x) for x in f.read().split()])
+        with open(self._raw_data_shape_filename, "r", encoding="utf8") as f:
+            shape = [int(x) for x in f.read().split()]
         shape.reverse()  # Shape is given in reverse order in .dim file
-        raw_data = np.fromfile(self._raw_data_name, dtype='<f8')
+        raw_data = np.fromfile(self._raw_data_name, dtype="<f8")
         raw_data = np.reshape(raw_data, shape).transpose()
         self.dataset.data.data = raw_data
 
     def _parse_axes(self):
-        if len(self.xml_dict['struct']['axes']['data']['measure']) > 3:
-            raise NotImplementedError('No method to import more than 3 axes. '
-                                      'This task is left to you.')
-        for axis in self.xml_dict['struct']['axes']['data']['measure']:
+        if len(self.xml_dict["struct"]["axes"]["data"]["measure"]) > 3:
+            raise NotImplementedError(
+                "No method to import more than 3 axes. "
+                "This task is left to you."
+            )
+        for axis in self.xml_dict["struct"]["axes"]["data"]["measure"]:
             self._get_magnetic_field_axis(axis)
             self._get_time_axis(axis)
 
     def _get_magnetic_field_axis(self, axis):
-        if '#text' in axis.keys() and axis['#text'] == 'magnetic field':
-            id_ = int(axis['@id']) - 1
-            self.dataset.data.axes[0].quantity = 'magnetic field'
-            self.dataset.data.axes[0].values = \
-                self._get_values_from_xml_dict(id_=id_)
-            assert int(self.xml_dict['struct']['axes']['data']['values'][
-                id_]['@id']) == (id_ + 1), 'Axis-IDs do not match!'
-            self.dataset.data.axes[0].unit = self.xml_dict['struct']['axes'][
-                'data']['unit'][id_]['#text']
+        if "#text" in axis.keys() and axis["#text"] == "magnetic field":
+            id_ = int(axis["@id"]) - 1
+            self.dataset.data.axes[0].quantity = "magnetic field"
+            self.dataset.data.axes[0].values = self._get_values_from_xml_dict(
+                id_=id_
+            )
+            assert int(
+                self.xml_dict["struct"]["axes"]["data"]["values"][id_]["@id"]
+            ) == (id_ + 1), "Axis-IDs do not match!"
+            self.dataset.data.axes[0].unit = self.xml_dict["struct"]["axes"][
+                "data"
+            ]["unit"][id_]["#text"]
 
     def _get_time_axis(self, axis):
-        if '#text' in axis.keys() and axis['#text'] == 'time':
-            id_ = int(axis['@id']) - 1
-            self.dataset.data.axes[1].quantity = 'time'
-            self.dataset.data.axes[1].values = \
-                self._get_values_from_xml_dict(id_=id_)
-            assert int(self.xml_dict['struct']['axes']['data']['values'][
-                id_]['@id']) == (id_ + 1)
-            self.dataset.data.axes[1].unit = self.xml_dict['struct']['axes'][
-                'data']['unit'][id_]['#text']
+        if "#text" in axis.keys() and axis["#text"] == "time":
+            id_ = int(axis["@id"]) - 1
+            self.dataset.data.axes[1].quantity = "time"
+            self.dataset.data.axes[1].values = self._get_values_from_xml_dict(
+                id_=id_
+            )
+            assert int(
+                self.xml_dict["struct"]["axes"]["data"]["values"][id_]["@id"]
+            ) == (id_ + 1)
+            self.dataset.data.axes[1].unit = self.xml_dict["struct"]["axes"][
+                "data"
+            ]["unit"][id_]["#text"]
 
     def _infofile_exists(self):
         if self._get_infofile_name() and os.path.exists(
-                self._get_infofile_name()[0]):
+            self._get_infofile_name()[0]
+        ):
             return True
-        logger.warning('No infofile found for dataset "%s", import continued '
-                       'without infofile.', os.path.split(self.source)[1])
+        logger.warning(
+            'No infofile found for dataset "%s", import continued '
+            "without infofile.",
+            os.path.split(self.source)[1],
+        )
         return False
 
     def _get_infofile_name(self):
-        return glob.glob(''.join([self.source.strip(), '.info']))
+        return glob.glob("".join([self.source.strip(), ".info"]))
 
     def _load_infofile(self):
         """Import infofile and parse it."""
@@ -568,7 +598,7 @@ class TezImporter(aspecd.io.DatasetImporter):
 
     def _map_infofile(self):
         """Bring the metadata to a given format."""
-        infofile_version = self._infofile.infofile_info['version']
+        infofile_version = self._infofile.infofile_info["version"]
         self._map_metadata(infofile_version)
         self._assign_comment_as_annotation()
 
@@ -577,48 +607,58 @@ class TezImporter(aspecd.io.DatasetImporter):
         mapper = aspecd.metadata.MetadataMapper()
         mapper.version = infofile_version
         mapper.metadata = self._infofile.parameters
-        mapper.recipe_filename = 'trepr@metadata_mapper.yaml'
+        mapper.recipe_filename = "trepr@metadata_mapper.yaml"
         mapper.map()
-        self._metadata = \
-            aspecd.utils.convert_keys_to_variable_names(mapper.metadata)
+        self._metadata = aspecd.utils.convert_keys_to_variable_names(
+            mapper.metadata
+        )
 
     def _assign_comment_as_annotation(self):
         comment = aspecd.annotation.Comment()
-        comment.comment = self._infofile.parameters['COMMENT']
+        comment.comment = self._infofile.parameters["COMMENT"]
         self.dataset.annotate(comment)
 
     def _get_values_from_xml_dict(self, id_=None):
-        values = np.asarray([float(i) for i in
-                             self.xml_dict['struct']['axes']['data'][
-                                 'values'][id_]['#text'].split(' ') if i])
+        values = np.asarray(
+            [
+                float(i)
+                for i in self.xml_dict["struct"]["axes"]["data"]["values"][
+                    id_
+                ]["#text"].split(" ")
+                if i
+            ]
+        )
         return values
 
     def _get_metadata_from_xml(self):
         mapping = aspecd.utils.Yaml()
         mapping.read_stream(
-            aspecd.utils.get_package_data(self.tez_mapper_filename).encode())
+            aspecd.utils.get_package_data(self.tez_mapper_filename).encode()
+        )
         metadata_dict = collections.OrderedDict()
         for key, subdict in mapping.dict.items():
             metadata_dict[key] = collections.OrderedDict()
             for key2, value in subdict.items():
-                metadata_dict[key][key2] = \
-                    self._cascade(self.xml_dict['struct'], value)
+                metadata_dict[key][key2] = self._cascade(
+                    self.xml_dict["struct"], value
+                )
 
         self._metadata = self._fuse_with_existing_metadata(metadata_dict)
         self.dataset.metadata.from_dict(self._metadata)
         # Cause Copycat in UdS measurement program:
-        self.dataset.metadata.bridge.attenuation.unit = 'dB'
+        self.dataset.metadata.bridge.attenuation.unit = "dB"
 
     def _fuse_with_existing_metadata(self, metadata_dict):
-        metadata_dict = \
-            aspecd.utils.remove_empty_values_from_dict(metadata_dict)
-        infofile_metadata = \
-            aspecd.utils.copy_values_between_dicts(target=self._metadata,
-                                                   source=metadata_dict)
+        metadata_dict = aspecd.utils.remove_empty_values_from_dict(
+            metadata_dict
+        )
+        infofile_metadata = aspecd.utils.copy_values_between_dicts(
+            target=self._metadata, source=metadata_dict
+        )
         return infofile_metadata
 
     def _cascade(self, dict_, value):
-        keys = value.split('.')
+        keys = value.split(".")
         return_value = dict_
         for key in keys:
             return_value = return_value[key]
@@ -627,24 +667,24 @@ class TezImporter(aspecd.io.DatasetImporter):
         elif self._get_value(return_value):
             return_value = self._get_value(return_value)
         else:
-            return_value = ''
+            return_value = ""
         return return_value
 
     @staticmethod
     def _get_value(dict_):
         return_value = None
-        if '#text' in dict_.keys():
-            return_value = dict_['#text']
+        if "#text" in dict_.keys():
+            return_value = dict_["#text"]
         return return_value
 
     @staticmethod
     def _get_physical_quantity(dict_):
         return_value = None
-        if 'value' and 'unit' in dict_.keys():
-            if '#text' in dict_['value'].keys():
+        if "value" in dict_.keys() and "unit" in dict_.keys():
+            if "#text" in dict_["value"].keys():
                 return_value = {
-                    'value': float(dict_['value']['#text']),
-                    'unit': dict_['unit']['#text']
+                    "value": float(dict_["value"]["#text"]),
+                    "unit": dict_["unit"]["#text"],
                 }
         return return_value
 
@@ -656,21 +696,33 @@ class TezImporter(aspecd.io.DatasetImporter):
         written in the tez structure.
         """
         if self._xml_contains_mw_frequencies():
-            self.dataset.microwave_frequency.data = \
-                np.asarray([float(i) for i in self.xml_dict['struct'][
-                    'parameters']['bridge']['MWfrequency']['values'][
-                    '#text'].split(' ') if i])
-            self.dataset.microwave_frequency.axes[0] = \
-                self.dataset.data.axes[0]
-            self.dataset.microwave_frequency.axes[1].unit = \
+            self.dataset.microwave_frequency.data = np.asarray(
+                [
+                    float(i)
+                    for i in self.xml_dict["struct"]["parameters"]["bridge"][
+                        "MWfrequency"
+                    ]["values"]["#text"].split(" ")
+                    if i
+                ]
+            )
+            self.dataset.microwave_frequency.axes[0] = self.dataset.data.axes[
+                0
+            ]
+            self.dataset.microwave_frequency.axes[1].unit = (
                 self.dataset.metadata.bridge.mw_frequency.unit
-            self.dataset.microwave_frequency.axes[1].quantity = \
-                'microwave frequency'
+            )
+            self.dataset.microwave_frequency.axes[1].quantity = (
+                "microwave frequency"
+            )
 
     def _xml_contains_mw_frequencies(self):
         answer = False
-        if '#text' in self.xml_dict['struct']['parameters']['bridge'][
-                'MWfrequency']['values']:
+        if (
+            "#text"
+            in self.xml_dict["struct"]["parameters"]["bridge"]["MWfrequency"][
+                "values"
+            ]
+        ):
             answer = True
         return answer
 
@@ -732,24 +784,24 @@ class Fsc2Importer(aspecd.io.DatasetImporter):
 
     """
 
-    def __init__(self, source=''):
+    def __init__(self, source=""):
         super().__init__(source=source)
         self._header = []
-        self._parameters = dict()
+        self._parameters = {}
         self._comment = []
         self._devices = []
         self._device_list = {
-            'tds520A': 'Tektronix TDS520A',
-            'bh15_fc': 'Bruker BH15',
-            'aeg_x_band': 'AEG Magnet Power Supply',
-            'er035m_s': 'Bruker ER 035 M',
+            "tds520A": "Tektronix TDS520A",
+            "bh15_fc": "Bruker BH15",
+            "aeg_x_band": "AEG Magnet Power Supply",
+            "er035m_s": "Bruker ER 035 M",
         }
-        self._orig_source = ''
+        self._orig_source = ""
 
     def _import(self):
         if not os.path.splitext(self.source)[1]:
             self._orig_source = self.source
-            self.source += '.dat'
+            self.source += ".dat"
 
         self._read_header()
         self._load_and_assign_data()
@@ -779,19 +831,19 @@ class Fsc2Importer(aspecd.io.DatasetImporter):
         """
         in_header = True
         parameter_line = False
-        with open(self.source, 'r', encoding="utf8") as file:
+        with open(self.source, "r", encoding="utf8") as file:
             while in_header:
                 line = file.readline()
-                if line.startswith('%'):
-                    line = line.replace('%', '', 1).strip()
+                if line.startswith("%"):
+                    line = line.replace("%", "", 1).strip()
                     self._header.append(line)
-                    if line.startswith('Number of runs'):
+                    if line.startswith("Number of runs"):
                         parameter_line = True
                     if parameter_line:
-                        if ' = ' in line:
-                            key, value = line.split(' = ')
+                        if " = " in line:
+                            key, value = line.split(" = ")
                             try:
-                                if '.' in value:
+                                if "." in value:
                                     value = float(value)
                                 else:
                                     value = int(value)
@@ -806,34 +858,39 @@ class Fsc2Importer(aspecd.io.DatasetImporter):
 
     def _load_and_assign_data(self):
         data = np.loadtxt(self.source, comments="% ")
-        self.dataset.data.data = \
-            data.reshape([-1, self._parameters['Number of points']])
+        self.dataset.data.data = data.reshape(
+            [-1, self._parameters["Number of points"]]
+        )
 
     def _assign_field_axis(self):
-        field_start = float(self._parameters['Start field'].split(' ')[0]) / 10
-        field_end = float(self._parameters['End field'].split(' ')[0]) / 10
-        self.dataset.data.axes[0].values = \
-            np.linspace(field_start, field_end, self.dataset.data.data.shape[0])
-        self.dataset.data.axes[0].quantity = 'magnetic field'
-        self.dataset.data.axes[0].unit = 'mT'
+        field_start = (
+            float(self._parameters["Start field"].split(" ")[0]) / 10
+        )
+        field_end = float(self._parameters["End field"].split(" ")[0]) / 10
+        self.dataset.data.axes[0].values = np.linspace(
+            field_start, field_end, self.dataset.data.data.shape[0]
+        )
+        self.dataset.data.axes[0].quantity = "magnetic field"
+        self.dataset.data.axes[0].unit = "mT"
 
     def _assign_time_axis(self):
-        trigger_position = self._parameters['Trigger position']
+        trigger_position = self._parameters["Trigger position"]
         number_of_points = self.dataset.data.data.shape[1]
         relative_trigger_position = trigger_position / number_of_points
-        slice_length = \
-            float(self._parameters['Slice length'].split(' ')[0]) * 1e-6
+        slice_length = (
+            float(self._parameters["Slice length"].split(" ")[0]) * 1e-6
+        )
         self.dataset.data.axes[1].values = np.linspace(
             -slice_length * relative_trigger_position,
             slice_length - (slice_length * relative_trigger_position),
-            number_of_points
+            number_of_points,
         )
-        self.dataset.data.axes[1].quantity = 'time'
-        self.dataset.data.axes[1].unit = 's'
+        self.dataset.data.axes[1].quantity = "time"
+        self.dataset.data.axes[1].unit = "s"
 
     def _assign_intensity_axis(self):
-        self.dataset.data.axes[2].quantity = 'intensity'
-        self.dataset.data.axes[2].unit = 'V'
+        self.dataset.data.axes[2].quantity = "intensity"
+        self.dataset.data.axes[2].unit = "V"
 
     def _assign_metadata(self):
         """
@@ -852,103 +909,127 @@ class Fsc2Importer(aspecd.io.DatasetImporter):
         self._assign_experiment_metadata()
 
     def _assign_transient_metadata(self):
-        self.dataset.metadata.transient.points = \
-            self._parameters['Number of points']
-        self.dataset.metadata.transient.trigger_position = \
-            self._parameters['Trigger position']
-        value, _ = self._parameters['Slice length'].split()
+        self.dataset.metadata.transient.points = self._parameters[
+            "Number of points"
+        ]
+        self.dataset.metadata.transient.trigger_position = self._parameters[
+            "Trigger position"
+        ]
+        value, _ = self._parameters["Slice length"].split()
         self.dataset.metadata.transient.length.value = float(value) * 1e-6
-        self.dataset.metadata.transient.length.unit = 's'
+        self.dataset.metadata.transient.length.unit = "s"
 
     def _assign_recorder_metadata(self):
-        if 'Sensitivity' in self._parameters:
-            self._assign_value_unit('Sensitivity',
-                                    self.dataset.metadata.recorder.sensitivity)
-        if 'Time base' in self._parameters:
-            self._assign_value_unit('Time base',
-                                    self.dataset.metadata.recorder.time_base)
-        if 'Number of averages' in self._parameters:
-            self.dataset.metadata.recorder.averages = \
-                self._parameters['Number of averages']
-        self.dataset.metadata.recorder.pretrigger.value = \
-            np.abs(self.dataset.data.axes[1].values[0])
-        self.dataset.metadata.recorder.pretrigger.unit = \
+        if "Sensitivity" in self._parameters:
+            self._assign_value_unit(
+                "Sensitivity", self.dataset.metadata.recorder.sensitivity
+            )
+        if "Time base" in self._parameters:
+            self._assign_value_unit(
+                "Time base", self.dataset.metadata.recorder.time_base
+            )
+        if "Number of averages" in self._parameters:
+            self.dataset.metadata.recorder.averages = self._parameters[
+                "Number of averages"
+            ]
+        self.dataset.metadata.recorder.pretrigger.value = np.abs(
+            self.dataset.data.axes[1].values[0]
+        )
+        self.dataset.metadata.recorder.pretrigger.unit = (
             self.dataset.data.axes[1].unit
-        if 'tds520A' in self._devices:
-            self.dataset.metadata.recorder.model = self._device_list['tds520A']
+        )
+        if "tds520A" in self._devices:
+            self.dataset.metadata.recorder.model = self._device_list[
+                "tds520A"
+            ]
 
     def _assign_bridge_metadata(self):
-        if 'MW frequency' in self._parameters:
-            self._assign_value_unit('MW frequency',
-                                    self.dataset.metadata.bridge.mw_frequency)
-        if 'Attenuation' in self._parameters:
-            self._assign_value_unit('Attenuation',
-                                    self.dataset.metadata.bridge.attenuation)
+        if "MW frequency" in self._parameters:
+            self._assign_value_unit(
+                "MW frequency", self.dataset.metadata.bridge.mw_frequency
+            )
+        if "Attenuation" in self._parameters:
+            self._assign_value_unit(
+                "Attenuation", self.dataset.metadata.bridge.attenuation
+            )
 
     def _assign_temperature_control_metadata(self):
-        if 'Temperature' in self._parameters:
+        if "Temperature" in self._parameters:
             self._assign_value_unit(
-                'Temperature',
-                self.dataset.metadata.temperature_control.temperature)
+                "Temperature",
+                self.dataset.metadata.temperature_control.temperature,
+            )
 
     def _assign_pump_metadata(self):
-        if 'Laser wavelength' in self._parameters:
-            wavelength, repetition_rate = \
-                self._parameters['Laser wavelength'].split(' (')
+        if "Laser wavelength" in self._parameters:
+            wavelength, repetition_rate = self._parameters[
+                "Laser wavelength"
+            ].split(" (")
             value, unit = wavelength.split()
             self.dataset.metadata.pump.wavelength.value = float(value)
             self.dataset.metadata.pump.wavelength.unit = unit
             value, unit = repetition_rate.split()
             self.dataset.metadata.pump.repetition_rate.value = float(value)
-            self.dataset.metadata.pump.repetition_rate.unit = \
-                unit.replace(')', '')
+            self.dataset.metadata.pump.repetition_rate.unit = unit.replace(
+                ")", ""
+            )
 
     def _assign_magnetic_field_metadata(self):
-        if 'bh15_fc' in self._devices:
-            self.dataset.metadata.magnetic_field.controller = \
-                self._device_list['bh15_fc']
-            self.dataset.metadata.magnetic_field.power_supply = \
-                self._device_list['bh15_fc']
-            self.dataset.metadata.magnetic_field.field_probe_model = \
-                self._device_list['bh15_fc']
-            self.dataset.metadata.magnetic_field.field_probe_type = 'Hall probe'
-        if 'aeg_x_band' in self._devices:
-            self.dataset.metadata.magnetic_field.controller = 'home-built'
-            self.dataset.metadata.magnetic_field.power_supply = \
-                self._device_list['aeg_x_band']
-        if 'er035m_s' in self._devices:
-            self.dataset.metadata.magnetic_field.field_probe_model = \
-                self._device_list['er035m_s']
-            self.dataset.metadata.magnetic_field.field_probe_type = \
-                'NMR Gaussmeter'
+        if "bh15_fc" in self._devices:
+            self.dataset.metadata.magnetic_field.controller = (
+                self._device_list["bh15_fc"]
+            )
+            self.dataset.metadata.magnetic_field.power_supply = (
+                self._device_list["bh15_fc"]
+            )
+            self.dataset.metadata.magnetic_field.field_probe_model = (
+                self._device_list["bh15_fc"]
+            )
+            self.dataset.metadata.magnetic_field.field_probe_type = (
+                "Hall probe"
+            )
+        if "aeg_x_band" in self._devices:
+            self.dataset.metadata.magnetic_field.controller = "home-built"
+            self.dataset.metadata.magnetic_field.power_supply = (
+                self._device_list["aeg_x_band"]
+            )
+        if "er035m_s" in self._devices:
+            self.dataset.metadata.magnetic_field.field_probe_model = (
+                self._device_list["er035m_s"]
+            )
+            self.dataset.metadata.magnetic_field.field_probe_type = (
+                "NMR Gaussmeter"
+            )
 
     def _assign_experiment_metadata(self):
-        self.dataset.metadata.experiment.runs = \
-            self._parameters['Number of runs']
-        self.dataset.metadata.experiment.shot_repetition_rate = \
+        self.dataset.metadata.experiment.runs = self._parameters[
+            "Number of runs"
+        ]
+        self.dataset.metadata.experiment.shot_repetition_rate = (
             self.dataset.metadata.pump.repetition_rate
+        )
 
     def _assign_comment(self):
         if self._comment:
             comment = aspecd.annotation.Comment()
-            comment.content = ' '.join(self._comment)
+            comment.content = " ".join(self._comment)
             self.dataset.annotate(comment)
 
-    def _assign_value_unit(self, parameter='', metadata=None):
+    def _assign_value_unit(self, parameter="", metadata=None):
         value, unit = self._parameters[parameter].split()
         metadata.value = float(value)
-        metadata.unit = unit.split('/')[0]
+        metadata.unit = unit.split("/")[0]
 
     def _get_list_of_active_devices(self):
         in_devices = False
         for line in self._header:
-            if 'DEVICES:' in line:
+            if "DEVICES:" in line:
                 in_devices = True
                 continue
-            if 'VARIABLES:' in line:
+            if "VARIABLES:" in line:
                 break
-            if in_devices and line and not line.startswith('//'):
-                device = line.split()[0].replace(';', '').strip()
+            if in_devices and line and not line.startswith("//"):
+                device = line.split()[0].replace(";", "").strip()
                 self._devices.append(device)
 
 
@@ -972,9 +1053,9 @@ class BES3TImporter(aspecd.io.DatasetImporter):
 
     def __init__(self, source=None):
         super().__init__(source=source)
-        self._orig_source = ''
-        self._dsc_keys = dict()
-        self._mapper_filename = 'bes3t_dsc_keys.yaml'
+        self._orig_source = ""
+        self._dsc_keys = {}
+        self._mapper_filename = "bes3t_dsc_keys.yaml"
 
     def _import(self):
         base_file, extension = os.path.splitext(self.source)
@@ -990,24 +1071,24 @@ class BES3TImporter(aspecd.io.DatasetImporter):
         self.source = self._orig_source or self.source
 
     def _read_dsc_file(self):  # noqa: MC0001
-        with open(self.source + '.DSC', 'r', encoding='utf8') as file:
+        with open(self.source + ".DSC", "r", encoding="utf8") as file:
             file_contents = file.readlines()
-        block = ''
+        block = ""
         for line in file_contents:
-            if '*' in line:
-                line, _ = line.split('*', maxsplit=1)
+            if "*" in line:
+                line, _ = line.split("*", maxsplit=1)
             line = line.strip()
             if not line:
                 continue
-            if line.startswith('#'):
+            if line.startswith("#"):
                 block, _ = line[1:].split()
                 continue
-            if block and block in ['DESC', 'SPL']:
+            if block and block in ["DESC", "SPL"]:
                 try:
                     key, value = line.split(maxsplit=1)
                     value = value.replace("'", "")
                     try:
-                        if '.' in value:
+                        if "." in value:
                             value = float(value)
                         else:
                             value = int(value)
@@ -1020,70 +1101,78 @@ class BES3TImporter(aspecd.io.DatasetImporter):
 
     def _map_dsc_file(self):
         yaml_file = aspecd.utils.Yaml()
-        yaml_file.read_stream(aspecd.utils.get_package_data(
-            'trepr@' + self._mapper_filename).encode())
+        yaml_file.read_stream(
+            aspecd.utils.get_package_data(
+                "trepr@" + self._mapper_filename
+            ).encode()
+        )
         metadata_dict = {}
         metadata_dict = self._traverse(yaml_file.dict, metadata_dict)
         self.dataset.metadata.from_dict(metadata_dict)
-        self.dataset.label = self._dsc_keys['TITL']
+        self.dataset.label = self._dsc_keys["TITL"]
 
     def _traverse(self, dict_, metadata_dict):
         for key, value in dict_.items():
             if isinstance(value, dict):
                 metadata_dict[key] = {}
                 self._traverse(value, metadata_dict[key])
-            elif value in self._dsc_keys.keys():
+            elif value in self._dsc_keys:
                 metadata_dict[key] = self._dsc_keys[value]
         return metadata_dict
 
     def _read_dta_file(self):
-        filename = self.source + '.DTA'
-        byte_order = '>' if self._dsc_keys['BSEQ'] == 'BIG' else '<'
+        filename = self.source + ".DTA"
+        byte_order = ">" if self._dsc_keys["BSEQ"] == "BIG" else "<"
         format_ = {
-            'S': 'h',
-            'I': 'i',
-            'F': 'f',
-            'D': 'd',
+            "S": "h",
+            "I": "i",
+            "F": "f",
+            "D": "d",
         }
-        dtype = byte_order + format_[self._dsc_keys['IRFMT']]
+        dtype = byte_order + format_[self._dsc_keys["IRFMT"]]
         self.dataset.data.data = np.fromfile(filename, dtype=dtype)
-        if 'YPTS' in self._dsc_keys and self._dsc_keys['YPTS']:
-            self.dataset.data.data = \
-                np.reshape(self.dataset.data.data,
-                           (-1, self._dsc_keys['XPTS'])).T
-        if self._dsc_keys['XNAM'].lower() == "time":
+        if "YPTS" in self._dsc_keys and self._dsc_keys["YPTS"]:
+            self.dataset.data.data = np.reshape(
+                self.dataset.data.data, (-1, self._dsc_keys["XPTS"])
+            ).T
+        if self._dsc_keys["XNAM"].lower() == "time":
             self.dataset.data.data = self.dataset.data.data.T
 
     def _assign_axes(self):
         yaxis = None
-        xaxis = np.linspace(self._dsc_keys['XMIN'],
-                            self._dsc_keys['XMIN'] + self._dsc_keys['XWID'],
-                            self._dsc_keys['XPTS'])
-        if 'YTYP' in self._dsc_keys and self._dsc_keys['YTYP'] == 'IDX':
-            yaxis = np.linspace(self._dsc_keys['YMIN'],
-                                self._dsc_keys['YMIN']
-                                + self._dsc_keys['YWID'],
-                                self._dsc_keys['YPTS'])
-        if 'XNAM' in self._dsc_keys \
-                and self._dsc_keys['XNAM'].lower() == "time":
+        xaxis = np.linspace(
+            self._dsc_keys["XMIN"],
+            self._dsc_keys["XMIN"] + self._dsc_keys["XWID"],
+            self._dsc_keys["XPTS"],
+        )
+        if "YTYP" in self._dsc_keys and self._dsc_keys["YTYP"] == "IDX":
+            yaxis = np.linspace(
+                self._dsc_keys["YMIN"],
+                self._dsc_keys["YMIN"] + self._dsc_keys["YWID"],
+                self._dsc_keys["YPTS"],
+            )
+        if (
+            "XNAM" in self._dsc_keys
+            and self._dsc_keys["XNAM"].lower() == "time"
+        ):
             self.dataset.data.axes[0].values = yaxis
-            self.dataset.data.axes[0].unit = self._dsc_keys['YUNI']
+            self.dataset.data.axes[0].unit = self._dsc_keys["YUNI"]
             self.dataset.data.axes[1].values = xaxis
-            self.dataset.data.axes[1].unit = self._dsc_keys['XUNI']
+            self.dataset.data.axes[1].unit = self._dsc_keys["XUNI"]
         else:
             self.dataset.data.axes[0].values = xaxis
-            self.dataset.data.axes[0].unit = self._dsc_keys['XUNI']
+            self.dataset.data.axes[0].unit = self._dsc_keys["XUNI"]
             if yaxis is not None:
                 self.dataset.data.axes[1].values = yaxis
-                self.dataset.data.axes[1].unit = self._dsc_keys['YUNI']
+                self.dataset.data.axes[1].unit = self._dsc_keys["YUNI"]
         for axis in self.dataset.data.axes:
-            if axis.unit == 'G':
+            if axis.unit == "G":
                 axis.values /= 10
-                axis.unit = 'mT'
-                axis.quantity = 'magnetic field'
-            if axis.unit == 'ns':
+                axis.unit = "mT"
+                axis.quantity = "magnetic field"
+            if axis.unit == "ns":
                 axis.values /= 1e9
-                axis.unit = 's'
-                axis.quantity = 'time'
-        self.dataset.data.axes[-1].quantity = self._dsc_keys['IRNAM'].lower()
-        self.dataset.data.axes[-1].unit = self._dsc_keys['IRUNI']
+                axis.unit = "s"
+                axis.quantity = "time"
+        self.dataset.data.axes[-1].quantity = self._dsc_keys["IRNAM"].lower()
+        self.dataset.data.axes[-1].unit = self._dsc_keys["IRUNI"]

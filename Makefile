@@ -23,7 +23,6 @@ docs:
 tests:
 	@echo "Run unittests"
 	cd tests/ && python -m unittest discover -s . -t .
-	cd tests/io/ && python -m unittest discover -s . -t .
 
 check:
 	@echo "Check code using prospector... this may take a while"

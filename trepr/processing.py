@@ -121,6 +121,7 @@ Module documentation
 ====================
 
 """
+
 import numpy as np
 
 import aspecd.processing
@@ -174,20 +175,19 @@ class PretriggerOffsetCompensation(aspecd.processing.SingleProcessingStep):
         super().__init__()
         # public properties:
         # Note: self.parameters inherited
-        self.description = 'Pretrigger offset compensation'
+        self.description = "Pretrigger offset compensation"
         self.undoable = True
-        self.parameters['zeropoint_index'] = 0
+        self.parameters["zeropoint_index"] = 0
 
     def _perform_task(self):
         """Perform the processing step and return the processed data."""
         self._get_zeropoint_index()
-        self._execute_compensation(self.parameters['zeropoint_index'])
+        self._execute_compensation(self.parameters["zeropoint_index"])
 
     def _get_zeropoint_index(self):
         """Get the index of the last time value before the trigger."""
-        zeropoint_index = \
-            np.argmin(abs(self.dataset.data.axes[1].values))
-        self.parameters['zeropoint_index'] = int(zeropoint_index)
+        zeropoint_index = np.argmin(abs(self.dataset.data.axes[1].values))
+        self.parameters["zeropoint_index"] = int(zeropoint_index)
 
     def _execute_compensation(self, range_end):
         """Execute the pretrigger offset compensation."""
@@ -293,9 +293,9 @@ class BackgroundCorrection(aspecd.processing.SingleProcessingStep):
     def __init__(self):
         super().__init__()
         # public properties:
-        self.description = 'Background correction of 2D spectrum'
+        self.description = "Background correction of 2D spectrum"
         self.undoable = True
-        self.parameters['num_profiles'] = None
+        self.parameters["num_profiles"] = None
 
     @staticmethod
     def applicable(dataset):
@@ -318,39 +318,48 @@ class BackgroundCorrection(aspecd.processing.SingleProcessingStep):
         return len(dataset.data.axes) == 3
 
     def _sanitise_parameters(self):
-        if not isinstance(self.parameters['num_profiles'], list):
-            self.parameters['num_profiles'] = [self.parameters['num_profiles']]
-        if len(self.parameters['num_profiles']) == 1:
-            self.parameters['num_profiles'] = self.parameters['num_profiles'][0]
+        if not isinstance(self.parameters["num_profiles"], list):
+            self.parameters["num_profiles"] = [
+                self.parameters["num_profiles"]
+            ]
+        if len(self.parameters["num_profiles"]) == 1:
+            self.parameters["num_profiles"] = self.parameters["num_profiles"][
+                0
+            ]
 
     def _set_defaults(self):
-        self.parameters['num_profiles'] = \
-            self.parameters['num_profiles'] or [5, 5]
+        self.parameters["num_profiles"] = self.parameters["num_profiles"] or [
+            5,
+            5,
+        ]
 
     def _perform_task(self):
         self._check_data_size()
         self._subtract_background()
 
     def _check_data_size(self):
-        if isinstance(self.parameters['num_profiles'], list):
-            num_profiles = sum(self.parameters['num_profiles'])
+        if isinstance(self.parameters["num_profiles"], list):
+            num_profiles = sum(self.parameters["num_profiles"])
         else:
-            num_profiles = self.parameters['num_profiles']
+            num_profiles = self.parameters["num_profiles"]
         if len(self.dataset.data.axes[0].values) <= 2 * num_profiles:
             raise aspecd.exceptions.NotApplicableToDatasetError(
-                message='The given dataset ist too small to perform '
-                        'appropriate background correction.')
+                message="The given dataset ist too small to perform "
+                "appropriate background correction."
+            )
 
     def _subtract_background(self):
-        if isinstance(self.parameters['num_profiles'], list) and \
-                len(self.parameters['num_profiles']) == 2:
+        if (
+            isinstance(self.parameters["num_profiles"], list)
+            and len(self.parameters["num_profiles"]) == 2
+        ):
             self._bg_corr_with_slope()
         else:
             self._bg_corr_one_side()
 
     def _bg_corr_with_slope(self):
-        low = self.parameters['num_profiles'][0]
-        high = abs(self.parameters['num_profiles'][1])
+        low = self.parameters["num_profiles"][0]
+        high = abs(self.parameters["num_profiles"][1])
         lower_mean = np.mean(self.dataset.data.data[:low, :], axis=0)
         higher_mean = np.mean(self.dataset.data.data[-high:, :], axis=0)
         slope = (higher_mean - lower_mean) / self.dataset.data.data.shape[0]
@@ -358,24 +367,24 @@ class BackgroundCorrection(aspecd.processing.SingleProcessingStep):
             transient -= lower_mean + slope * idx
 
     def _bg_corr_one_side(self):
-        assert isinstance(self.parameters['num_profiles'], int)
+        assert isinstance(self.parameters["num_profiles"], int)
 
-        if self.parameters['num_profiles'] < 0:
+        if self.parameters["num_profiles"] < 0:
             self._subtract_from_end()
         else:
             self._subtract_from_begin()
 
     def _subtract_from_end(self):
         bg = np.mean(
-            self.dataset.data.data[self.parameters['num_profiles']:, :],
-            axis=0
+            self.dataset.data.data[self.parameters["num_profiles"] :, :],
+            axis=0,
         )
         self.dataset.data.data -= bg
 
     def _subtract_from_begin(self):
         bg = np.mean(
-            self.dataset.data.data[:self.parameters['num_profiles'], :],
-            axis=0
+            self.dataset.data.data[: self.parameters["num_profiles"], :],
+            axis=0,
         )
         self.dataset.data.data -= bg
 
@@ -451,14 +460,15 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
         units of using the given frequency, then converted back using target
         frequency.
         """
-        nu_target = self.parameters['frequency']
+        nu_target = self.parameters["frequency"]
         for axis in self.dataset.data.axes:
             # TODO: Question: Better check for quantity rather than unit? (
             #   Difficult if not filled)
             # if axis.quantity == 'magnetic field'
-            if axis.unit in ('mT', 'G'):
-                axis.values = self._correct_field_for_frequency(nu_target,
-                                                                axis.values)
+            if axis.unit in ("mT", "G"):
+                axis.values = self._correct_field_for_frequency(
+                    nu_target, axis.values
+                )
                 self._write_new_frequency()
 
     def _correct_field_for_frequency(self, nu_target=None, b_initial=None):
@@ -484,8 +494,9 @@ class FrequencyCorrection(aspecd.processing.SingleProcessingStep):
         return b_target
 
     def _write_new_frequency(self):
-        self.dataset.metadata.bridge.mw_frequency.value = \
-            self.parameters['frequency']
+        self.dataset.metadata.bridge.mw_frequency.value = self.parameters[
+            "frequency"
+        ]
 
 
 class TriggerAutodetection(aspecd.processing.SingleProcessingStep):
@@ -627,8 +638,8 @@ class TriggerAutodetection(aspecd.processing.SingleProcessingStep):
 
     def __init__(self):
         super().__init__()
-        self.description = 'Autodetect trigger position'
-        self.parameters['n_sigma'] = 4
+        self.description = "Autodetect trigger position"
+        self.parameters["n_sigma"] = 4
 
     @staticmethod
     def applicable(dataset):
@@ -639,9 +650,9 @@ class TriggerAutodetection(aspecd.processing.SingleProcessingStep):
         of 1D data) or the second axis (in case of 2D data) is a time axis.
         """
         if len(dataset.data.axes) == 2:
-            answer = 'time' in dataset.data.axes[0].quantity
+            answer = "time" in dataset.data.axes[0].quantity
         else:
-            answer = 'time' in dataset.data.axes[1].quantity
+            answer = "time" in dataset.data.axes[1].quantity
         return answer
 
     def _perform_task(self):
@@ -649,16 +660,18 @@ class TriggerAutodetection(aspecd.processing.SingleProcessingStep):
             time_trace = self.dataset.data.data[0, :]
         else:
             time_trace = self.dataset.data.data
-        smoothed_differences = np.convolve(np.diff(time_trace), np.ones(
-            int(len(time_trace) / 20)))
+        smoothed_differences = np.convolve(
+            np.diff(time_trace), np.ones(int(len(time_trace) / 20))
+        )
         try:
-            threshold = np.std(smoothed_differences[0:50]) \
-                * self.parameters['n_sigma']
-            trigger_pos = \
-                np.where(smoothed_differences > threshold)[0][0]
+            threshold = (
+                np.std(smoothed_differences[0:50])
+                * self.parameters["n_sigma"]
+            )
+            trigger_pos = np.where(smoothed_differences > threshold)[0][0]
         except IndexError:
             trigger_pos = 0
         self.dataset.metadata.transient.trigger_position = trigger_pos
         for axis in self.dataset.data.axes:
-            if 'time' in axis.quantity:
+            if "time" in axis.quantity:
                 axis.values -= axis.values[trigger_pos]

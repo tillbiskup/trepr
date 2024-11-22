@@ -87,6 +87,7 @@ Module documentation
 ====================
 
 """
+
 import copy
 
 import numpy as np
@@ -251,9 +252,9 @@ class MWFrequencyDrift(aspecd.analysis.SingleAnalysisStep):
     def __init__(self):
         super().__init__()
         # public properties
-        self.description = 'Microwave frequency drift analysis.'
-        self.parameters['kind'] = 'ratio'
-        self.parameters['output'] = 'value'
+        self.description = "Microwave frequency drift analysis."
+        self.parameters["kind"] = "ratio"
+        self.parameters["output"] = "value"
         # protected properties
         self._delta_mw_freq = float()
         self._delta_B0 = float()
@@ -273,12 +274,12 @@ class MWFrequencyDrift(aspecd.analysis.SingleAnalysisStep):
         return dataset.microwave_frequency.data.any()
 
     def _sanitise_parameters(self):
-        if self.parameters["output"] not in ['value', 'dict', 'dataset']:
-            raise ValueError("Unknown output type %s"
-                             % self.parameters["output"])
-        if self.parameters["kind"] not in ['ratio', 'drift']:
-            raise ValueError("Unknown kind %s"
-                             % self.parameters["kind"])
+        if self.parameters["output"] not in ["value", "dict", "dataset"]:
+            raise ValueError(
+                f"Unknown output type {self.parameters['output']}"
+            )
+        if self.parameters["kind"] not in ["ratio", "drift"]:
+            raise ValueError(f"Unknown kind {self.parameters['kind']}")
 
     def _perform_task(self):
         """Perform all methods to do analysis."""
@@ -290,8 +291,9 @@ class MWFrequencyDrift(aspecd.analysis.SingleAnalysisStep):
 
     def _calculate_mw_freq_amplitude(self):
         """Calculate the amplitude of the microwave frequency."""
-        self._delta_mw_freq = max(self.dataset.microwave_frequency.data) - \
-            min(self.dataset.microwave_frequency.data)
+        self._delta_mw_freq = max(
+            self.dataset.microwave_frequency.data
+        ) - min(self.dataset.microwave_frequency.data)
 
     # noinspection PyPep8Naming
     def _calculate_delta_B0(self):  # noqa: N802
@@ -301,55 +303,66 @@ class MWFrequencyDrift(aspecd.analysis.SingleAnalysisStep):
     # noinspection PyPep8Naming
     @staticmethod
     def _GHz_to_mT(frequency=None):  # noqa: N802
-        electron_g_factor = scipy.constants.value('electron g factor')
-        bohr_magneton = scipy.constants.value('Bohr magneton')
-        planck_constant = scipy.constants.value('Planck constant')
-        magnetic_field = frequency * 1e9 * planck_constant \
+        electron_g_factor = scipy.constants.value("electron g factor")
+        bohr_magneton = scipy.constants.value("Bohr magneton")
+        planck_constant = scipy.constants.value("Planck constant")
+        magnetic_field = (
+            frequency
+            * 1e9
+            * planck_constant
             / (-1 * electron_g_factor * bohr_magneton * 1e-3)
+        )
         return magnetic_field
 
     def _calculate_step_size(self):
         """Calculate the step size of the given dataset."""
-        self._step_size_in_mT = \
-            self.dataset.microwave_frequency.axes[0].values[1] \
+        self._step_size_in_mT = (
+            self.dataset.microwave_frequency.axes[0].values[1]
             - self.dataset.microwave_frequency.axes[0].values[0]
+        )
 
     # noinspection PyPep8Naming
     def _compare_delta_B0_with_step_size(self):  # noqa: N802
         """Calculate the ratio between delta B0 and the step size."""
-        self._ratio_frequency_drift_to_step_size = \
+        self._ratio_frequency_drift_to_step_size = (
             self._delta_B0 / self._step_size_in_mT
+        )
 
     def _write_result(self):
         """Write the results in the results dictionary."""
-        if self.parameters['output'] == 'value':
-            if self.parameters['kind'] == 'ratio':
+        if self.parameters["output"] == "value":
+            if self.parameters["kind"] == "ratio":
                 self.result = self._ratio_frequency_drift_to_step_size
-            elif self.parameters['kind'] == 'drift':
+            elif self.parameters["kind"] == "drift":
                 self.result = self._delta_B0
-        elif self.parameters['output'] == 'dataset':
+        elif self.parameters["output"] == "dataset":
             self.result = self.create_dataset()
-            self.result.data.data = self._GHz_to_mT(np.diff(
-                self.dataset.microwave_frequency.data))
-            self.result.data.axes[0].quantity = \
+            self.result.data.data = self._GHz_to_mT(
+                np.diff(self.dataset.microwave_frequency.data)
+            )
+            self.result.data.axes[0].quantity = (
                 self.dataset.microwave_frequency.axes[0].quantity
-            self.result.data.axes[0].unit = \
+            )
+            self.result.data.axes[0].unit = (
                 self.dataset.microwave_frequency.axes[0].unit
-            self.result.data.axes[0].values = \
-                self.dataset.microwave_frequency.axes[0].values[:-1] \
+            )
+            self.result.data.axes[0].values = (
+                self.dataset.microwave_frequency.axes[0].values[:-1]
                 + self._step_size_in_mT * 0.5
+            )
             self.result.data.axes[1].quantity = "drift"
             self.result.data.axes[1].unit = "mT"
-            if self.parameters['kind'] == 'ratio':
+            if self.parameters["kind"] == "ratio":
                 self.result.data.data /= self._step_size_in_mT
                 self.result.data.axes[1].quantity = "drift/(field step size)"
                 self.result.data.axes[1].unit = ""
         else:
             self.result = {
-                'frequency drift': aspecd.metadata.PhysicalQuantity(
-                    value=self._delta_B0, unit='mT'),
-                'ratio frequency drift/step size':
-                    self._ratio_frequency_drift_to_step_size}
+                "frequency drift": aspecd.metadata.PhysicalQuantity(
+                    value=self._delta_B0, unit="mT"
+                ),
+                "ratio frequency drift/step size": self._ratio_frequency_drift_to_step_size,
+            }
 
 
 class TimeStampAnalysis(aspecd.analysis.SingleAnalysisStep):
@@ -493,9 +506,9 @@ class TimeStampAnalysis(aspecd.analysis.SingleAnalysisStep):
     def __init__(self):
         super().__init__()
         # public properties
-        self.description = 'Time stamp analysis.'
-        self.parameters['output'] = 'dataset'
-        self.parameters['kind'] = 'delta'
+        self.description = "Time stamp analysis."
+        self.parameters["output"] = "dataset"
+        self.parameters["kind"] = "delta"
 
     @staticmethod
     def applicable(dataset):
@@ -509,41 +522,47 @@ class TimeStampAnalysis(aspecd.analysis.SingleAnalysisStep):
         return dataset.time_stamp.data.any()
 
     def _sanitise_parameters(self):
-        if self.parameters["output"] not in ['values', 'dataset']:
-            raise ValueError("Unknown output type %s"
-                             % self.parameters["output"])
-        if self.parameters["kind"] not in ['delta', 'time']:
-            raise ValueError("Unknown kind %s"
-                             % self.parameters["kind"])
+        if self.parameters["output"] not in ["values", "dataset"]:
+            raise ValueError(
+                f"Unknown output type {self.parameters['output']}"
+            )
+        if self.parameters["kind"] not in ["delta", "time"]:
+            raise ValueError(f"Unknown kind {self.parameters['kind']}")
 
     def _perform_task(self):
         """Perform all methods to do analysis."""
         time_deltas = np.diff(self.dataset.time_stamp.data)
         time_deltas_in_seconds = [abs(x.total_seconds()) for x in time_deltas]
-        times = [time.total_seconds() for time in
-                 self.dataset.time_stamp.data
-                 - min(self.dataset.time_stamp.data)]
-        if self.parameters['output'] == 'dataset':
+        times = [
+            time.total_seconds()
+            for time in self.dataset.time_stamp.data
+            - min(self.dataset.time_stamp.data)
+        ]
+        if self.parameters["output"] == "dataset":
             self.result = self.create_dataset()
-            if self.parameters['kind'] == 'delta':
+            if self.parameters["kind"] == "delta":
                 self.result.data.data = np.asarray(time_deltas_in_seconds)
-                self.result.data.axes[0].values = \
+                self.result.data.axes[0].values = (
                     self.dataset.time_stamp.axes[0].values[1:]
-                self.result.data.axes[1].quantity = 'Delta time'
-            elif self.parameters['kind'] == 'time':
+                )
+                self.result.data.axes[1].quantity = "Delta time"
+            elif self.parameters["kind"] == "time":
                 self.result.data.data = np.asarray(times)
-                self.result.data.axes[0].values = \
+                self.result.data.axes[0].values = (
                     self.dataset.time_stamp.axes[0].values
-                self.result.data.axes[1].quantity = 'time'
-            self.result.data.axes[0].quantity = \
-                self.dataset.time_stamp.axes[0].quantity
-            self.result.data.axes[0].unit = \
-                self.dataset.time_stamp.axes[0].unit
-            self.result.data.axes[1].unit = 's'
+                )
+                self.result.data.axes[1].quantity = "time"
+            self.result.data.axes[0].quantity = self.dataset.time_stamp.axes[
+                0
+            ].quantity
+            self.result.data.axes[0].unit = self.dataset.time_stamp.axes[
+                0
+            ].unit
+            self.result.data.axes[1].unit = "s"
         else:
-            if self.parameters['kind'] == 'delta':
+            if self.parameters["kind"] == "delta":
                 self.result = time_deltas_in_seconds
-            elif self.parameters['kind'] == 'time':
+            elif self.parameters["kind"] == "time":
                 self.result = times
 
 
@@ -579,18 +598,20 @@ class BasicCharacteristics(aspecd.analysis.BasicCharacteristics):
 
     def __init__(self):
         super().__init__()
-        self.parameters['axis'] = None
+        self.parameters["axis"] = None
 
     def _sanitise_parameters(self):
-        if self.parameters['axis'] > self.dataset.data.data.ndim - 1:
-            raise IndexError("Axis %i out of bounds"
-                             % self.parameters['axis'])
+        if self.parameters["axis"] > self.dataset.data.data.ndim - 1:
+            raise IndexError(
+                f"Axis {self.parameters['axis']} out of bounds"
+            )
 
     def _perform_task(self):
         super()._perform_task()
-        if self.parameters['axis'] is not None \
-                and isinstance(self.result, list):
-            self.result = self.result[self.parameters['axis']]
+        if self.parameters["axis"] is not None and isinstance(
+            self.result, list
+        ):
+            self.result = self.result[self.parameters["axis"]]
 
 
 class MWFrequencyValues(aspecd.analysis.SingleAnalysisStep):
@@ -667,7 +688,7 @@ class MWFrequencyValues(aspecd.analysis.SingleAnalysisStep):
 
     def __init__(self):
         super().__init__()
-        self.description = 'Extract MW frequency values'
+        self.description = "Extract MW frequency values"
 
     @staticmethod
     def applicable(dataset):
@@ -967,13 +988,14 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
 
     def __init__(self):
         super().__init__()
-        self.description = \
-            'Perform FFT to extract transient nutation frequencies'
-        self.parameters['start_in_extremum'] = True
-        self.parameters['padding'] = 1
-        self.parameters['subtract_decay'] = False
-        self.parameters['window'] = None
-        self.parameters['window_parameters'] = None
+        self.description = (
+            "Perform FFT to extract transient nutation frequencies"
+        )
+        self.parameters["start_in_extremum"] = True
+        self.parameters["padding"] = 1
+        self.parameters["subtract_decay"] = False
+        self.parameters["window"] = None
+        self.parameters["window_parameters"] = None
 
         self._time_axis = 0
         self._cut_index = 0
@@ -989,7 +1011,7 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
         To be able to analyse transient nutations, a time axis needs to be
         present.
         """
-        return any(['time' in axis.quantity for axis in dataset.data.axes])
+        return any("time" in axis.quantity for axis in dataset.data.axes)
 
     def _perform_task(self):
         self.result = self.create_dataset()
@@ -999,10 +1021,10 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
         self._apply_padding()
         self._cut_data()
 
-        if self.parameters['subtract_decay']:
+        if self.parameters["subtract_decay"]:
             self._subtract_decay()
 
-        if self.parameters['window']:
+        if self.parameters["window"]:
             self._apply_window()
 
         self._perform_fft()
@@ -1010,32 +1032,37 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
 
     def _get_time_axis(self):
         for idx, axis in enumerate(self.dataset.data.axes):
-            if 'time' in axis.quantity:
+            if "time" in axis.quantity:
                 self._time_axis = idx
 
     def _get_cut_index(self):
-        if self.parameters['start_in_extremum']:
-            self._cut_index = np.argmax(np.abs(self.dataset.data.data)) \
+        if self.parameters["start_in_extremum"]:
+            self._cut_index = (
+                np.argmax(np.abs(self.dataset.data.data))
                 % self.dataset.data.data.shape[self._time_axis]
+            )
         else:
-            self._cut_index = np.argmin(np.abs(self.dataset.data.axes[
-                                               self._time_axis].values))
+            self._cut_index = np.argmin(
+                np.abs(self.dataset.data.axes[self._time_axis].values)
+            )
 
     def _apply_padding(self):
         if self.dataset.data.data.ndim > 1:
-            self._n_points = \
-                self.dataset.data.data[:, self._cut_index:].shape[1] \
-                * self.parameters['padding']
+            self._n_points = (
+                self.dataset.data.data[:, self._cut_index :].shape[1]
+                * self.parameters["padding"]
+            )
         else:
-            self._n_points = \
-                self.dataset.data.data[self._cut_index:].shape[0] \
-                * self.parameters['padding']
+            self._n_points = (
+                self.dataset.data.data[self._cut_index :].shape[0]
+                * self.parameters["padding"]
+            )
 
     def _cut_data(self):
         if self.dataset.data.data.ndim > 1:
-            self._y = copy.copy(self.dataset.data.data[:, self._cut_index:])
+            self._y = copy.copy(self.dataset.data.data[:, self._cut_index :])
         else:
-            self._y = copy.copy(self.dataset.data.data[self._cut_index:])
+            self._y = copy.copy(self.dataset.data.data[self._cut_index :])
 
     def _subtract_decay(self):
 
@@ -1043,59 +1070,76 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
             return a * np.exp(-t * x)
 
         start_parameters = (1, 1)
-        time_values = \
-            self.dataset.data.axes[self._time_axis].values[self._cut_index:]
+        time_values = self.dataset.data.axes[self._time_axis].values[
+            self._cut_index :
+        ]
 
         if self.dataset.data.data.ndim > 1:
             for idx, row in enumerate(self._y):
-                fitted_parameters, _ = curve_fit(mono_exponential,  # noqa
-                                                 time_values,
-                                                 row,
-                                                 start_parameters)
-                self._y[idx, :] = \
-                    row - mono_exponential(time_values, *fitted_parameters)
+                fitted_parameters, _ = curve_fit(  # noqa
+                    mono_exponential,
+                    time_values,
+                    row,
+                    start_parameters,
+                )
+                self._y[idx, :] = row - mono_exponential(
+                    time_values, *fitted_parameters
+                )
         else:
-            fitted_parameters, _ = curve_fit(mono_exponential,  # noqa
-                                             time_values,
-                                             self._y,
-                                             start_parameters)
+            fitted_parameters, _ = curve_fit(  # noqa
+                mono_exponential,
+                time_values,
+                self._y,
+                start_parameters,
+            )
             self._y -= mono_exponential(time_values, *fitted_parameters)
 
     def _apply_window(self):
-        if self.parameters['window_parameters']:
-            if aspecd.utils.isiterable(self.parameters['window_parameters']):
-                window_name = (self.parameters['window'],
-                               *self.parameters['window_parameters'])
+        if self.parameters["window_parameters"]:
+            if aspecd.utils.isiterable(self.parameters["window_parameters"]):
+                window_name = (
+                    self.parameters["window"],
+                    *self.parameters["window_parameters"],
+                )
             else:
-                window_name = (self.parameters['window'],
-                               self.parameters['window_parameters'])
+                window_name = (
+                    self.parameters["window"],
+                    self.parameters["window_parameters"],
+                )
         else:
-            window_name = self.parameters['window']
+            window_name = self.parameters["window"]
 
         if self.dataset.data.data.ndim > 1:
             for idx, row in enumerate(self._y):
-                window = windows.get_window(window_name,
-                                            len(row) * 2)[len(row):]
+                window = windows.get_window(window_name, len(row) * 2)[
+                    len(row) :
+                ]
                 self._y[idx, :] *= window
         else:
-            window = windows.get_window(window_name,
-                                        len(self._y) * 2)[len(self._y):]
+            window = windows.get_window(window_name, len(self._y) * 2)[
+                len(self._y) :
+            ]
             self._y *= window
 
     def _perform_fft(self):
         self._xt = rfftfreq(
             self._n_points,
-            float(np.diff(self.dataset.data.axes[self._time_axis].values[
-                          -2:])[0]))
+            float(
+                np.diff(self.dataset.data.axes[self._time_axis].values[-2:])[
+                    0
+                ]
+            ),
+        )
         yt = rfft(self._y, axis=self._time_axis, n=self._n_points)
         self.result.data.data = np.abs(yt)
 
     def _assign_result_axes(self):
-        for idx in range(len(self.result.data.axes)):
+        for idx, _ in enumerate(self.result.data.axes):
             if idx != self._time_axis:
-                self.result.data.axes[idx] = \
-                    copy.copy(self.dataset.data.axes[idx])
+                self.result.data.axes[idx] = copy.copy(
+                    self.dataset.data.axes[idx]
+                )
         self.result.data.axes[self._time_axis].values = self._xt
-        self.result.data.axes[self._time_axis].quantity = 'frequency'
-        self.result.data.axes[self._time_axis].unit = 'Hz'
-        self.result.data.axes[-1].unit = ''
+        self.result.data.axes[self._time_axis].quantity = "frequency"
+        self.result.data.axes[self._time_axis].unit = "Hz"
+        self.result.data.axes[-1].unit = ""

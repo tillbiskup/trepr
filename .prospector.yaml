@@ -2,6 +2,7 @@ inherits:
   - strictness_high
 
 ignore-paths:
+  - build
   - trepr/bla.py
 
 pep257:
@@ -11,6 +12,13 @@ pep257:
     - D203
     - D212
     - D213
+
+pycodestyle:
+  disable:
+    - E203
+    - W503
+  enable:
+    - W504
 
 pyroma:
   run: true

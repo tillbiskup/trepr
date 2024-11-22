@@ -65,6 +65,7 @@ Module documentation
 ====================
 
 """
+
 import os
 
 import aspecd.dataset
@@ -157,11 +158,13 @@ class DatasetFactory(aspecd.dataset.DatasetFactory):
         self.importer_factory = trepr.io.DatasetImporterFactory()
 
     @staticmethod
-    def _create_dataset(source=''):
+    def _create_dataset(source=""):
         return trepr.dataset.ExperimentalDataset()
 
 
-class ExperimentalDatasetMetadata(aspecd.metadata.ExperimentalDatasetMetadata):
+class ExperimentalDatasetMetadata(
+    aspecd.metadata.ExperimentalDatasetMetadata
+):
     """Metadata for an experimental TREPR dataset.
 
     The metadata and their structure implemented in this class are one key
@@ -278,7 +281,7 @@ class Measurement(aspecd.metadata.Measurement):
 
     def __init__(self, dict_=None):
         # public properties
-        self.label = ''
+        self.label = ""
         super().__init__(dict_=dict_)
 
 
@@ -312,10 +315,10 @@ class Sample(aspecd.metadata.Sample):
 
     def __init__(self, dict_=None):
         # public properties
-        self.description = ''
-        self.solvent = ''
-        self.preparation = ''
-        self.tube = ''
+        self.description = ""
+        self.solvent = ""
+        self.preparation = ""
+        self.tube = ""
         super().__init__(dict_=dict_)
 
 
@@ -426,8 +429,8 @@ class Spectrometer(aspecd.metadata.Metadata):
 
     def __init__(self, dict_=None):
         # public properties
-        self.model = ''
-        self.software = ''
+        self.model = ""
+        self.software = ""
         super().__init__(dict_=dict_)
 
 
@@ -480,14 +483,14 @@ class MagneticField(aspecd.metadata.Metadata):
 
     def __init__(self, dict_=None):
         # public properties
-        self.field_probe_type = ''
-        self.field_probe_model = ''
+        self.field_probe_type = ""
+        self.field_probe_model = ""
         self.start = aspecd.metadata.PhysicalQuantity()
         self.stop = aspecd.metadata.PhysicalQuantity()
         self.step = aspecd.metadata.PhysicalQuantity()
-        self.sequence = ''
-        self.controller = ''
-        self.power_supply = ''
+        self.sequence = ""
+        self.controller = ""
+        self.power_supply = ""
         super().__init__(dict_=dict_)
 
 
@@ -539,7 +542,7 @@ class Background(aspecd.metadata.Metadata):
         # public properties
         self.field = aspecd.metadata.PhysicalQuantity()
         self.occurrence = None
-        self.polarisation = ''
+        self.polarisation = ""
         self.intensity = aspecd.metadata.PhysicalQuantity()
         super().__init__(dict_=dict_)
 
@@ -615,12 +618,12 @@ class Bridge(aspecd.metadata.Metadata):
 
     def __init__(self, dict_=None):
         # public properties
-        self.model = ''
-        self.controller = ''
+        self.model = ""
+        self.controller = ""
         self.attenuation = aspecd.metadata.PhysicalQuantity()
         self.power = aspecd.metadata.PhysicalQuantity()
-        self.detection = ''
-        self.frequency_counter = ''
+        self.detection = ""
+        self.frequency_counter = ""
         self.mw_frequency = aspecd.metadata.PhysicalQuantity()
         super().__init__(dict_=dict_)
 
@@ -762,12 +765,12 @@ class Recorder(aspecd.metadata.Metadata):
 
     def __init__(self, dict_=None):
         # public properties
-        self.model = ''
+        self.model = ""
         self.averages = None
         self.time_base = aspecd.metadata.PhysicalQuantity()
         self.bandwidth = aspecd.metadata.PhysicalQuantity()
         self.pretrigger = aspecd.metadata.PhysicalQuantity()
-        self.coupling = ''
+        self.coupling = ""
         self.impedance = aspecd.metadata.PhysicalQuantity()
         self.sensitivity = aspecd.metadata.PhysicalQuantity()
         super().__init__(dict_=dict_)
@@ -816,9 +819,9 @@ class Probehead(aspecd.metadata.Metadata):
 
     def __init__(self, dict_=None):
         # public properties
-        self.type = ''
-        self.model = ''
-        self.coupling = ''
+        self.type = ""
+        self.model = ""
+        self.coupling = ""
         super().__init__(dict_=dict_)
 
 
@@ -916,16 +919,16 @@ class Pump(aspecd.metadata.Metadata):
 
     def __init__(self, dict_=None):
         # public properties
-        self.type = ''
-        self.model = ''
+        self.type = ""
+        self.model = ""
         self.wavelength = aspecd.metadata.PhysicalQuantity()
         self.power = aspecd.metadata.PhysicalQuantity()
         self.repetition_rate = aspecd.metadata.PhysicalQuantity()
-        self.tunable_type = ''
-        self.tunable_model = ''
-        self.tunable_dye = ''
+        self.tunable_type = ""
+        self.tunable_model = ""
+        self.tunable_dye = ""
         self.tunable_position = None
-        self.filter = ''
+        self.filter = ""
         super().__init__(dict_=dict_)
 
 
@@ -956,6 +959,6 @@ class TemperatureControl(aspecd.metadata.TemperatureControl):
 
     def __init__(self, dict_=None):
         # public properties
-        self.cryostat = ''
-        self.cryogen = ''
+        self.cryostat = ""
+        self.cryogen = ""
         super().__init__(dict_=dict_)

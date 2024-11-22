@@ -23,7 +23,7 @@ class DimensionError(Error):
 
     """
 
-    def __init__(self, message=''):
+    def __init__(self, message=""):
         super().__init__()
         self.message = message
 
@@ -38,7 +38,7 @@ class RangeError(Error):
 
     """
 
-    def __init__(self, message=''):
+    def __init__(self, message=""):
         super().__init__()
         self.message = message
 
@@ -53,6 +53,6 @@ class UnitError(Error):
 
     """
 
-    def __init__(self, message=''):
+    def __init__(self, message=""):
         super().__init__()
         self.message = message

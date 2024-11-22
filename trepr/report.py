@@ -55,6 +55,7 @@ import time
 import jinja2
 
 import aspecd.report
+import trepr.dataset
 
 
 class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
@@ -91,17 +92,17 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
 
     """
 
-    def __init__(self, template='', filename=''):
+    def __init__(self, template="", filename=""):
         # public properties
         super().__init__(template=template, filename=filename)
         self.dataset = trepr.dataset.Dataset()
         # protected properties
         self._latex_jinja_env = jinja2.Environment()
-        self._metadata = dict()
+        self._metadata = {}
         self._date = None
         self._processing_steps = collections.OrderedDict()
-        self._avg_parameter = dict()
-        self._figure_name = dict()
+        self._avg_parameter = {}
+        self._figure_name = {}
 
     def create(self):
         """Perform all methods to generate a report."""
@@ -116,23 +117,24 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
         """Prepare the metadata the way it can be rendered automatically."""
         self._metadata = self.dataset.metadata.to_dict()
         self._metadata = self._change_keys_in_dict_recursively(self._metadata)
-        self._metadata['Parameter'] = collections.OrderedDict()
+        self._metadata["Parameter"] = collections.OrderedDict()
         self._collect_parameters()
 
     def _collect_parameters(self):
         """Collect all the metadata keys."""
         for key in self._metadata.keys():
-            if key not in ['Sample', 'Measurement', 'Parameter']:
-                self._metadata['Parameter'][key] = \
-                    self._metadata[key]
+            if key not in ["Sample", "Measurement", "Parameter"]:
+                self._metadata["Parameter"][key] = self._metadata[key]
 
     def _get_processing_steps(self):
         """Get processing steps from history."""
         for history_record in self.dataset.history:
-            self._processing_steps[history_record.processing.description] = \
+            self._processing_steps[history_record.processing.description] = (
                 history_record.processing.parameters
-        self._processing_steps = \
-            self._change_keys_in_dict_recursively(self._processing_steps)
+            )
+        self._processing_steps = self._change_keys_in_dict_recursively(
+            self._processing_steps
+        )
 
     def _change_keys_in_dict_recursively(self, dict_=None):
         """Replace all underscores in the keys with a space.
@@ -143,53 +145,59 @@ class ExperimentalDatasetLaTeXReporter(aspecd.report.LaTeXReporter):
         tmp_dict = collections.OrderedDict()
         for key, value in dict_.items():
             if isinstance(value, dict):
-                dict_[key] = \
-                    self._change_keys_in_dict_recursively(value)
-            tmp_dict[key.replace('_', ' ').capitalize()] = dict_[key]
+                dict_[key] = self._change_keys_in_dict_recursively(value)
+            tmp_dict[key.replace("_", " ").capitalize()] = dict_[key]
         return tmp_dict
 
     def _get_figure_names(self):
         """Get the names of the figures used for the report."""
-        for i in range(len(self.dataset.representations)):
-            if self.dataset.representations[i].plot.description \
-                    == '2D plot as scaled image.':
-                self._figure_name['Figure2D'] = \
-                    self.dataset.representations[i].plot.filename
-            elif self.dataset.representations[i].plot.description \
-                    == '1D line plot.':
-                self._figure_name['Figure1D'] = \
-                    self.dataset.representations[i].plot.filename
+        for representation in self.dataset.representations:
+            if representation.plot.description == "2D plot as scaled image.":
+                self._figure_name["Figure2D"] = representation.plot.filename
+            elif representation.plot.description == "1D line plot.":
+                self._figure_name["Figure1D"] = representation.plot.filename
             else:
                 pass
 
     def _get_current_date(self):
         """Get the current date."""
-        self._date = time.strftime('%d.%m.%Y')
+        self._date = time.strftime("%d.%m.%Y")
 
     def _create_context(self):
         """Create a dictionary containing all data to write the report."""
-        self.context['PROCESSINGSTEPS'] = self._processing_steps
-        self.context['METADATA'] = self._metadata
-        self.context['DATE'] = self._date
-        self.context['PROCESSINGPARAMETERS'] = self._avg_parameter
-        self.context['FIGURENAMES'] = self._figure_name
+        self.context["PROCESSINGSTEPS"] = self._processing_steps
+        self.context["METADATA"] = self._metadata
+        self.context["DATE"] = self._date
+        self.context["PROCESSINGPARAMETERS"] = self._avg_parameter
+        self.context["FIGURENAMES"] = self._figure_name
 
 
-if __name__ == '__main__':
-    import trepr.dataset
-    import trepr.io
-    import trepr.processing
+if __name__ == "__main__":
+    import os
 
-    template_ = 'report.tex'
-    filename_ = 'test.tex'
+    import aspecd.processing  # noqa
+    import trepr.io  # noqa
+    import trepr.processing  # noqa
+
+    template_ = "report.tex"
+    filename_ = "test.tex"
     dataset = trepr.dataset.ExperimentalDataset()
-    imp = trepr.io.SpeksimImporter(
-        source='/home/popp/nas/Python/Daten/messung01')
+    source = os.path.join(
+        os.path.split(os.path.abspath(__file__))[0],
+        "..",
+        "tests",
+        "testdata",
+        "speksim",
+    )
+    imp = trepr.io.SpeksimImporter(source=source)
     dataset.import_from(imp)
     poc = trepr.processing.PretriggerOffsetCompensation()
     dataset.process(poc)
-    pro = trepr.processing.Averaging(
-        avg_range=[4.e-7, 6.e-7], dimension=0, unit='axis')
+    pro = aspecd.processing.Averaging()
+    pro.parameters["range"] = [4.0e-7, 6.0e-7]
+    pro.parameters["axis"] = 1
+    pro.parameters["unit"] = "axis"
+
     dataset.process(pro)
     report = ExperimentalDatasetLaTeXReporter(template_, filename_)
     report.dataset = dataset
