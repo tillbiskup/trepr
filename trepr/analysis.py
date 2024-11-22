@@ -1085,7 +1085,8 @@ class TransientNutationFFT(aspecd.analysis.SingleAnalysisStep):
     def _perform_fft(self):
         self._xt = rfftfreq(
             self._n_points,
-            float(np.diff(self.dataset.data.axes[self._time_axis].values[-2:])))
+            float(np.diff(self.dataset.data.axes[self._time_axis].values[
+                          -2:])[0]))
         yt = rfft(self._y, axis=self._time_axis, n=self._n_points)
         self.result.data.data = np.abs(yt)
 

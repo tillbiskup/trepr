@@ -526,7 +526,7 @@ class TestTransientNutationFFT(unittest.TestCase):
         analysis = self.dataset.analyse(self.analysis)
 
         xt = rfftfreq(len(self.dataset.data.data),
-                      float(np.diff(self.dataset.data.axes[0].values[-2:])))
+                      float(np.diff(self.dataset.data.axes[0].values[-2:])[0]))
         self.assertListEqual(list(xt),
                              list(analysis.result.data.axes[0].values))
 
@@ -537,7 +537,7 @@ class TestTransientNutationFFT(unittest.TestCase):
 
         zero_index = np.argmin(np.abs(self.dataset.data.axes[0].values))
         xt = rfftfreq(len(self.dataset.data.data[zero_index:]),
-                      float(np.diff(self.dataset.data.axes[0].values[-2:])))
+                      float(np.diff(self.dataset.data.axes[0].values[-2:])[0]))
 
         self.assertListEqual(list(xt),
                              list(analysis.result.data.axes[0].values))
@@ -549,7 +549,7 @@ class TestTransientNutationFFT(unittest.TestCase):
 
         cut_index = np.argmax(np.abs(self.dataset.data.data))
         xt = rfftfreq(len(self.dataset.data.data[cut_index:]),
-                      float(np.diff(self.dataset.data.axes[0].values[-2:])))
+                      float(np.diff(self.dataset.data.axes[0].values[-2:])[0]))
 
         self.assertListEqual(list(xt),
                              list(analysis.result.data.axes[0].values))
@@ -562,7 +562,7 @@ class TestTransientNutationFFT(unittest.TestCase):
 
         cut_index = np.argmax(np.abs(self.dataset.data.data))
         xt = rfftfreq(len(self.dataset.data.data[cut_index:]),
-                      float(np.diff(self.dataset.data.axes[0].values[-2:])))
+                      float(np.diff(self.dataset.data.axes[0].values[-2:])[0]))
 
         self.assertListEqual(list(xt),
                              list(analysis.result.data.axes[0].values))
@@ -573,7 +573,7 @@ class TestTransientNutationFFT(unittest.TestCase):
         analysis = self.dataset.analyse(self.analysis)
         cut_index = np.argmax(np.abs(self.dataset.data.data))
         xt = rfftfreq(len(self.dataset.data.data[cut_index:]) * 5,
-                      float(np.diff(self.dataset.data.axes[0].values[-2:])))
+                      float(np.diff(self.dataset.data.axes[0].values[-2:])[0]))
         self.assertEqual(len(xt),
                          len(analysis.result.data.data))
 

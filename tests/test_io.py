@@ -125,7 +125,7 @@ class TestTezImporter(unittest.TestCase):
         self.importer._unpack_zip()
         self.importer._get_dir_and_filenames()
         self.importer._import_xml_data_to_dict()
-        self.assertEqual(collections.OrderedDict, type(self.importer.xml_dict))
+        self.assertEqual(dict, type(self.importer.xml_dict))
 
     def test_axes_are_created(self):
         self.dataset.import_from(self.importer)
