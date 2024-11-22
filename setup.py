@@ -55,8 +55,9 @@ setup(
         'colour',
     ],
     extras_require={
-        'dev': ['prospector'],
-        'docs': ['sphinx', 'sphinx_rtd_theme'],
+        'dev': ['prospector', 'pyroma', 'bandit', 'black'],
+        'docs': ['sphinx', 'sphinx_rtd_theme', 'sphinx_multiversion'],
+        'deployment': ['build', 'twine'],
     },
     python_requires='>=3.7',
 )
