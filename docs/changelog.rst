@@ -16,6 +16,17 @@ Documentation
 * New section on :doc:`metadata during data acquisition <metadata>`
 
 
+Version 0.2.1
+=============
+
+Not yet released
+
+Fixes
+-----
+
+* :class:`trepr.io.Fsc2Importer` flips data and field axis if measurement was done from high to low field.
+
+
 Version 0.2.0
 =============
 

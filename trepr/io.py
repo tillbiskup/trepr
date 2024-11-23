@@ -867,9 +867,15 @@ class Fsc2Importer(aspecd.io.DatasetImporter):
             float(self._parameters["Start field"].split(" ")[0]) / 10
         )
         field_end = float(self._parameters["End field"].split(" ")[0]) / 10
-        self.dataset.data.axes[0].values = np.linspace(
-            field_start, field_end, self.dataset.data.data.shape[0]
-        )
+        if field_end > field_start:
+            self.dataset.data.axes[0].values = np.linspace(
+                field_start, field_end, self.dataset.data.data.shape[0]
+            )
+        else:
+            self.dataset.data.axes[0].values = np.linspace(
+                field_end, field_start, self.dataset.data.data.shape[0]
+            )
+            self.dataset.data.data = np.flipud(self.dataset.data.data)
         self.dataset.data.axes[0].quantity = "magnetic field"
         self.dataset.data.axes[0].unit = "mT"
 

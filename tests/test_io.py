@@ -244,6 +244,7 @@ class TestFsc2Importer(unittest.TestCase):
             comments="% ",
             header="\n".join(header_lines),
         )
+        return data
 
     def test_importer(self):
         self.dataset.import_from(self.importer)
@@ -308,6 +309,46 @@ class TestFsc2Importer(unittest.TestCase):
         self.assertEqual(3, len(self.dataset.data.axes[0].values))
         self.assertEqual("magnetic field", self.dataset.data.axes[0].quantity)
         self.assertEqual("mT", self.dataset.data.axes[0].unit)
+
+    def test_with_downwards_scan_sets_field_axis_upwards(self):
+        self.prepare_fsc2_file(
+            length=30,
+            header=[
+                "Number of runs      = 1",
+                "Start field         = 4300.00000 G",
+                "End field           = 2700.00000 G",
+                "Number of points    = 10",
+                "Trigger position    = 1",
+                "Slice length        = 10.0000000 us",
+                f"Number of points   = 10",
+            ],
+        )
+        self.importer.source = self.datafile
+        self.dataset.import_from(self.importer)
+        self.assertEqual(270, self.dataset.data.axes[0].values[0])
+        self.assertEqual(430, self.dataset.data.axes[0].values[-1])
+        self.assertEqual(3, len(self.dataset.data.axes[0].values))
+        self.assertEqual("magnetic field", self.dataset.data.axes[0].quantity)
+        self.assertEqual("mT", self.dataset.data.axes[0].unit)
+
+    def test_with_downwards_scan_flips_data(self):
+        data = self.prepare_fsc2_file(
+            length=30,
+            header=[
+                "Number of runs      = 1",
+                "Start field         = 4300.00000 G",
+                "End field           = 2700.00000 G",
+                "Number of points    = 10",
+                "Trigger position    = 1",
+                "Slice length        = 10.0000000 us",
+                f"Number of points   = 10",
+            ],
+        )
+        self.importer.source = self.datafile
+        self.dataset.import_from(self.importer)
+        np.testing.assert_allclose(
+            np.flipud(data.reshape([-1, 10])), self.dataset.data.data
+        )
 
     def test_with_minimal_fsc2_file_sets_time_axis(self):
         self.prepare_fsc2_file(
