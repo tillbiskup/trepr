@@ -1,0 +1,49 @@
+format:
+  type: ASpecD recipe
+  version: '0.2'
+
+settings:
+  default_package: trepr
+
+directories:
+  datasets_source: ../../tests/testdata/
+
+datasets:
+  - speksim/
+
+tasks:
+  - kind: processing
+    type: PretriggerOffsetCompensation
+  - kind: aspecd.processing
+    type: Averaging
+    properties:
+      parameters:
+        range: [370.4, 371.4]
+        unit: axis
+        axis: 0
+    result: averaged
+  - kind: processing
+    type: Filtering
+    properties:
+      parameters:
+        type: savitzky-golay
+        window_length: 301
+        order: 5
+    result: filtered
+    apply_to:
+    - averaged
+  - kind: multiplot
+    type: MultiPlotter1D
+    properties:
+      parameters:
+        tight: x
+        tight_layout: true
+        show_legend: true
+      properties:
+        drawings:
+          - label: original
+          - label: filtered
+      filename: averaged_filtered.pdf
+    apply_to: 
+      - averaged
+      - filtered

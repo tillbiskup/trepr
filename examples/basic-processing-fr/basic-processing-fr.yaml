@@ -1,0 +1,75 @@
+format:
+  type: ASpecD recipe
+  version: '0.2'
+
+settings:
+  default_package: trepr
+
+directories:
+  datasets_source: ../../tests/testdata/
+
+datasets:
+  - speksim/
+
+tasks:
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        switch_axes: true
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+      filename: raw.png
+      type: contourf
+    result: 2Dplot
+  - kind: processing
+    type: PretriggerOffsetCompensation
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        switch_axes: true
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+      filename: poc.png
+      type: contourf
+    result: 2Dplot
+  - kind: aspecd.processing
+    type: Averaging
+    properties:
+      parameters:
+        range: [370.4, 371.4]
+        unit: axis
+        axis: 0
+    result: 1Ddataset-averaged
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: 370.8
+        unit: axis
+        axis: 0
+    result: 1Ddataset-extracted
+  - kind: singleplot
+    type: SinglePlotter1D
+    properties:
+      parameters:
+        tight: x
+        tight_layout: true
+      filename: test2.pdf
+    apply_to: 
+      - 1Ddataset-averaged
+    result: 1Dplot
+  - kind: singleplot
+    type: SinglePlotter1D
+    properties:
+      parameters:
+        tight: x
+        tight_layout: true
+      filename: test3.pdf
+    apply_to: 
+      - 1Ddataset-extracted

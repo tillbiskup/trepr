@@ -1,0 +1,251 @@
+format:
+  type: ASpecD recipe
+  version: '0.2'
+
+settings:
+  default_package: trepr
+
+directories:
+  datasets_source: ../../tests/testdata/tez/
+
+datasets:
+  - pentacene
+
+tasks:
+  - kind: processing
+    type: PretriggerOffsetCompensation
+  - kind: processing
+    type: BackgroundCorrection
+    properties:
+      parameters:
+        num_profiles: [10, 10]
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        switch_axes: true
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+      filename: pentacene-xband-2D.png
+      type: contourf
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        switch_axes: true
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+        axes:
+          xlim: [0.075e-5, 0.25e-5]
+      filename: pentacene-xband-2D-zoom.png
+      type: contourf
+  - kind: aspecd.processing
+    type: Averaging
+    properties:
+      parameters:
+        range: [0.9e-6, 1.1e-6]
+        unit: axis
+        axis: 1
+    result: spectrum-1_0us
+  - kind: aspecd.processing
+    type: Averaging
+    properties:
+      parameters:
+        range: [1.1e-6, 1.3e-6]
+        unit: axis
+        axis: 1
+    result: spectrum-1_2us
+  - kind: aspecd.processing
+    type: Averaging
+    properties:
+      parameters:
+        range: [1.3e-6, 1.5e-6]
+        unit: axis
+        axis: 1
+    result: spectrum-1_4us
+  - kind: aspecd.processing
+    type: Averaging
+    properties:
+      parameters:
+        range: [1.5e-6, 1.7e-6]
+        unit: axis
+        axis: 1
+    result: spectrum-1_6us
+  - kind: aspecd.processing
+    type: Averaging
+    properties:
+      parameters:
+        range: [1.7e-6, 1.9e-6]
+        unit: axis
+        axis: 1
+    result: spectrum-1_8us
+  - kind: aspecd.processing
+    type: Averaging
+    properties:
+      parameters:
+        range: [1.9e-6, 2.1e-6]
+        unit: axis
+        axis: 1
+    result: spectrum-2_0us
+  - kind: singleplot
+    type: SinglePlotter1D
+    properties:
+      parameters:
+        tight_layout: true
+        tight: x
+      filename: pentacene-xband-1D.pdf
+    apply_to:
+      - spectrum-1_4us
+  - kind: singleplot
+    type: SinglePlotter1D
+    properties:
+      parameters:
+        tight_layout: true
+        tight: x
+      properties:
+        axes:
+          xlim: [300, 400]
+      filename: pentacene-xband-1D-zoom.pdf
+    apply_to:
+      - spectrum-1_4us
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: 320
+        unit: axis
+        axis: 0
+    result: trace_320mT
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: 372.5
+        unit: axis
+        axis: 0
+    result: trace_372_5mT
+  - kind: processing
+    type: Filtering
+    properties:
+      parameters:
+        type: savitzky-golay
+        window_length: 501
+        order: 5
+    result: trace_320mT-filtered
+    apply_to:
+    - trace_320mT
+  - kind: processing
+    type: Filtering
+    properties:
+      parameters:
+        type: savitzky-golay
+        window_length: 501
+        order: 5
+    result: trace_372_5mT-filtered
+    apply_to:
+    - trace_372_5mT
+  - kind: multiplot
+    type: MultiPlotter1D
+    properties:
+      parameters:
+        tight_layout: true
+        show_legend: true
+      properties:
+        drawings:
+          - label: "1.0 µs"
+          - label: "1.2 µs"
+          - label: "1.4 µs"
+          - label: "1.6 µs"
+          - label: "1.8 µs"
+          - label: "2.0 µs"
+      filename: pentacene-xband-1D-multi.pdf
+    apply_to:
+      - spectrum-1_0us
+      - spectrum-1_2us
+      - spectrum-1_4us
+      - spectrum-1_6us
+      - spectrum-1_8us
+      - spectrum-2_0us
+  - kind: multiplot
+    type: MultiPlotter1D
+    properties:
+      parameters:
+        tight_layout: true
+        tight: x
+        show_legend: true
+      properties:
+        grid:
+          show: true
+          axis: x
+        drawings:
+          - label: "372.5 mT"
+          - label: "320.0 mT"
+      filename: pentacene-xband-traces.pdf
+    apply_to:
+      - trace_372_5mT
+      - trace_320mT
+  - kind: multiplot
+    type: MultiPlotter1D
+    properties:
+      parameters:
+        tight_layout: true
+        tight: x
+        show_legend: true
+      properties:
+        grid:
+          show: true
+          axis: x
+        drawings:
+          - label: "372.5 mT"
+          - label: "320.0 mT"
+      filename: pentacene-xband-traces-filtered.pdf
+    apply_to:
+      - trace_372_5mT-filtered
+      - trace_320mT-filtered
+  - kind: multiplot
+    type: MultiPlotter1D
+    properties:
+      parameters:
+        tight_layout: true
+        tight: x
+        show_legend: true
+      properties:
+        grid:
+          show: true
+          axis: x
+        drawings:
+          - label: "372.5 mT unfiltered"
+          - label: "372.5 mT filtered"
+          - label: "320.0 mT unfiltered"
+          - label: "320.0 mT filtered"
+      filename: pentacene-xband-traces-cf-filtered.pdf
+    apply_to:
+      - trace_372_5mT
+      - trace_372_5mT-filtered
+      - trace_320mT
+      - trace_320mT-filtered
+  - kind: processing
+    type: Filtering
+    properties:
+      parameters:
+        type: savitzky-golay
+        window_length: 501
+        order: 3
+    result: filtered
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        switch_axes: true
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+      filename: pentacene-xband-2D-filtered.png
+      type: contourf
+    apply_to:
+      - filtered

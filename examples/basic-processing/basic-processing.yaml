@@ -1,0 +1,139 @@
+format:
+  type: ASpecD recipe
+  version: '0.2'
+
+settings:
+  default_package: trepr
+  autosave_plots: false
+
+directories:
+  datasets_source: ../../tests/testdata/fsc2/
+
+datasets:
+  - radical-pair
+  
+tasks:
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        switch_axes: true
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+        axes:
+          title: "raw data"
+    result: plot-raw
+  - kind: aspecd.processing
+    type: Averaging
+    properties:
+      parameters:
+        range: [0.8e-6, 1.0e-6]
+        unit: axis
+        axis: 1
+    result: spectrum-raw
+  - kind: processing
+    type: PretriggerOffsetCompensation
+    result: poc
+    comment: >
+        Compensate for DC offsets of the signal prior to the laser flash
+  - kind: aspecd.processing
+    type: Averaging
+    properties:
+      parameters:
+        range: [0.8e-6, 1.0e-6]
+        unit: axis
+        axis: 1
+    result: spectrum-poc
+    apply_to:
+    - poc
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        switch_axes: true
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+        axes:
+          title: "pretrigger offset compensation (POC)"
+      type: contourf
+    apply_to: poc
+    result: plot-poc
+  - kind: processing
+    type: BackgroundCorrection
+    properties:
+      parameters:
+        num_profiles: [10, 10]
+    result: bgc
+    apply_to: poc
+    comment: >
+        Correct for laser-induced background signal.
+  - kind: aspecd.processing
+    type: Averaging
+    properties:
+      parameters:
+        range: [0.8e-6, 1.0e-6]
+        unit: axis
+        axis: 1
+    result: spectrum-bgc
+    apply_to:
+    - bgc
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        switch_axes: true
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+        axes:
+          title: "POC and background correction"
+      type: contourf
+    apply_to: bgc
+    result: plot-poc-bgc
+  - kind: compositeplot
+    type: CompositePlotter
+    properties:
+      properties:
+        figure:
+          dpi: 150
+          size: [12, 4]
+      grid_dimensions: [1, 3]
+      subplot_locations:
+        - [0, 0, 1, 1]
+        - [0, 1, 1, 1]
+        - [0, 2, 1, 1]
+      plotter:
+        - plot-raw
+        - plot-poc
+        - plot-poc-bgc
+      filename: basic-processing-overview.png
+      caption:
+        title: Overview of standard processing steps of tr-EPR data.
+        text: >
+            The first step is always to correct for DC offsets of the transients prior to the laser flash (POC), followed by subtracting the laser-induced background (BGC). The latter is sometimes carried out during data acquisition by regularly recording off-resonant transients and subtracting their signal within the transient recorder.
+  - kind: multiplot
+    type: MultiPlotter1D
+    properties:
+      parameters:
+        tight_layout: true
+        show_legend: true
+      properties:
+        drawings:
+          - label: raw
+          - label: poc
+          - label: bgc
+      filename: basic-processing-spectra-comparison.pdf
+      caption:
+        title: >
+            Standard processing steps of tr-EPR data from the view-point of spectra taken near the signal maximum.
+        text: >
+            In this case, the pretrigger offset compensation (POC) does not have such a clear impact on the spectral shape, but clearly on position on the y axis. The background correction works similar to a polynomial baseline correction and operates on the complete two-dimensional dataset.
+    apply_to: 
+      - spectrum-raw
+      - spectrum-poc
+      - spectrum-bgc

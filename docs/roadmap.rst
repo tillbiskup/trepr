@@ -8,6 +8,8 @@ A few ideas how to develop the project further, currently a list as a reminder f
 For version 0.3
 ===============
 
+* Extend example section with recipes
+
 * Improve handling of reports
 
 * Extend Bruker BES3T importer

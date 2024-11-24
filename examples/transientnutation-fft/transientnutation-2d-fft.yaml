@@ -1,0 +1,203 @@
+format:
+  type: ASpecD recipe
+  version: '0.2'
+
+settings:
+  default_package: trepr
+  autosave_plots: false
+
+directories:
+  datasets_source: ../../tests/testdata/fsc2/
+  
+datasets:
+  #- radical-pair
+  - triplet
+
+tasks:
+  - kind: processing
+    type: PretriggerOffsetCompensation
+    comment: >
+        Compensate for DC offsets of the signal prior to the laser flash
+  - kind: processing
+    type: BackgroundCorrection
+    comment: >
+        Correct for laser-induced background signal.
+  - kind: singleanalysis
+    type: TransientNutationFFT
+    properties:
+      parameters:
+        padding: 10
+        subtract_decay: True
+    result: tnfft
+    comment: Perform FFT on dataset
+  - kind: singleanalysis
+    type: TransientNutationFFT
+    properties:
+      parameters:
+        padding: 10
+        subtract_decay: True
+        window: cosine
+    result: tnfft-window
+    comment: Perform FFT on dataset with cosine window
+  - kind: singleanalysis
+    type: BasicCharacteristics
+    properties:
+      parameters:
+        kind: max
+        output: indices
+        axis: 0
+    result: max_field
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: max_field
+        axis: 0
+    result: time_trace_max
+    comment: Extract transient for global maximum of the dataset
+  - kind: singleanalysis
+    type: BasicCharacteristics
+    properties:
+      parameters:
+        kind: min
+        output: indices
+        axis: 0
+    result: min_field
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: min_field
+        axis: 0
+    result: time_trace_min
+    comment: Extract transient for global minimum of the dataset
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: max_field
+        axis: 0
+    result: frequency_max
+    comment: Extract frequency for global maximum of the dataset
+    apply_to: tnfft
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: min_field
+        axis: 0
+    result: frequency_min
+    comment: Extract frequency for global minimum of the dataset
+    apply_to: tnfft
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: max_field
+        axis: 0
+    result: frequency_max-window
+    comment: Extract frequency for global maximum of the dataset
+    apply_to: tnfft-window
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: min_field
+        axis: 0
+    result: frequency_min-window
+    comment: Extract frequency for global minimum of the dataset
+    apply_to: tnfft-window
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+      type: contourf
+    result: original_data
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+        axes:
+          ylim: [0, 8e5]
+      type: contourf
+    result: fft_data
+    apply_to: tnfft-window
+  - kind: multiplot
+    type: MultiPlotter1D
+    properties:
+      parameters:
+        tight_layout: true
+        tight: x
+      properties:
+        grid:
+          show: true
+          axis: x
+    result: time_traces
+    apply_to:
+      - time_trace_max
+      - time_trace_min
+  - kind: multiplot
+    type: MultiPlotter1D
+    properties:
+      parameters:
+        tight_layout: true
+        show_legend: true
+      properties:
+        axes:
+          xlim: [0, 5e5]
+        drawings:
+          - label: max
+          - label: min
+          - label: max cosine
+          - label: min cosine
+        grid:
+          show: true
+          axis: x
+    result: frequency_traces_compare_windows
+    apply_to:
+      - frequency_max
+      - frequency_min
+      - frequency_max-window
+      - frequency_min-window
+  - kind: multiplot
+    type: MultiPlotter1D
+    properties:
+      parameters:
+        tight_layout: true
+      properties:
+        axes:
+          xlim: [0, 5e5]
+        grid:
+          show: true
+          axis: x
+    result: frequency_traces
+    apply_to:
+      - frequency_max-window
+      - frequency_min-window
+  - kind: compositeplot
+    type: CompositePlotter
+    properties:
+      properties:
+        figure:
+          dpi: 150
+          size: [8, 6]
+      grid_dimensions: [2, 2]
+      subplot_locations:
+        - [0, 0, 1, 1]
+        - [0, 1, 1, 1]
+        - [1, 0, 1, 1]
+        - [1, 1, 1, 1]
+      plotter:
+        - original_data
+        - fft_data
+        - time_traces
+        - frequency_traces
+      filename: tnfft.png

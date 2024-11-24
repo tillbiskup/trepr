@@ -1,0 +1,88 @@
+format:
+  type: ASpecD recipe
+  version: '0.2'
+
+settings:
+  default_package: trepr
+  autosave_plots: false
+
+directories:
+  datasets_source: ../../tests/testdata/
+  
+datasets:
+  - speksim/
+
+tasks:
+  - kind: processing
+    type: PretriggerOffsetCompensation
+    comment: >
+        Compensate for DC offsets of the signal prior to the laser flash
+  - kind: aspecd.processing
+    type: Averaging
+    properties:
+      parameters:
+        range: [370.4, 371.4]
+        unit: axis
+        axis: 0
+    result: 1Ddataset-averaged
+  - kind: singleplot
+    type: SinglePlotter1D
+    properties:
+      parameters:
+        tight: x
+        tight_layout: true
+    apply_to:
+      - 1Ddataset-averaged
+    result: time_trace
+  - kind: singleanalysis
+    type: TransientNutationFFT
+    properties:
+      parameters:
+        padding: 10
+    result: tnfft
+    comment: Perform FFT on dataset
+    apply_to: 1Ddataset-averaged
+  - kind: singleanalysis
+    type: TransientNutationFFT
+    properties:
+      parameters:
+        padding: 10
+        window: kaiser
+        window_parameters: [3]
+    result: tnfft-window
+    comment: Perform FFT on dataset
+    apply_to: 1Ddataset-averaged
+  - kind: multiplot
+    type: MultiPlotter1D
+    properties:
+      parameters:
+        tight_layout: true
+        show_legend: true
+      properties:
+        axes:
+          xlim: [0, 2e6]
+        drawings:
+          - label: no window
+          - label: cosine window
+        grid:
+          show: true
+          axis: x
+    result: fft
+    apply_to:
+      - tnfft
+      - tnfft-window
+  - kind: compositeplot
+    type: CompositePlotter
+    properties:
+      properties:
+        figure:
+          dpi: 150
+          size: [8, 4]
+      grid_dimensions: [1, 2]
+      subplot_locations:
+        - [0, 0, 1, 1]
+        - [0, 1, 1, 1]
+      plotter:
+        - time_trace
+        - fft
+      filename: tn-1d-fft.png

@@ -1,0 +1,48 @@
+format:
+  type: ASpecD recipe
+  version: '0.2'
+
+settings:
+  default_package: trepr
+  autosave_plots: false
+
+directories:
+  datasets_source: ../../tests/testdata/fsc2/
+  
+datasets:
+  #- radical-pair
+  - triplet
+  #- speksim/
+
+tasks:
+  - kind: processing
+    type: PretriggerOffsetCompensation
+    comment: >
+        Compensate for DC offsets of the signal prior to the laser flash
+  - kind: processing
+    type: BackgroundCorrection
+    comment: >
+        Correct for laser-induced background signal.
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+      type: contourf
+      filename: 2Dplot.pdf
+  - kind: aspecd.report
+    type: LaTeXReporter
+    properties:
+        template: datensatz.tex
+        filename: report-de.tex
+        language: de
+    compile: true
+  - kind: aspecd.report
+    type: LaTeXReporter
+    properties:
+        template: dataset.tex
+        filename: report-en.tex
+    compile: true

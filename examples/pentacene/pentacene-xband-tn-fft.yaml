@@ -1,0 +1,145 @@
+format:
+  type: ASpecD recipe
+  version: '0.2'
+
+settings:
+  default_package: trepr
+  autosave_plots: false
+
+directories:
+  datasets_source: ../../tests/testdata/tez/
+
+datasets:
+  - pentacene
+
+tasks:
+  - kind: processing
+    type: PretriggerOffsetCompensation
+  - kind: processing
+    type: BackgroundCorrection
+    properties:
+      parameters:
+        num_profiles: [10, 10]
+  - kind: singleanalysis
+    type: TransientNutationFFT
+    properties:
+      parameters:
+        padding: 10
+        subtract_decay: True
+        window: hann
+    result: tnfft-window
+    comment: Perform FFT on dataset with window
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+      type: contourf
+    result: original_data
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+        axes:
+          ylim: [0, 1.2e6]
+      type: contourf
+    result: fft_data
+    apply_to: tnfft-window
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: 320
+        unit: axis
+        axis: 0
+    result: trace_320mT
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: 372.5
+        unit: axis
+        axis: 0
+    result: trace_372_5mT
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: 320
+        unit: axis
+        axis: 0
+    apply_to: tnfft-window
+    result: frequency_trace_320mT
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: 372.5
+        unit: axis
+        axis: 0
+    apply_to: tnfft-window
+    result: frequency_trace_372_5mT
+  - kind: multiplot
+    type: MultiPlotter1D
+    properties:
+      parameters:
+        tight_layout: true
+        tight: x
+        show_legend: true
+      properties:
+        grid:
+          show: true
+          axis: x
+        drawings:
+          - label: "372.5 mT"
+          - label: "320.0 mT"
+    apply_to:
+      - trace_372_5mT
+      - trace_320mT
+    result: time_traces
+  - kind: multiplot
+    type: MultiPlotter1D
+    properties:
+      parameters:
+        tight_layout: true
+        tight: x
+        show_legend: true
+      properties:
+        grid:
+          show: true
+          axis: x
+        axes:
+          xlim: [0, 1.2e6]
+        drawings:
+          - label: "372.5 mT"
+          - label: "320.0 mT"
+    apply_to:
+      - frequency_trace_372_5mT
+      - frequency_trace_320mT
+    result: frequency_traces
+  - kind: compositeplot
+    type: CompositePlotter
+    properties:
+      properties:
+        figure:
+          dpi: 150
+          size: [8, 6]
+      grid_dimensions: [2, 2]
+      subplot_locations:
+        - [0, 0, 1, 1]
+        - [0, 1, 1, 1]
+        - [1, 0, 1, 1]
+        - [1, 1, 1, 1]
+      plotter:
+        - original_data
+        - fft_data
+        - time_traces
+        - frequency_traces
+      filename: pentacene-tnfft.png
