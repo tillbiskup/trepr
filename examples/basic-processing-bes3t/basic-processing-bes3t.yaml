@@ -1,0 +1,43 @@
+format:
+  type: ASpecD recipe
+  version: '0.2'
+
+settings:
+  default_package: trepr
+  autosave_plots: false
+
+directories:
+  datasets_source: ../tests/testdata/BES3T/
+
+datasets:
+  - rp-transient-80k-5sc.DSC
+
+tasks:
+  - kind: processing
+    type: TriggerAutodetection
+  - kind: processing
+    type: PretriggerOffsetCompensation
+    comment: >
+        Compensate for DC offsets of the signal prior to the laser flash
+  - kind: processing
+    type: BackgroundCorrection
+    properties:
+      parameters:
+        num_profiles: [1, 1]
+    comment: >
+        Correct for laser-induced background signal.
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        switch_axes: true
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+        axes:
+          title: "raw data"
+        drawing:
+          cmap: twilight_shifted
+      filename: rp-transient-80k-5sc.png
+    result: plot-raw
