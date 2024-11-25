@@ -127,6 +127,8 @@ tasks:
       properties:
         figure:
           dpi: 300
+        drawing:
+          cmap: twilight_shifted
       type: contourf
     result: 2D
   - kind: compositeplot
