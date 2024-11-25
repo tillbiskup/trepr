@@ -102,8 +102,8 @@ tasks:
           show: true
           axis: y
     apply_to:
-    - time_trace_max
     - time_trace_min
+    - time_trace_max
     result: transients
   - kind: multiplot
     type: MultiPlotter1D

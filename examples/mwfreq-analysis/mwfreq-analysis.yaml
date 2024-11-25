@@ -1,0 +1,57 @@
+format:
+  type: ASpecD recipe
+  version: '0.2'
+
+settings:
+  default_package: trepr
+
+directories:
+  datasets_source: ../../tests/testdata/
+
+datasets:
+- speksim/
+
+tasks:
+- kind: processing
+  type: PretriggerOffsetCompensation
+- kind: singleanalysis
+  type: MWFrequencyValues
+  apply_to: speksim/
+  result: mwfreq
+- kind: singleplot
+  type: SinglePlotter1D
+  properties:
+    parameters:
+      tight_layout: true
+    filename: mwfreq.pdf
+  apply_to: mwfreq
+- kind: singleanalysis
+  type: MWFrequencyDrift
+  properties:
+    parameters:
+      kind: drift
+      output: dataset
+  apply_to: speksim/
+  result: mwfreq-drift
+- kind: singleplot
+  type: SinglePlotter1D
+  properties:
+    parameters:
+      tight_layout: true
+    filename: mwfreq-drift.pdf
+  apply_to: mwfreq-drift
+- kind: singleanalysis
+  type: MWFrequencyDrift
+  properties:
+    parameters:
+      kind: ratio
+      output: dataset
+  apply_to: speksim/
+  result: mwfreq-ratio
+- kind: singleplot
+  type: SinglePlotter1D
+  properties:
+    parameters:
+      tight_layout: true
+    filename: mwfreq-ratio.pdf
+  apply_to: mwfreq-ratio

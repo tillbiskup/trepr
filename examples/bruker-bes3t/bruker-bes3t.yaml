@@ -1,0 +1,70 @@
+format:
+  type: ASpecD recipe
+  version: '0.2'
+
+settings:
+  default_package: trepr
+
+directories:
+  datasets_source: ../../tests/testdata/BES3T/
+
+datasets:
+#- pentacen-transient-field-vs-time
+- rp-transient-80k-5sc
+
+tasks:
+- kind: processing
+  type: SliceExtraction
+  properties:
+    parameters:
+      position: 1
+  result: time_trace
+- kind: singleplot
+  type: SinglePlotter1D
+  properties:
+    properties:
+      axes:
+        xlim: [0.5e-6, 1e-6]
+        ylim: [-1000, 4000]
+    filename: time_trace.pdf
+  apply_to: time_trace
+- kind: singleplot
+  type: SinglePlotter2D
+  properties:
+    filename: overview.pdf
+- kind: processing
+  type: TriggerAutodetection
+- kind: singleplot
+  type: SinglePlotter2D
+  properties:
+    filename: overview_w_trigger.pdf
+- kind: processing
+  type: PretriggerOffsetCompensation
+- kind: processing
+  type: BackgroundCorrection
+- kind: singleplot
+  type: SinglePlotter2D
+  properties:
+    filename: overview_poc_bgc.pdf
+- kind: singleanalysis
+  type: BasicCharacteristics
+  properties:
+    parameters:
+      kind: max
+      output: indices
+      axis: 0
+  result: max_field
+  comment: Extract index of field axis for global maximum of the dataset
+- kind: processing
+  type: SliceExtraction
+  properties:
+    parameters:
+      position: max_field
+      axis: 0
+  result: time_trace_max
+  comment: Extract transient for global maximum of the dataset
+- kind: singleplot
+  type: SinglePlotter1D
+  properties:
+    filename: time_trace_maximum.pdf
+  apply_to: time_trace_max

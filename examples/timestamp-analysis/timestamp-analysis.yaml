@@ -1,0 +1,50 @@
+format:
+  type: ASpecD recipe
+  version: '0.2'
+
+settings:
+  default_package: trepr
+
+directories:
+  datasets_source: ../../tests/testdata/
+
+datasets:
+- speksim/
+
+tasks:
+- kind: processing
+  type: PretriggerOffsetCompensation
+- kind: singleanalysis
+  type: TimeStampAnalysis
+  properties:
+    parameters:
+      kind: delta
+      output: dataset
+  result: time-delta
+- kind: singleplot
+  type: SinglePlotter1D
+  properties:
+    parameters:
+      tight_layout: true
+    properties:
+      drawing:
+        marker: '*'
+    filename: time-delta.pdf
+  apply_to: time-delta
+- kind: singleanalysis
+  type: TimeStampAnalysis
+  properties:
+    parameters:
+      kind: time
+      output: dataset
+  result: time-values
+- kind: singleplot
+  type: SinglePlotter1D
+  properties:
+    parameters:
+      tight_layout: true
+    properties:
+      drawing:
+        marker: '*'
+    filename: time-values.pdf
+  apply_to: time-values
