@@ -106,7 +106,7 @@ tasks:
     properties:
       properties:
         figure:
-          dpi: 150
+          dpi: 300
           size: [11, 4]
       grid_dimensions: [1, 3]
       subplot_locations:
@@ -130,11 +130,13 @@ tasks:
         tight_layout: true
         show_legend: true
       properties:
+        figure:
+          dpi: 300
         drawings:
           - label: raw
           - label: poc
           - label: bgc
-      filename: basic-processing-spectra-comparison.pdf
+      filename: basic-processing-spectra-comparison.png
       caption:
         title: >
             Standard processing steps of tr-EPR data from the view-point of spectra taken near the signal maximum.

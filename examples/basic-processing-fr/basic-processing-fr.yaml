@@ -21,9 +21,19 @@ tasks:
       properties:
         figure:
           dpi: 300
+        drawing:
+          cmap: twilight_shifted
       filename: raw.png
       type: contourf
     result: 2Dplot
+  - kind: processing
+    type: SliceExtraction
+    properties:
+      parameters:
+        position: 370.6
+        unit: axis
+        axis: 0
+    result: raw-1D
   - kind: processing
     type: PretriggerOffsetCompensation
   - kind: singleplot
@@ -35,41 +45,33 @@ tasks:
       properties:
         figure:
           dpi: 300
+        drawing:
+          cmap: twilight_shifted
       filename: poc.png
       type: contourf
     result: 2Dplot
-  - kind: aspecd.processing
-    type: Averaging
-    properties:
-      parameters:
-        range: [370.4, 371.4]
-        unit: axis
-        axis: 0
-    result: 1Ddataset-averaged
   - kind: processing
     type: SliceExtraction
     properties:
       parameters:
-        position: 370.8
+        position: 370.6
         unit: axis
         axis: 0
-    result: 1Ddataset-extracted
-  - kind: singleplot
-    type: SinglePlotter1D
+    result: poc-1D
+  - kind: multiplot
+    type: MultiPlotter1D
     properties:
       parameters:
         tight: x
         tight_layout: true
-      filename: test2.pdf
+        show_legend: true
+      properties:
+        drawings:
+          - label: raw
+          - label: poc
+        figure:
+          dpi: 300
+      filename: raw-poc-1D.png
     apply_to: 
-      - 1Ddataset-averaged
-    result: 1Dplot
-  - kind: singleplot
-    type: SinglePlotter1D
-    properties:
-      parameters:
-        tight: x
-        tight_layout: true
-      filename: test3.pdf
-    apply_to: 
-      - 1Ddataset-extracted
+      - raw-1D
+      - poc-1D

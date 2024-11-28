@@ -7,23 +7,72 @@ settings:
   autosave_plots: false
 
 directories:
-  datasets_source: ../tests/testdata/BES3T/
+  datasets_source: ../../tests/testdata/BES3T/
 
 datasets:
   - rp-transient-80k-5sc.DSC
 
 tasks:
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        switch_axes: true
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+        axes:
+          title: raw data
+        drawing:
+          cmap: twilight_shifted
+    result: plot-raw
   - kind: processing
     type: TriggerAutodetection
+    result: trigger
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        switch_axes: true
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+        axes:
+          title: trigger detected
+        drawing:
+          cmap: twilight_shifted
+    apply_to: trigger
+    result: plot-trigger
   - kind: processing
     type: PretriggerOffsetCompensation
+    apply_to: trigger
+    result: poc
     comment: >
         Compensate for DC offsets of the signal prior to the laser flash
+  - kind: singleplot
+    type: SinglePlotter2D
+    properties:
+      parameters:
+        switch_axes: true
+        tight_layout: true
+      properties:
+        figure:
+          dpi: 300
+        axes:
+          title: pretrigger offset compensated
+        drawing:
+          cmap: twilight_shifted
+    apply_to: poc
+    result: plot-poc
   - kind: processing
     type: BackgroundCorrection
     properties:
       parameters:
         num_profiles: [1, 1]
+    apply_to: poc
+    result: bgc
     comment: >
         Correct for laser-induced background signal.
   - kind: singleplot
@@ -36,8 +85,28 @@ tasks:
         figure:
           dpi: 300
         axes:
-          title: "raw data"
+          title: background corrected
         drawing:
           cmap: twilight_shifted
-      filename: rp-transient-80k-5sc.png
-    result: plot-raw
+    apply_to: bgc
+    result: plot-bgc
+  - kind: compositeplot
+    type: CompositePlotter
+    properties:
+      properties:
+        figure:
+          dpi: 300
+          size: [8, 7]
+      grid_dimensions: [2, 2]
+      subplot_locations:
+        - [0, 0, 1, 1]
+        - [0, 1, 1, 1]
+        - [1, 0, 1, 1]
+        - [1, 1, 1, 1]
+      sharey: true
+      plotter:
+        - plot-raw
+        - plot-trigger
+        - plot-poc
+        - plot-bgc
+      filename: basic-processing-bes3t-overview.png
