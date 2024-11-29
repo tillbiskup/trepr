@@ -11,7 +11,7 @@ For each of the examples, a full recipe is provided ready to be copied and paste
     There are plans to provide a series of real example data as well, to make it easy to get first-hand experience with the trepr package.
 
 
-For a brief introduction into recipe-driven data analysis, see the :doc:`usecases` section. A more thorough introduction with many more examples can be found in the `documentation of the underlying ASpecD framework <https://docs.aspecd.de/examples/>`_. The most detailed documentation of recipe-driven data analysis -- besides having a look at the examples of the individual tasks to be performed -- is still the `API documentation of the ASpecD tasks module <https://docs.aspecd.de/api/aspecd.tasks.html>`_.
+For a brief introduction into recipe-driven data analysis, see the :doc:`../usecases` section. A more thorough introduction with many more examples can be found in the `documentation of the underlying ASpecD framework <https://docs.aspecd.de/examples/>`_. The most detailed documentation of recipe-driven data analysis -- besides having a look at the examples of the individual tasks to be performed -- is still the `API documentation of the ASpecD tasks module <https://docs.aspecd.de/api/aspecd.tasks.html>`_.
 
 
 Prerequisites

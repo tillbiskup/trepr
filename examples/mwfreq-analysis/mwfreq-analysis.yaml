@@ -9,21 +9,25 @@ directories:
   datasets_source: ../../tests/testdata/
 
 datasets:
-- speksim/
+- source: speksim/
+  id: data
 
 tasks:
-- kind: processing
-  type: PretriggerOffsetCompensation
 - kind: singleanalysis
   type: MWFrequencyValues
-  apply_to: speksim/
+  apply_to: data
   result: mwfreq
 - kind: singleplot
   type: SinglePlotter1D
   properties:
     parameters:
       tight_layout: true
-    filename: mwfreq.pdf
+    properties:
+      figure:
+        dpi: 300
+      axes:
+        title: Microwave frequency
+    filename: mwfreq.png
   apply_to: mwfreq
 - kind: singleanalysis
   type: MWFrequencyDrift
@@ -31,14 +35,19 @@ tasks:
     parameters:
       kind: drift
       output: dataset
-  apply_to: speksim/
+  apply_to: data
   result: mwfreq-drift
 - kind: singleplot
   type: SinglePlotter1D
   properties:
     parameters:
       tight_layout: true
-    filename: mwfreq-drift.pdf
+    properties:
+      figure:
+        dpi: 300
+      axes:
+        title: Microwave frequency drift (absolute)
+    filename: mwfreq-drift.png
   apply_to: mwfreq-drift
 - kind: singleanalysis
   type: MWFrequencyDrift
@@ -46,12 +55,17 @@ tasks:
     parameters:
       kind: ratio
       output: dataset
-  apply_to: speksim/
+  apply_to: data
   result: mwfreq-ratio
 - kind: singleplot
   type: SinglePlotter1D
   properties:
     parameters:
       tight_layout: true
-    filename: mwfreq-ratio.pdf
+    properties:
+      figure:
+        dpi: 300
+      axes:
+        title: Microwave frequency drift (relative to field step width)
+    filename: mwfreq-ratio.png
   apply_to: mwfreq-ratio

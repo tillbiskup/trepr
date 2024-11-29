@@ -188,7 +188,7 @@ tasks:
       properties:
         figure:
           dpi: 150
-          size: [8, 6]
+          size: [8, 7]
       grid_dimensions: [2, 2]
       subplot_locations:
         - [0, 0, 1, 1]
@@ -200,4 +200,4 @@ tasks:
         - fft_data
         - time_traces
         - frequency_traces
-      filename: tnfft.png
+      filename: transient-nutation-2d-fft.png

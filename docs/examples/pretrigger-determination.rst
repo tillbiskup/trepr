@@ -2,6 +2,16 @@
 Determining the pretrigger part of the signal (Bruker BES3T)
 ============================================================
 
+Classes used:
+
+* :class:`trepr.processing.TriggerAutodetection`
+* :class:`trepr.processing.PretriggerOffsetCompensation`
+* :class:`trepr.processing.BackgroundCorrection`
+
+
+Description
+===========
+
 tr-EPR spectra are typically recorded as full time profiles for a series of magnetic field positions, and to obtain the full kinetics, it is crucial to record the time traces starting before the laser flash.
 
 The part before the laser flash that triggers the actual measurement is usually termed "pretrigger offset". The first preprocessing step of raw data is hence to take this pretrigger offset and set its average to zero, *i.e.* average over this part of the time trace and subtract this average value from the entire time trace. This removes any DC offset of the recording.

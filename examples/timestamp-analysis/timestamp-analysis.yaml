@@ -12,8 +12,6 @@ datasets:
 - speksim/
 
 tasks:
-- kind: processing
-  type: PretriggerOffsetCompensation
 - kind: singleanalysis
   type: TimeStampAnalysis
   properties:
@@ -29,7 +27,11 @@ tasks:
     properties:
       drawing:
         marker: '*'
-    filename: time-delta.pdf
+      figure:
+        dpi: 300
+      axes:
+        title: Time taken per individual time trace
+    filename: time-delta.png
   apply_to: time-delta
 - kind: singleanalysis
   type: TimeStampAnalysis
@@ -46,5 +48,9 @@ tasks:
     properties:
       drawing:
         marker: '*'
-    filename: time-values.pdf
+      figure:
+        dpi: 300
+      axes:
+        title: Relative timestamp for each time trace
+    filename: time-values.png
   apply_to: time-values

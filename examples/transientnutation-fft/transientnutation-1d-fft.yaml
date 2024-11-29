@@ -63,7 +63,7 @@ tasks:
           xlim: [0, 2e6]
         drawings:
           - label: no window
-          - label: cosine window
+          - label: Kaiser window
         grid:
           show: true
           axis: x
@@ -85,4 +85,4 @@ tasks:
       plotter:
         - time_trace
         - fft
-      filename: tn-1d-fft.png
+      filename: transient-nutation-1d-fft.png

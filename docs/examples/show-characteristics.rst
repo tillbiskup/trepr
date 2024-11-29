@@ -2,6 +2,17 @@
 Characteristics of a dataset
 ============================
 
+Classes used:
+
+* :class:`trepr.processing.PretriggerOffsetCompensation`
+* :class:`trepr.processing.BackgroundCorrection`
+* :class:`trepr.analysis.BasicCharacteristics`
+* :class:`aspecd.processing.SliceExtraction`
+
+
+Description
+===========
+
 As with all kinds of data, one of the first and most important steps is to get an overview of the resulting data and their characteristics. Furthermore, with a growing number of different measurements, keeping an overview is crucial. This is the realm of well-crafted, expressive graphical representations that are automatically generated, thus uniform and highly appropriate to compare different datasets and focus on their respective differences.
 
 For tr-EPR data in particular, things get somewhat more complicated due to the two-dimensional nature of the data (magnetic field, time). One strategy to get a decent overview of the characteristics of a dataset would be:
