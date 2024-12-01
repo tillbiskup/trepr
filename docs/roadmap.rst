@@ -10,6 +10,10 @@ For version 0.3
 
 * Extend example section with recipes
 
+* Annotation for arrows with A and E (for enhanced absorption and emission)
+
+  * Should work for inverted axes as well (*i.e.*, vertically and horizontally)
+
 * Improve handling of reports
 
 * Extend Bruker BES3T importer
